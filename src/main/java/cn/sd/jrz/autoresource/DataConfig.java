@@ -2,6 +2,8 @@ package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 
 public abstract class DataConfig {
     public static final DataConfig ENERGY_GENERATOR_FE = new DataConfig(1, Long.MAX_VALUE, 1, 1) {
@@ -15,11 +17,21 @@ public abstract class DataConfig {
         public BlockEntityType<?> getEntityType() {
             return Registration.LIQUID_GENERATOR_WATER_ENTITY.get();
         }
+
+        @Override
+        public Fluid getFluid() {
+            return Fluids.WATER;
+        }
     };
     public static final DataConfig LIQUID_GENERATOR_LAVA = new DataConfig(50, Long.MAX_VALUE, 10, 50) {
         @Override
         public BlockEntityType<?> getEntityType() {
             return Registration.LIQUID_GENERATOR_LAVA_ENTITY.get();
+        }
+
+        @Override
+        public Fluid getFluid() {
+            return Fluids.LAVA;
         }
     };
 
@@ -164,4 +176,8 @@ public abstract class DataConfig {
     }
 
     public abstract BlockEntityType<?> getEntityType();
+
+    public Fluid getFluid() {
+        return Fluids.EMPTY;
+    }
 }

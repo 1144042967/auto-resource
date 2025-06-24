@@ -1,11 +1,12 @@
 package cn.sd.jrz.autoresource.energy;
 
+import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import net.minecraftforge.energy.IEnergyStorage;
 
 public class EnergyConnection implements IEnergyStorage {
-    private final GeneratorEntity owner;
+    private final EnergyGeneratorEntity owner;
 
-    public EnergyConnection(GeneratorEntity owner) {
+    public EnergyConnection(EnergyGeneratorEntity owner) {
         this.owner = owner;
     }
 
@@ -16,9 +17,9 @@ public class EnergyConnection implements IEnergyStorage {
 
     @Override
     public int extractEnergy(int maxExtract, boolean simulate) {
-        double energyExtracted = Math.min(owner.getEnergy(), maxExtract);
+        long energyExtracted = Math.min(owner.energy, maxExtract);
         if (!simulate) {
-            owner.setEnergy(owner.getEnergy() - energyExtracted);
+            owner.energy -= energyExtracted;
         }
         owner.setChanged();
         return (int) energyExtracted;
@@ -26,12 +27,12 @@ public class EnergyConnection implements IEnergyStorage {
 
     @Override
     public int getEnergyStored() {
-        return (int) owner.getEnergy();
+        return (int) owner.energy;
     }
 
     @Override
     public int getMaxEnergyStored() {
-        return (int) owner.getOutput();
+        return Integer.MAX_VALUE;
     }
 
     @Override

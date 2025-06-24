@@ -17,5 +17,17 @@
   "screen.exponentialpower.generator_rate": "Current Energy Generation:",
   "screen.exponentialpower.storage_total_percent": "Energy Percent : %s %%",
   "screen.exponentialpower.storage_total_current": "Energy Stored : %s RF",
-  "screen.exponentialpower.storage_total_max": "Max Energy : %s RF"
+  "screen.exponentialpower.storage_total_max": "Max Energy : %s RF",
+  "item.autoresource.energy_generator.tooltip.energy": "Energy: %s RF",
+  "item.autoresource.energy_generator.tooltip.output": "Output: %s RF/tick",
+  "item.autoresource.energy_generator.tooltip.growth": "Growth: %s %%",
+  "item.autoresource.energy_generator.tooltip.growth_max": "Growth: Max",
+  "screen.autoresource.energy_generator.message": "Energy: %s RF   Output: %s RF/tick   Growth: %s %%",
+  "screen.autoresource.energy_generator.message_max": "Energy: %s RF   Output: %s RF/tick   Growth: Max",
+  "item.autoresource.liquid_generator.tooltip.liquid": "Liquid: %s RF",
+  "item.autoresource.liquid_generator.tooltip.output": "Output: %s RF/tick",
+  "item.autoresource.liquid_generator.tooltip.growth": "Growth: %s %%",
+  "item.autoresource.liquid_generator.tooltip.growth_max": "Growth: Max",
+  "screen.autoresource.liquid_generator.message": "Liquid: %s mB   Output: %s mB/tick   Growth: %s %%",
+  "screen.autoresource.liquid_generator.message_max": "Liquid: %s mB   Output: %s mB/tick   Growth: Max"
 }

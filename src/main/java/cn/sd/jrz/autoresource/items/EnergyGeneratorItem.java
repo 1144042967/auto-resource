@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.items;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.nbt.CompoundTag;
+import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
@@ -27,17 +28,30 @@ public class EnergyGeneratorItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        double energy = 0;
+        long output = 0;
+        long energy = 0;
+        long tickCount = 0;
         if (stack.hasTag()) {
             CompoundTag tag = stack.getTagElement("BlockEntityTag");
-            if (tag != null && tag.contains("energy")) {
-                energy = tag.getDouble("energy");
+            if (tag != null) {
+                if (tag.contains("output", Tag.TAG_LONG)) {
+                    output = tag.getLong("output");
+                }
+                if (tag.contains("energy", Tag.TAG_LONG)) {
+                    energy = tag.getLong("energy");
+                }
+                if (tag.contains("tickCount", Tag.TAG_LONG)) {
+                    tickCount = tag.getInt("tickCount");
+                }
             }
         }
-        double maxEnergy = config.getStorageMaxEnergy();
-        double percent = ((int) (energy / maxEnergy * 10000)) / 100.00;
-        tooltip.add(Component.translatable("item.exponentialpower.storage.tooltip.stored_percent", percent));
-        tooltip.add(Component.translatable("item.exponentialpower.storage.tooltip.stored_current", energy));
-        tooltip.add(Component.translatable("item.exponentialpower.storage.tooltip.stored_max", maxEnergy));
+        double percent = (int) (tickCount / 20.00 / config.second * 10000) / 100.00;
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
+        if (output < config.max) {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
+        } else {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
+        }
     }
 }
