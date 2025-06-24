@@ -14,7 +14,7 @@ public class ItemManager {
     private static final DeferredRegister<CreativeModeTab> CREATIVE_MODE_TABS = DeferredRegister.create(Registries.CREATIVE_MODE_TAB, AutoResource.MODID);
 
     private static final RegistryObject<CreativeModeTab> TAB = CREATIVE_MODE_TABS.register("autoresource", () -> CreativeModeTab.builder()
-            .title(Component.translatable("itemGroup.exponentialpower"))
+            .title(Component.translatable("itemGroup.autoresource"))
             .icon(() -> new ItemStack(Registration.ENERGY_GENERATOR_FE_ITEM.get()))
             .displayItems((parameters, output) -> {
                 output.accept(Registration.ENERGY_GENERATOR_FE_ITEM.get());

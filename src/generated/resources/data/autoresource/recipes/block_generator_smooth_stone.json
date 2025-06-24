@@ -1,0 +1,26 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "block_generator_smooth_stone",
+  "key": {
+    "#": {
+      "item": "minecraft:smooth_stone"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    },
+    "S": {
+      "item": "minecraft:smooth_stone"
+    }
+  },
+  "pattern": [
+    "#L#",
+    "#S#",
+    "#W#"
+  ],
+  "result": {
+    "item": "autoresource:block_generator_smooth_stone"
+  }
+}

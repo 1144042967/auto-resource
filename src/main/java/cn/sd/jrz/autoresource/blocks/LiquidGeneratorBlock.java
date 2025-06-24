@@ -43,6 +43,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
+        if (level.isClientSide) {
+            return;
+        }
         if (!(tile instanceof LiquidGeneratorEntity generator)) {
             return;
         }
@@ -50,11 +53,16 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (generator.tickCount / 20 >= generator.config.second) {
             generator.tickCount = 0;
             generator.output = Math.min(generator.config.max, generator.output + generator.config.step);
-            generator.liquid += generator.output;
         }
-        if (level.isClientSide) {
+        generator.liquid += generator.output;
+        if (generator.liquid < 0) {
+            generator.liquid = 0;
+        }
+        if (generator.liquid / 1000 <= 0) {
+            generator.setChanged();
             return;
         }
+        //传输
         BlockPos blockPos = generator.getBlockPos();
         for (Direction direction : Direction.values()) {
             BlockPos pos = blockPos.relative(direction);
@@ -63,16 +71,18 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(
-                    handler -> handler.isFluidValid((int) generator.liquid, new FluidStack(generator.config.getFluid(), (int) generator.liquid))
+                    handler -> handler.isFluidValid((int) (generator.liquid / 1000), new FluidStack(generator.config.getFluid(), (int) (generator.liquid / 1000)))
             ).orElse(null);
             if (storage == null) {
                 continue;
             }
-            generator.liquid -= storage.fill(new FluidStack(generator.config.getFluid(), (int) generator.liquid), IFluidHandler.FluidAction.EXECUTE);
-            if (generator.liquid <= 0) {
-                return;
+            int fill = storage.fill(new FluidStack(generator.config.getFluid(), (int) (generator.liquid / 1000)), IFluidHandler.FluidAction.EXECUTE);
+            generator.liquid -= fill * 1000L;
+            if (generator.liquid / 1000 <= 0) {
+                break;
             }
         }
+        generator.setChanged();
     }
 
     @SuppressWarnings("deprecation")
@@ -85,8 +95,8 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
-        long liquid = generator.liquid;
-        long output = generator.output;
+        double liquid = generator.liquid / 1000D;
+        double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.second * 10000) / 100.00;
         if (output < generator.config.max) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));

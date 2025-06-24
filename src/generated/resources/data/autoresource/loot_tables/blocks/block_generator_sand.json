@@ -1,0 +1,53 @@
+{
+  "type": "minecraft:block",
+  "pools": [
+    {
+      "bonus_rolls": 0.0,
+      "entries": [
+        {
+          "type": "minecraft:item",
+          "functions": [
+            {
+              "function": "minecraft:copy_name",
+              "source": "block_entity"
+            },
+            {
+              "function": "minecraft:copy_nbt",
+              "ops": [
+                {
+                  "op": "replace",
+                  "source": "energy",
+                  "target": "BlockEntityTag.energy"
+                },
+                {
+                  "op": "replace",
+                  "source": "liquid",
+                  "target": "BlockEntityTag.liquid"
+                },
+                {
+                  "op": "replace",
+                  "source": "block",
+                  "target": "BlockEntityTag.block"
+                },
+                {
+                  "op": "replace",
+                  "source": "output",
+                  "target": "BlockEntityTag.output"
+                },
+                {
+                  "op": "replace",
+                  "source": "tickCount",
+                  "target": "BlockEntityTag.tickCount"
+                }
+              ],
+              "source": "block_entity"
+            }
+          ],
+          "name": "autoresource:block_generator_sand"
+        }
+      ],
+      "name": "blockgeneratorsand",
+      "rolls": 1.0
+    }
+  ]
+}

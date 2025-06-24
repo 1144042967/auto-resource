@@ -2,35 +2,27 @@ package cn.sd.jrz.autoresource.energy;
 
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.IFluidTank;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 
-public class LiquidConnection implements IFluidTank {
+public class LiquidConnection implements IFluidHandler {
     private final LiquidGeneratorEntity owner;
+    private final FluidStack stack;
 
     public LiquidConnection(LiquidGeneratorEntity owner) {
         this.owner = owner;
+        this.stack = new FluidStack(owner.config.getFluid(), 0);
     }
 
     @Override
-    public @NotNull FluidStack getFluid() {
-        return new FluidStack(owner.config.getFluid(), getFluidAmount());
+    public int getTanks() {
+        return 1;
     }
 
     @Override
-    public int getFluidAmount() {
-        return (int) (owner.liquid);
-    }
-
-    @Override
-    public int getCapacity() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean isFluidValid(FluidStack fluidStack) {
-        return false;
+    public @NotNull FluidStack getFluidInTank(int tank) {
+        stack.setAmount((int) (owner.liquid / 1000));
+        return stack;
     }
 
     @Override
@@ -39,13 +31,16 @@ public class LiquidConnection implements IFluidTank {
     }
 
     @Override
-    public @NotNull FluidStack drain(int maxExtract, IFluidHandler.FluidAction fluidAction) {
-        long liquidDrain = Math.min(owner.liquid, maxExtract);
-        if (fluidAction.execute()) {
-            owner.liquid -= liquidDrain;
+    public @NotNull FluidStack drain(int amount, IFluidHandler.FluidAction fluidAction) {
+        if (owner.liquid / 1000 <= 0 || amount <= 0) {
+            return new FluidStack(owner.config.getFluid(), 0);
         }
-        owner.setChanged();
-        return new FluidStack(owner.config.getFluid(), (int) liquidDrain);
+        int ret = (int) Math.min(owner.liquid / 1000, amount);
+        if (fluidAction.execute()) {
+            owner.liquid -= ret * 1000L;
+            owner.setChanged();
+        }
+        return new FluidStack(owner.config.getFluid(), ret);
     }
 
     @Override
@@ -53,7 +48,17 @@ public class LiquidConnection implements IFluidTank {
         if (fluidStack.getFluid() == owner.config.getFluid()) {
             return drain(fluidStack.getAmount(), fluidAction);
         } else {
-            return FluidStack.EMPTY;
+            return new FluidStack(owner.config.getFluid(), 0);
         }
+    }
+
+    @Override
+    public int getTankCapacity(int tank) {
+        return Integer.MAX_VALUE;
+    }
+
+    @Override
+    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+        return false;
     }
 }

@@ -1,0 +1,6 @@
+{
+  "parent": "minecraft:block/cube_all",
+  "textures": {
+    "all": "autoresource:block/block_generator_gravel"
+  }
+}

@@ -1,0 +1,20 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "liquid_generator_lava",
+  "key": {
+    "#": {
+      "item": "minecraft:smooth_stone"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "pattern": [
+    "#L#",
+    "LLL",
+    "#L#"
+  ],
+  "result": {
+    "item": "autoresource:liquid_generator_lava"
+  }
+}

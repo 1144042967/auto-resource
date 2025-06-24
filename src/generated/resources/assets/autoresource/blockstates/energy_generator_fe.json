@@ -1,0 +1,7 @@
+{
+  "variants": {
+    "": {
+      "model": "autoresource:block/energy_generator_fe"
+    }
+  }
+}

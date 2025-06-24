@@ -28,17 +28,17 @@ public class LiquidGeneratorItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        long output = 0;
-        long liquid = 0;
+        double output = 0;
+        double liquid = 0;
         long tickCount = 0;
         if (stack.hasTag()) {
             CompoundTag tag = stack.getTagElement("BlockEntityTag");
             if (tag != null) {
                 if (tag.contains("output", Tag.TAG_LONG)) {
-                    output = tag.getLong("output");
+                    output = tag.getLong("output") / 1000D;
                 }
                 if (tag.contains("liquid", Tag.TAG_LONG)) {
-                    liquid = tag.getLong("liquid");
+                    liquid = tag.getLong("liquid") / 1000D;
                 }
                 if (tag.contains("tickCount", Tag.TAG_LONG)) {
                     tickCount = tag.getInt("tickCount");

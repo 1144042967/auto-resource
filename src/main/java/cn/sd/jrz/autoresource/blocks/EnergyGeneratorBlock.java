@@ -42,6 +42,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
+        if (level.isClientSide) {
+            return;
+        }
         if (!(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
@@ -49,10 +52,10 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         if (generator.tickCount / 20 >= generator.config.second) {
             generator.tickCount = 0;
             generator.output = Math.min(generator.config.max, generator.output + generator.config.step);
-            generator.energy += generator.output;
         }
-        if (level.isClientSide) {
-            return;
+        generator.energy += generator.output;
+        if (generator.energy < 0) {
+            generator.energy = 0;
         }
         BlockPos blockPos = generator.getBlockPos();
         for (Direction direction : Direction.values()) {
@@ -67,9 +70,10 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             }
             generator.energy -= storage.receiveEnergy((int) generator.energy, false);
             if (generator.energy <= 0) {
-                return;
+                break;
             }
         }
+        generator.setChanged();
     }
 
     @SuppressWarnings("deprecation")
