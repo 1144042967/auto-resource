@@ -1,3 +1,33 @@
+
+# AutoResource
+
+Added some machines that automatically generate resources, supporting the generation of FE, Water, Lava, and various types of stones.
+
+## Generator
+- The maximum power generation is 9,223,372,036,854,775,807 RF/t
+- The default initial power generation is 1 RF/t. Every second, the power generation increases by 1 RF/t, and it may not reach full power generation in one's lifetime
+- The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract RF
+- Synthetic materials require redstone and smooth stone
+
+## Fluid machine
+- Support the generation of Water and Lava
+- The maximum output is 9,223,372,036,854,775.807 B/t
+- The default initial production is 0.05 B/t, which is 1 B/second. Every 10 seconds, the production increases by 0.05 B/t
+- Fluid will actively transfer fluid evenly to the six veneers, or other MOD pipelines can be used to extract fluid
+- Synthetic materials require water buckets/lava buckets and smooth stones
+- In the case of redstone activation, 4 attempts will be made per second to place fluid into the air block below the machine
+
+## Block machine
+- Support the production of dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone
+- The maximum output is 9,223,372,036,854,775.807 Block/t
+- The default initial output is 0.05 Block/t, which is 1 Block/second. Every 10 seconds, the output increases by 0.05 Block/t
+- The block machine actively transfers blocks evenly to the six veneers, or can use other MOD pipelines to extract blocks
+- Synthetic materials require water buckets, lava buckets, corresponding products, and smooth stones
+- In the case of redstone activation, 4 attempts will be made per second to place a block into the air block below the machine
+
+![all machine image](https://github.com/1144042967/auto-resource/raw/master/docs/block.png)
+
+
 # AutoResource
 
 添加了一些自动生成资源的机器，支持生成FE、水、岩浆、多种石头。
