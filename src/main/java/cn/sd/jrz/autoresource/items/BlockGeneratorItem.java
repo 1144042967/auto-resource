@@ -31,6 +31,8 @@ public class BlockGeneratorItem extends BlockItem {
         double output = config.min;
         double block = 0;
         long tickCount = 0;
+        long second = config.second;
+        long step = config.step;
         if (stack.hasTag()) {
             CompoundTag tag = stack.getTagElement("BlockEntityTag");
             if (tag != null) {
@@ -45,7 +47,7 @@ public class BlockGeneratorItem extends BlockItem {
                 }
             }
         }
-        double percent = (int) (tickCount / 20.00 / config.second * 10000) / 100.00;
+        double percent = (int) (tickCount / 20.00 / second * 10000) / 100.00;
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.block", block));
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.output", output));
         if (output < config.max) {
@@ -53,5 +55,6 @@ public class BlockGeneratorItem extends BlockItem {
         } else {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
         }
+        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
     }
 }
