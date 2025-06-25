@@ -281,16 +281,32 @@ public abstract class DataConfig {
         }
     };
 
-    public final long min;
-    public final long max;
-    public final long second;
-    public final long step;
+    private final ForgeConfigSpec.LongValue min;
+    private final ForgeConfigSpec.LongValue max;
+    private final ForgeConfigSpec.LongValue second;
+    private final ForgeConfigSpec.LongValue step;
 
     public DataConfig(ForgeConfigSpec.LongValue min, ForgeConfigSpec.LongValue max, ForgeConfigSpec.LongValue second, ForgeConfigSpec.LongValue step) {
-        this.min = min.get();
-        this.max = max.get();
-        this.second = second.get();
-        this.step = step.get();
+        this.min = min;
+        this.max = max;
+        this.second = second;
+        this.step = step;
+    }
+
+    public long getMin() {
+        return min.get();
+    }
+
+    public long getMax() {
+        return max.get();
+    }
+
+    public long getSecond() {
+        return second.get();
+    }
+
+    public long getStep() {
+        return step.get();
     }
 
     public abstract BlockEntityType<?> getEntityType();

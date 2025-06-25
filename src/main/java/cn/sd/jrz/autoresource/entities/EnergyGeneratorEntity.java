@@ -27,7 +27,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(config.getEntityType(), pos, state);
         this.config = config;
-        this.output = config.min;
+        this.output = config.getMin();
     }
 
     @Override

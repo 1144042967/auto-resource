@@ -53,9 +53,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             return;
         }
         generator.tickCount++;
-        if (generator.tickCount / 20 >= generator.config.second) {
+        if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.max, generator.output + generator.config.step);
+            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
         }
         generator.liquid += generator.output;
         if (generator.liquid < 0) {
@@ -108,8 +108,8 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         }
         double liquid = generator.liquid / 1000D;
         double output = generator.output / 1000D;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.second * 10000) / 100.00;
-        if (output < generator.config.max) {
+        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
+        if (output < generator.config.getMax()) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));

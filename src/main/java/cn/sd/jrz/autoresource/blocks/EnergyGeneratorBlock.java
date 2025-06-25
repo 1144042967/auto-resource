@@ -51,9 +51,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             return;
         }
         generator.tickCount++;
-        if (generator.tickCount / 20 >= generator.config.second) {
+        if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.max, generator.output + generator.config.step);
+            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
         }
         generator.energy += generator.output;
         if (generator.energy < 0) {
@@ -92,8 +92,8 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         }
         long energy = generator.energy;
         long output = generator.output;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.second * 10000) / 100.00;
-        if (output < generator.config.max) {
+        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
+        if (output < generator.config.getMax()) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent));
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));

@@ -55,9 +55,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         }
         //计算产量
         generator.tickCount++;
-        if (generator.tickCount / 20 >= generator.config.second) {
+        if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.max, generator.output + generator.config.step);
+            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
         }
         generator.block += generator.output;
         if (generator.block < 0) {
@@ -108,8 +108,8 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         }
         double block = generator.block / 1000D;
         double output = generator.output / 1000D;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.second * 10000) / 100.00;
-        if (output < generator.config.max) {
+        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
+        if (output < generator.config.getMax()) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));

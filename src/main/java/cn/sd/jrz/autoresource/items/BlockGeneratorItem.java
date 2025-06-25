@@ -28,11 +28,11 @@ public class BlockGeneratorItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        double output = config.min / 1000D;
+        double output = config.getMin() / 1000D;
         double block = 0;
         long tickCount = 0;
-        long second = config.second;
-        long step = config.step;
+        long second = config.getSecond();
+        long step = config.getStep();
         if (stack.hasTag()) {
             CompoundTag tag = stack.getTagElement("BlockEntityTag");
             if (tag != null) {
@@ -50,7 +50,7 @@ public class BlockGeneratorItem extends BlockItem {
         double percent = (int) (tickCount / 20.00 / second * 10000) / 100.00;
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.block", block));
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.output", output));
-        if (output < config.max) {
+        if (output < config.getMax()) {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent));
         } else {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
