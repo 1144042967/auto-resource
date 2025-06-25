@@ -1,4 +1,4 @@
-package cn.sd.jrz.autoresource.energy;
+package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import net.minecraftforge.energy.IEnergyStorage;

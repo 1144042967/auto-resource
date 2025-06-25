@@ -77,7 +77,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             ItemStack result = ItemHandlerHelper.insertItemStacked(handler, new ItemStack(config.getBlock(), (int) (generator.block / 1000)), false);
-            generator.block -= generator.block - result.getCount() * 1000L;
+            generator.block -= ((int) (generator.block / 1000) - result.getCount()) * 1000L;
             if (generator.block / 1000 <= 0) {
                 break;
             }

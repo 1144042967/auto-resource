@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.energy.BlockConnection;
+import cn.sd.jrz.autoresource.connection.BlockConnection;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
