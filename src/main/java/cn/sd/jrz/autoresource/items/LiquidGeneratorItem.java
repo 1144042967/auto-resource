@@ -28,7 +28,7 @@ public class LiquidGeneratorItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        double output = 0;
+        double output = config.min;
         double liquid = 0;
         long tickCount = 0;
         if (stack.hasTag()) {
