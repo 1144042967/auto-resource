@@ -28,7 +28,7 @@ public class BlockGeneratorItem extends BlockItem {
     @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
-        double output = config.min;
+        double output = config.min / 1000D;
         double block = 0;
         long tickCount = 0;
         long second = config.second;
