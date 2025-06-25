@@ -25,6 +25,8 @@ Added some machines that automatically generate resources, supporting the genera
 - Synthetic materials require water buckets, lava buckets, corresponding products, and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place a block into the air block below the machine
 
+## Image
+
 ![all machine image](https://github.com/1144042967/auto-resource/raw/master/docs/block.png)
 
 
