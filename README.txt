@@ -1,46 +1,34 @@
+# AutoResource
 
-Source installation information for modders
--------------------------------------------
-This code follows the Minecraft Forge installation methodology. It will apply
-some small patches to the vanilla MCP source code, giving you and it access 
-to some of the data and functions you need to build a successful mod.
+添加了一些自动生成资源的机器，支持生成FE、水、岩浆、多种石头。
 
-Note also that the patches are built against "un-renamed" MCP source code (aka
-SRG Names) - this means that you will not be able to read them directly against
-normal code.
+## 发电机
 
-Setup Process:
-==============================
+- 最大发电量为 922,3372,0368,5477,5807 RF/t
+- 默认初始发电量为 1 RF/t，每过 1 秒，发电量增加 1 RF/t，一辈子可能见不到满发电量了
+- 发电机会主动向六个贴面均匀传输电量，也可以使用其他MOD的导线抽取电量
+- 合成材料需要红石和平滑石头
 
-Step 1: Open your command-line and browse to the folder where you extracted the zip file.
+## 流体机
 
-Step 2: You're left with a choice.
-If you prefer to use Eclipse:
-1. Run the following command: `./gradlew genEclipseRuns`
-2. Open Eclipse, Import > Existing Gradle Project > Select Folder 
-   or run `gradlew eclipse` to generate the project.
+- 支持产生水和岩浆
+- 最大产量为 9223,3720,3685,4775.807 桶/t
+- 默认初始产量为 0.05 桶/t，也就是 1 桶/秒，每过 10 秒，产量增加 0.05 桶/t
+- 流体机会主动向六个贴面均匀传输流体，也可以使用其他MOD的管道抽取流体
+- 合成材料需要水桶/岩浆桶和平滑石头
+- 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
 
-If you prefer to use IntelliJ:
-1. Open IDEA, and import project.
-2. Select your build.gradle file and have it import.
-3. Run the following command: `./gradlew genIntellijRuns`
-4. Refresh the Gradle Project in IDEA if required.
+## 方块机
 
-If at any point you are missing libraries in your IDE, or you've run into problems you can 
-run `gradlew --refresh-dependencies` to refresh the local cache. `gradlew clean` to reset everything 
-(this does not affect your code) and then start the process again.
+- 支持产生泥土、圆石、石头、平滑石头、粘土、沙子、沙砾、花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石、海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
+- 最大产量为 9223,3720,3685,4775.807 个/t
+- 默认初始产量为 0.05 个/t，也就是 1 个/秒，每过 10 秒，产量增加 0.05 个/t
+- 方块机会主动向六个贴面均匀传输方块，也可以使用其他MOD的管道抽取方块
+- 合成材料需要水桶、岩浆桶、对应产物和平滑石头
+- 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置方块
 
-Mapping Names:
-=============================
-By default, the MDK is configured to use the official mapping names from Mojang for methods and fields 
-in the Minecraft codebase. These names are covered by a specific license. All modders should be aware of this
-license, if you do not agree with it you can change your mapping names to other crowdsourced names in your 
-build.gradle. For the latest license text, refer to the mapping file itself, or the reference copy here:
-https://github.com/MinecraftForge/MCPConfig/blob/master/Mojang.md
 
-Additional Resources: 
-=========================
-Community Documentation: https://docs.minecraftforge.net/en/1.20.1/gettingstarted/
-LexManos' Install Video: https://youtu.be/8VEdtQLuLO0
-Forge Forums: https://forums.minecraftforge.net/
-Forge Discord: https://discord.minecraftforge.net/
+
+## 图片
+
+![所有机器的图片](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/block.png)
