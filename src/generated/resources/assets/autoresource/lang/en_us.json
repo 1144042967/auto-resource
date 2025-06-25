@@ -1,7 +1,7 @@
 {
   "block.autoresource.energy_generator_fe": "FE Generator",
   "block.autoresource.liquid_generator_water": "Water Generator",
-  "block.autoresource.liquid_generator_lava": "Later Generator",
+  "block.autoresource.liquid_generator_lava": "Lava Generator",
   "block.autoresource.block_generator_dirt": "Dirt Generator",
   "block.autoresource.block_generator_cobblestone": "Cobblestone Generator",
   "block.autoresource.block_generator_stone": "Stone Generator",

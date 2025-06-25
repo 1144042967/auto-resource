@@ -61,7 +61,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (generator.liquid < 0) {
             generator.liquid = 0;
         }
-        if (generator.liquid / 1000 <= 0) {
+        if (generator.liquid <= 0) {
             generator.setChanged();
             return;
         }
@@ -76,18 +76,18 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(
-                    handler -> handler.isFluidValid((int) (generator.liquid / 1000), new FluidStack(generator.config.getFluid(), (int) (generator.liquid / 1000)))
+                    handler -> handler.isFluidValid((int) generator.liquid, new FluidStack(generator.config.getFluid(), (int) generator.liquid))
             ).orElse(null);
             if (storage == null) {
                 continue;
             }
-            int fill = storage.fill(new FluidStack(generator.config.getFluid(), (int) (generator.liquid / 1000)), IFluidHandler.FluidAction.EXECUTE);
-            generator.liquid -= fill * 1000L;
-            if (generator.liquid / 1000 <= 0) {
+            int fill = storage.fill(new FluidStack(generator.config.getFluid(), (int) generator.liquid), IFluidHandler.FluidAction.EXECUTE);
+            generator.liquid -= fill;
+            if (generator.liquid <= 0) {
                 break;
             }
         }
-        if (level.hasNeighborSignal(blockPos) && generator.liquid / 1000 >= 1 && generator.tickCount % 5 == 0) {
+        if (level.hasNeighborSignal(blockPos) && generator.liquid >= 1000 && generator.tickCount % 5 == 0) {
             BlockPos pos = blockPos.relative(Direction.DOWN);
             if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
                 generator.liquid -= 1000;

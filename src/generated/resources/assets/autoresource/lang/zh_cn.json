@@ -36,7 +36,7 @@
   "item.autoresource.liquid_generator.tooltip.output": "产量: %s 桶/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "成长: %s%%",
   "item.autoresource.liquid_generator.tooltip.growth_max": "成长: 已达上限",
-  "item.autoresource.liquid_generator.tooltip.step": "每 %s 秒, 产量提高 %s B/tick",
+  "item.autoresource.liquid_generator.tooltip.step": "每 %s 秒, 产量提高 %s 桶/tick",
   "item.autoresource.liquid_generator.tooltip.set_block": "激活红石信号, 在下方放置液体",
   "item.autoresource.liquid_generator.tooltip.tip": "自动向相邻的容器传输液体",
   "screen.autoresource.liquid_generator.message": "流体: %s 桶   产量: %s 桶/tick   成长: %s%%",

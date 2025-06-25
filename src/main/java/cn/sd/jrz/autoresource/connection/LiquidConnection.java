@@ -21,7 +21,7 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @NotNull FluidStack getFluidInTank(int tank) {
-        stack.setAmount((int) (owner.liquid / 1000));
+        stack.setAmount((int) owner.liquid);
         return stack;
     }
 
@@ -32,12 +32,12 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @NotNull FluidStack drain(int amount, IFluidHandler.FluidAction fluidAction) {
-        if (owner.liquid / 1000 <= 0 || amount <= 0) {
+        if (owner.liquid <= 0 || amount <= 0) {
             return new FluidStack(owner.config.getFluid(), 0);
         }
-        int ret = (int) Math.min(owner.liquid / 1000, amount);
+        int ret = (int) Math.min(owner.liquid, amount);
         if (fluidAction.execute()) {
-            owner.liquid -= ret * 1000L;
+            owner.liquid -= ret;
             owner.setChanged();
         }
         return new FluidStack(owner.config.getFluid(), ret);
