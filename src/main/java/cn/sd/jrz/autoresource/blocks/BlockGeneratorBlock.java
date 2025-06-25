@@ -26,6 +26,8 @@ import javax.annotation.Nullable;
 
 public class BlockGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
+    private final Direction[] directions = Direction.values();
+    private int findIndex = 0;
 
     public BlockGeneratorBlock(Properties properties, DataConfig config) {
         super(properties);
@@ -66,7 +68,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         }
         //传输
         BlockPos blockPos = generator.getBlockPos();
-        for (Direction direction : Direction.values()) {
+        for (int i = 0; i < directions.length; i++) {
+            findIndex = (findIndex + 1) % directions.length;
+            Direction direction = directions[findIndex];
             BlockPos pos = blockPos.relative(direction);
             BlockEntity entity = level.getBlockEntity(pos);
             if (entity == null) {
