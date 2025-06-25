@@ -56,5 +56,6 @@ public class BlockGeneratorItem extends BlockItem {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
         }
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
+        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.set_block"));
     }
 }

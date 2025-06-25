@@ -24,6 +24,11 @@ public abstract class DataConfig {
         public Fluid getFluid() {
             return Fluids.WATER;
         }
+
+        @Override
+        public Block getBlock() {
+            return Blocks.WATER;
+        }
     };
     public static final DataConfig LIQUID_GENERATOR_LAVA = new DataConfig(50, Long.MAX_VALUE, 10, 50) {
         @Override
@@ -34,6 +39,11 @@ public abstract class DataConfig {
         @Override
         public Fluid getFluid() {
             return Fluids.LAVA;
+        }
+
+        @Override
+        public Block getBlock() {
+            return Blocks.LAVA;
         }
     };
 

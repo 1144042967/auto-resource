@@ -10,6 +10,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -84,6 +85,12 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             generator.liquid -= fill * 1000L;
             if (generator.liquid / 1000 <= 0) {
                 break;
+            }
+        }
+        if (level.hasNeighborSignal(blockPos) && generator.liquid / 1000 >= 1 && generator.tickCount % 5 == 0) {
+            BlockPos pos = blockPos.relative(Direction.DOWN);
+            if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
+                generator.liquid -= 1000;
             }
         }
         generator.setChanged();

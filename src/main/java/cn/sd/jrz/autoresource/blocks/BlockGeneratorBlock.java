@@ -11,6 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -84,6 +85,12 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             generator.block -= ((int) (generator.block / 1000) - result.getCount()) * 1000L;
             if (generator.block / 1000 <= 0) {
                 break;
+            }
+        }
+        if (level.hasNeighborSignal(blockPos) && generator.block / 1000 >= 1 && generator.tickCount % 5 == 0) {
+            BlockPos pos = blockPos.relative(Direction.DOWN);
+            if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
+                generator.block -= 1000;
             }
         }
         generator.setChanged();

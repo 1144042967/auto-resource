@@ -36,6 +36,7 @@
   "item.autoresource.liquid_generator.tooltip.growth": "Growth: %s%%",
   "item.autoresource.liquid_generator.tooltip.growth_max": "Growth: Max",
   "item.autoresource.liquid_generator.tooltip.step": "Every %s seconds, Output increases by %s B/tick",
+  "item.autoresource.liquid_generator.tooltip.set_block": "Redstone Signal, Place liquid in the air below",
   "screen.autoresource.liquid_generator.message": "Liquid: %s B   Output: %s B/tick   Growth: %s%%",
   "screen.autoresource.liquid_generator.message_max": "Liquid: %s B   Output: %s B/tick   Growth: Max",
   "item.autoresource.block_generator.tooltip.block": "Block: %s",
@@ -43,6 +44,7 @@
   "item.autoresource.block_generator.tooltip.growth": "Growth: %s%%",
   "item.autoresource.block_generator.tooltip.growth_max": "Growth: Max",
   "item.autoresource.block_generator.tooltip.step": "Every %s seconds, Output increases by %s/tick",
+  "item.autoresource.block_generator.tooltip.set_block": "Redstone Signal, Place blocks in the air below",
   "screen.autoresource.block_generator.message": "Block: %s   Output: %s/tick   Growth: %s%%",
   "screen.autoresource.block_generator.message_max": "Block: %s   Output: %s/tick   Growth: Max"
 }
