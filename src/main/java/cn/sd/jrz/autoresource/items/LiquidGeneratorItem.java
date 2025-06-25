@@ -57,5 +57,6 @@ public class LiquidGeneratorItem extends BlockItem {
         }
         tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D));
         tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block"));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.tip"));
     }
 }

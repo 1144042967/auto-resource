@@ -29,6 +29,7 @@
   "item.autoresource.energy_generator.tooltip.growth": "成长: %s%%",
   "item.autoresource.energy_generator.tooltip.growth_max": "成长: 已达上限",
   "item.autoresource.energy_generator.tooltip.step": "每 %s 秒, 产量提高 %s RF/tick",
+  "item.autoresource.energy_generator.tooltip.tip": "自动向相邻的机器传输RF",
   "screen.autoresource.energy_generator.message": "电量: %s RF   产量: %s RF/tick   成长: %s%%",
   "screen.autoresource.energy_generator.message_max": "电量: %s RF   产量: %s RF/tick   成长: 已达上限",
   "item.autoresource.liquid_generator.tooltip.liquid": "流体: %s 桶",
@@ -37,6 +38,7 @@
   "item.autoresource.liquid_generator.tooltip.growth_max": "成长: 已达上限",
   "item.autoresource.liquid_generator.tooltip.step": "每 %s 秒, 产量提高 %s B/tick",
   "item.autoresource.liquid_generator.tooltip.set_block": "激活红石信号, 在下方放置液体",
+  "item.autoresource.liquid_generator.tooltip.tip": "自动向相邻的容器传输传输液体",
   "screen.autoresource.liquid_generator.message": "流体: %s 桶   产量: %s 桶/tick   成长: %s%%",
   "screen.autoresource.liquid_generator.message_max": "流体: %s 桶   产量: %s 桶/tick   成长: 已达上限",
   "item.autoresource.block_generator.tooltip.block": "方块: %s 个",
@@ -45,6 +47,7 @@
   "item.autoresource.block_generator.tooltip.growth_max": "成长: 已达上限",
   "item.autoresource.block_generator.tooltip.step": "每 %s 秒, 产量提高 %s 个/tick",
   "item.autoresource.block_generator.tooltip.set_block": "激活红石信号, 在下方放置方块",
+  "item.autoresource.block_generator.tooltip.tip": "自动向相邻的容器传输传输方块",
   "screen.autoresource.block_generator.message": "方块: %s 个   产量: %s 个/tick   成长: %s%%",
   "screen.autoresource.block_generator.message_max": "方块: %s 个   产量: %s 个/tick   成长: 已达上限"
 }
