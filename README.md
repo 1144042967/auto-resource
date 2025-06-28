@@ -4,9 +4,9 @@
 Added some machines that automatically generate resources, supporting the generation of FE, Water, Lava, and various types of stones.
 
 ## Generator
-- The maximum power generation is 9,223,372,036,854,775,807 RF/t
-- The default initial power generation is 1 RF/t. Every second, the power generation increases by 1 RF/t, and it may not reach full power generation in one's lifetime
-- The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract RF
+- The maximum power generation is 9,223,372,036,854,775,807 FE/t
+- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and it may not reach full power generation in one's lifetime
+- The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract FE
 - Synthetic materials require redstone and smooth stone
 
 ## Fluid machine
@@ -36,8 +36,8 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## 发电机
 
-- 最大发电量为 922,3372,0368,5477,5807 RF/t
-- 默认初始发电量为 1 RF/t，每过 1 秒，发电量增加 1 RF/t，一辈子可能见不到满发电量了
+- 最大发电量为 922,3372,0368,5477,5807 FE/t
+- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，一辈子可能见不到满发电量了
 - 发电机会主动向六个贴面均匀传输电量，也可以使用其他MOD的导线抽取电量
 - 合成材料需要红石和平滑石头
 
