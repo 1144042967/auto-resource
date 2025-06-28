@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -50,15 +51,12 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         if (!(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
-        generator.tickCount++;
+        generator.tickCount = Tool.suit(generator.tickCount + 1);
         if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
+            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.config.getStep()));
         }
-        generator.energy += generator.output;
-        if (generator.energy < 0) {
-            generator.energy = 0;
-        }
+        generator.energy = Tool.suit(generator.energy + generator.output);
         BlockPos blockPos = generator.getBlockPos();
         for (int i = 0; i < directions.length; i++) {
             findIndex = (findIndex + 1) % directions.length;
@@ -72,7 +70,15 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (storage == null) {
                 continue;
             }
-            generator.energy -= storage.receiveEnergy((int) generator.energy, false);
+            int maxOutput = Tool.suitInt(generator.energy);
+            int result = storage.receiveEnergy(maxOutput, false);
+            if (result < 0) {
+                result = 0;
+            }
+            if (result > maxOutput) {
+                result = maxOutput;
+            }
+            generator.energy -= result;
             if (generator.energy <= 0) {
                 break;
             }
@@ -92,7 +98,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         }
         long energy = generator.energy;
         long output = generator.output;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
+        double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent));
         } else {

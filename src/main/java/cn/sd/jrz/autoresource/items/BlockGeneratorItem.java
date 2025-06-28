@@ -43,11 +43,11 @@ public class BlockGeneratorItem extends BlockItem {
                     block = tag.getLong("block") / 1000D;
                 }
                 if (tag.contains("tickCount", Tag.TAG_LONG)) {
-                    tickCount = tag.getInt("tickCount");
+                    tickCount = tag.getLong("tickCount");
                 }
             }
         }
-        double percent = (int) (tickCount / 20.00 / second * 10000) / 100.00;
+        double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.block", block));
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.output", output));
         if (output < config.getMax()) {

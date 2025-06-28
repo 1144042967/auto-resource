@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -52,15 +53,12 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (!(tile instanceof LiquidGeneratorEntity generator)) {
             return;
         }
-        generator.tickCount++;
+        generator.tickCount = Tool.suit(generator.tickCount + 1);
         if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
+            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.config.getStep()));
         }
-        generator.liquid += generator.output;
-        if (generator.liquid < 0) {
-            generator.liquid = 0;
-        }
+        generator.liquid = Tool.suit(generator.liquid + generator.output);
         if (generator.liquid <= 0) {
             generator.setChanged();
             return;
@@ -75,14 +73,21 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
+            int maxOutput = Tool.suitInt(generator.liquid / 1000);
             IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(
-                    handler -> handler.isFluidValid((int) generator.liquid, new FluidStack(generator.config.getFluid(), (int) generator.liquid))
+                    handler -> handler.isFluidValid(maxOutput, new FluidStack(generator.config.getFluid(), maxOutput))
             ).orElse(null);
             if (storage == null) {
                 continue;
             }
-            int fill = storage.fill(new FluidStack(generator.config.getFluid(), (int) generator.liquid), IFluidHandler.FluidAction.EXECUTE);
-            generator.liquid -= fill;
+            int result = storage.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
+            if (result < 0) {
+                result = 0;
+            }
+            if (result > maxOutput) {
+                result = maxOutput;
+            }
+            generator.liquid -= result;
             if (generator.liquid <= 0) {
                 break;
             }

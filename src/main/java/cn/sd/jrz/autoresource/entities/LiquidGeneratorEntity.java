@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.connection.LiquidConnection;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
@@ -22,7 +23,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     public final DataConfig config;
     public long output;
     public long liquid = 0;
-    public int tickCount = 0;
+    public long tickCount = 0;
 
     public LiquidGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(config.getEntityType(), pos, state);
@@ -48,13 +49,13 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     public void load(@NotNull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = nbt.getLong("output");
+            output = Tool.suit(nbt.getLong("output"));
         }
         if (nbt.contains("liquid", Tag.TAG_LONG)) {
-            liquid = nbt.getLong("liquid");
+            liquid = Tool.suit(nbt.getLong("liquid"));
         }
         if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = nbt.getInt("tickCount");
+            tickCount = Tool.suit(nbt.getLong("tickCount"));
         }
     }
 }

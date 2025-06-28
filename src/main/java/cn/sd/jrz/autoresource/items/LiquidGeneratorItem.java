@@ -43,11 +43,11 @@ public class LiquidGeneratorItem extends BlockItem {
                     liquid = tag.getLong("liquid") / 1000D;
                 }
                 if (tag.contains("tickCount", Tag.TAG_LONG)) {
-                    tickCount = tag.getInt("tickCount");
+                    tickCount = tag.getLong("tickCount");
                 }
             }
         }
-        double percent = (int) (tickCount / 20.00 / second * 10000) / 100.00;
+        double percent = (int) (tickCount / 20.00D / second * 10000D) / 100.00D;
         tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid));
         tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output));
         if (output < config.getMax()) {

@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
@@ -32,10 +33,11 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @NotNull FluidStack drain(int amount, IFluidHandler.FluidAction fluidAction) {
-        if (owner.liquid <= 0 || amount <= 0) {
+        int maxOutput = Tool.suitInt(owner.liquid);
+        if (maxOutput <= 0 || amount <= 0) {
             return new FluidStack(owner.config.getFluid(), 0);
         }
-        int ret = (int) Math.min(owner.liquid, amount);
+        int ret = Math.min(maxOutput, amount);
         if (fluidAction.execute()) {
             owner.liquid -= ret;
             owner.setChanged();

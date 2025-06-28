@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -54,15 +55,12 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             return;
         }
         //计算产量
-        generator.tickCount++;
+        generator.tickCount = Tool.suit(generator.tickCount + 1);
         if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.getMax(), generator.output + generator.config.getStep());
+            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.config.getStep()));
         }
-        generator.block += generator.output;
-        if (generator.block < 0) {
-            generator.block = 0;
-        }
+        generator.block = Tool.suit(generator.block + generator.output);
         if (generator.block / 1000 <= 0) {
             generator.setChanged();
             return;
@@ -81,13 +79,21 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             if (handler == null) {
                 continue;
             }
-            ItemStack result = ItemHandlerHelper.insertItemStacked(handler, new ItemStack(config.getBlock(), (int) (generator.block / 1000)), false);
-            generator.block -= ((int) (generator.block / 1000) - result.getCount()) * 1000L;
+            int maxOutput = Tool.suitInt(generator.block / 1000);
+            ItemStack result = ItemHandlerHelper.insertItemStacked(handler, new ItemStack(config.getBlock(), maxOutput), false);
+            int count = result.getCount();
+            if (count < 0) {
+                count = 0;
+            }
+            if (count > maxOutput) {
+                count = maxOutput;
+            }
+            generator.block -= (maxOutput - count) * 1000L;
             if (generator.block / 1000 <= 0) {
                 break;
             }
         }
-        if (level.hasNeighborSignal(blockPos) && generator.block / 1000 >= 1 && generator.tickCount % 5 == 0) {
+        if (level.hasNeighborSignal(blockPos) && generator.block >= 1000 && generator.tickCount % 5 == 0) {
             BlockPos pos = blockPos.relative(Direction.DOWN);
             if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
                 generator.block -= 1000;
@@ -108,7 +114,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         }
         double block = generator.block / 1000D;
         double output = generator.output / 1000D;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
+        double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
         } else {

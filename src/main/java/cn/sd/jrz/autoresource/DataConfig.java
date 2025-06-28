@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -294,19 +295,19 @@ public abstract class DataConfig {
     }
 
     public long getMin() {
-        return min.get();
+        return Tool.suit(min.get());
     }
 
     public long getMax() {
-        return max.get();
+        return Tool.suit(max.get());
     }
 
     public long getSecond() {
-        return second.get();
+        return Tool.suit(second.get());
     }
 
     public long getStep() {
-        return step.get();
+        return Tool.suit(step.get());
     }
 
     public abstract BlockEntityType<?> getEntityType();
