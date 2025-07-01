@@ -22,7 +22,7 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @NotNull FluidStack getFluidInTank(int tank) {
-        stack.setAmount((int) owner.liquid);
+        stack.setAmount(Tool.suitInt(owner.liquid));
         return stack;
     }
 

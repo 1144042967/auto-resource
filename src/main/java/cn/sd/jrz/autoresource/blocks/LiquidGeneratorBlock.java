@@ -73,7 +73,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            int maxOutput = Tool.suitInt(generator.liquid / 1000);
+            int maxOutput = Tool.suitInt(generator.liquid);
             IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(
                     handler -> handler.isFluidValid(maxOutput, new FluidStack(generator.config.getFluid(), maxOutput))
             ).orElse(null);
@@ -111,7 +111,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
-        double liquid = generator.liquid / 1000D;
+        long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {

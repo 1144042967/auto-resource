@@ -29,7 +29,7 @@ public class BlockGeneratorItem extends BlockItem {
     public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
         double output = config.getMin() / 1000D;
-        double block = 0;
+        long block = 0;
         long tickCount = 0;
         long second = config.getSecond();
         long step = config.getStep();
@@ -40,7 +40,7 @@ public class BlockGeneratorItem extends BlockItem {
                     output = tag.getLong("output") / 1000D;
                 }
                 if (tag.contains("block", Tag.TAG_LONG)) {
-                    block = tag.getLong("block") / 1000D;
+                    block = tag.getLong("block") / 1000;
                 }
                 if (tag.contains("tickCount", Tag.TAG_LONG)) {
                     tickCount = tag.getLong("tickCount");
