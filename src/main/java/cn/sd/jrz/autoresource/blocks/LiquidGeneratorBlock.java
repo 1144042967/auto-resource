@@ -75,9 +75,15 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler storage = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().filter(
-                    handler -> handler.isFluidValid(maxOutput, new FluidStack(generator.config.getFluid(), maxOutput))
-            ).orElse(null);
+            IFluidHandler storage = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().filter(handler -> {
+                int tanks = handler.getTanks();
+                for (int tank = 0; tank < tanks; tank++) {
+                    if (handler.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
+                        return true;
+                    }
+                }
+                return false;
+            }).orElse(null);
             if (storage == null) {
                 continue;
             }
