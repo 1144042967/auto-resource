@@ -11,12 +11,12 @@ import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
-import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -26,20 +26,18 @@ import net.minecraftforge.registries.RegistryObject;
 public class Registration {
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AutoResource.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AutoResource.MODID);
-    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AutoResource.MODID);
-    private static final DeferredRegister<MenuType<?>> CONTAINERS = DeferredRegister.create(ForgeRegistries.MENU_TYPES, AutoResource.MODID);
+    private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITIES, AutoResource.MODID);
 
-    public static void init(FMLJavaModLoadingContext context) {
+    public static void init() {
+        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         BLOCKS.register(context.getModEventBus());
         ITEMS.register(context.getModEventBus());
         BLOCK_ENTITIES.register(context.getModEventBus());
-        CONTAINERS.register(context.getModEventBus());
     }
 
-    private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of()
-            .mapColor(DyeColor.BLUE)
-            .pushReaction(PushReaction.DESTROY)
-            .strength(2.5f, 15.0f);
+    private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of(
+            new Material(MaterialColor.COLOR_BLUE, false, true, true, true, false, false, PushReaction.DESTROY)
+    ).strength(2.5f, 15.0f);
 
     // Blocks
 

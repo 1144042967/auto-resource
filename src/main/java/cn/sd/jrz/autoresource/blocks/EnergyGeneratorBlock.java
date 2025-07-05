@@ -3,9 +3,10 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -17,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.energy.CapabilityEnergy;
 import net.minecraftforge.energy.IEnergyStorage;
 import org.jetbrains.annotations.NotNull;
 
@@ -66,7 +67,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IEnergyStorage storage = entity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).orElse(null);
+            IEnergyStorage storage = entity.getCapability(CapabilityEnergy.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).orElse(null);
             if (storage == null) {
                 continue;
             }
@@ -100,9 +101,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         long output = generator.output;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.energy_generator.message", energy, output, percent), Util.NIL_UUID);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.energy_generator.message_max", energy, output), Util.NIL_UUID);
         }
         return InteractionResult.SUCCESS;
     }

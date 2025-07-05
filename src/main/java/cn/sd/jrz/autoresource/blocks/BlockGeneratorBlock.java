@@ -3,9 +3,10 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -19,7 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
+import net.minecraftforge.items.CapabilityItemHandler;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
 import org.jetbrains.annotations.NotNull;
@@ -75,7 +76,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IItemHandler handler = entity.getCapability(ForgeCapabilities.ITEM_HANDLER, direction.getOpposite()).resolve().orElse(null);
+            IItemHandler handler = entity.getCapability(CapabilityItemHandler.ITEM_HANDLER_CAPABILITY, direction.getOpposite()).resolve().orElse(null);
             if (handler == null) {
                 continue;
             }
@@ -116,9 +117,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.block_generator.message", block, output, percent), Util.NIL_UUID);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.block_generator.message_max", block, output), Util.NIL_UUID);
         }
         return InteractionResult.SUCCESS;
     }

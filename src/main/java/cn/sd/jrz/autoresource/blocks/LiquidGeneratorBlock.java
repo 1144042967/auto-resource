@@ -3,9 +3,10 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -18,8 +19,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
+import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,7 +75,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(
+            IFluidHandler storage = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().filter(
                     handler -> handler.isFluidValid(maxOutput, new FluidStack(generator.config.getFluid(), maxOutput))
             ).orElse(null);
             if (storage == null) {
@@ -115,9 +116,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.liquid_generator.message", liquid, output, percent), Util.NIL_UUID);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
+            player.sendMessage(new TranslatableComponent("screen.autoresource.liquid_generator.message_max", liquid, output), Util.NIL_UUID);
         }
         return InteractionResult.SUCCESS;
     }

@@ -4,6 +4,7 @@ import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -20,7 +21,7 @@ public class BlockGeneratorItem extends BlockItem {
     private final DataConfig config;
 
     public BlockGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant());
+        super(block, new Properties().stacksTo(1).fireResistant().tab(ItemManager.CREATIVE_MODE_TABS));
         this.config = config;
     }
 
@@ -48,15 +49,15 @@ public class BlockGeneratorItem extends BlockItem {
             }
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
-        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.block", block));
-        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.output", output));
+        tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.block", block));
+        tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.output", output));
         if (output < config.getMax()) {
-            tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent));
+            tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.growth", percent));
         } else {
-            tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
+            tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.growth_max"));
         }
-        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
-        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.set_block"));
-        tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.tip"));
+        tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
+        tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.set_block"));
+        tooltip.add(new TranslatableComponent("item.autoresource.block_generator.tooltip.tip"));
     }
 }
