@@ -11,6 +11,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
@@ -51,13 +52,20 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         if (!(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
+        BlockPos blockPos = generator.getBlockPos();
         generator.tickCount = Tool.suit(generator.tickCount + 1);
         if (generator.tickCount / 20 >= generator.config.getSecond()) {
             generator.tickCount = 0;
-            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.config.getStep()));
+            generator.beaconIncrease = generator.config.getStep();
+            if (level.hasNeighborSignal(blockPos)) {
+                BlockPos pos = blockPos.relative(Direction.DOWN);
+                if (level.getBlockState(pos).getBlock() == Blocks.BEACON) {
+                    generator.beaconIncrease = Tool.suit((long) (generator.output / 10000.0 * config.getBeaconStep()) + generator.config.getStep());
+                }
+            }
+            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
         }
         generator.energy = Tool.suit(generator.energy + generator.output);
-        BlockPos blockPos = generator.getBlockPos();
         for (int i = 0; i < directions.length; i++) {
             findIndex = (findIndex + 1) % directions.length;
             Direction direction = directions[findIndex];
@@ -99,8 +107,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         long energy = generator.energy;
         long output = generator.output;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
+        long increase = generator.beaconIncrease;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent));
+            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase));
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
         }

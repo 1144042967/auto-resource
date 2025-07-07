@@ -30,7 +30,7 @@
   "item.autoresource.energy_generator.tooltip.growth_max": "Growth: Max",
   "item.autoresource.energy_generator.tooltip.step": "Every %s seconds, Output increases by %s FE/tick",
   "item.autoresource.energy_generator.tooltip.tip": "Automatically transmit FE to adjacent machines",
-  "screen.autoresource.energy_generator.message": "Energy: %s FE   Output: %s FE/tick   Growth: %s%%",
+  "screen.autoresource.energy_generator.message": "Energy: %s FE   Output: %s FE/tick   Growth: %s%%   Increase: %s FE/tick",
   "screen.autoresource.energy_generator.message_max": "Energy: %s FE   Output: %s FE/tick   Growth: Max",
   "item.autoresource.liquid_generator.tooltip.liquid": "Liquid: %s B",
   "item.autoresource.liquid_generator.tooltip.output": "Output: %s B/tick",

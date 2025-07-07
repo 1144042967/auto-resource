@@ -24,6 +24,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     public long output;
     public long energy = 0;
     public long tickCount = 0;
+    public long beaconIncrease = 0;
 
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(config.getEntityType(), pos, state);
@@ -43,6 +44,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         nbt.putLong("output", output);
         nbt.putLong("energy", energy);
         nbt.putLong("tickCount", tickCount);
+        nbt.putLong("beaconIncrease", beaconIncrease);
     }
 
     @Override
@@ -56,6 +58,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
         if (nbt.contains("tickCount", Tag.TAG_LONG)) {
             tickCount = Tool.suit(nbt.getLong("tickCount"));
+        }
+        if (nbt.contains("beaconIncrease", Tag.TAG_LONG)) {
+            tickCount = Tool.suit(nbt.getLong("beaconIncrease"));
         }
     }
 }

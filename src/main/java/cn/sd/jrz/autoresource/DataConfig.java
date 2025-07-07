@@ -15,6 +15,11 @@ public abstract class DataConfig {
         public BlockEntityType<?> getEntityType() {
             return Registration.ENERGY_GENERATOR_FE_ENTITY.get();
         }
+
+        @Override
+        public long getBeaconStep() {
+            return Config.FE_BEACON_STEP.get();
+        }
     };
     public static final DataConfig LIQUID_GENERATOR_WATER = new DataConfig(Config.WATER_MIN, Config.WATER_MAX, Config.WATER_SECOND, Config.WATER_STEP) {
         @Override
@@ -318,5 +323,9 @@ public abstract class DataConfig {
 
     public Block getBlock() {
         return Blocks.AIR;
+    }
+
+    public long getBeaconStep() {
+        return 0;
     }
 }
