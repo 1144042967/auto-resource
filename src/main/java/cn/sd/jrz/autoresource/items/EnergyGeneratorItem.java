@@ -4,7 +4,6 @@ import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -49,14 +48,14 @@ public class EnergyGeneratorItem extends BlockItem {
             }
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
-        tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.energy", energy));
-        tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.output", output));
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
         if (output < config.getMax()) {
-            tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.growth", percent));
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
         } else {
-            tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.growth_max"));
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
         }
-        tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.step", second, step));
-        tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.tip"));
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
     }
 }

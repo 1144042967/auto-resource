@@ -3,10 +3,9 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -110,9 +109,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         long increase = generator.beaconIncrease;
         if (output < generator.config.getMax()) {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.energy_generator.message", energy, output, percent, increase), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase));
         } else {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.energy_generator.message_max", energy, output), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
         }
         return InteractionResult.SUCCESS;
     }

@@ -4,7 +4,6 @@ import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.chat.TranslatableComponent;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
@@ -49,15 +48,15 @@ public class LiquidGeneratorItem extends BlockItem {
             }
         }
         double percent = (int) (tickCount / 20.00D / second * 10000D) / 100.00D;
-        tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.liquid", liquid));
-        tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.output", output));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output));
         if (output < config.getMax()) {
-            tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.growth", percent));
+            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth", percent));
         } else {
-            tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.growth_max"));
+            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth_max"));
         }
-        tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D));
-        tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.set_block"));
-        tooltip.add(new TranslatableComponent("item.autoresource.liquid_generator.tooltip.tip"));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block"));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.tip"));
     }
 }

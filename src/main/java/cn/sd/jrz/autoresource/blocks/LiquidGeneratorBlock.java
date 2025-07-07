@@ -3,10 +3,9 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -122,9 +121,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.liquid_generator.message", liquid, output, percent), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
         } else {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.liquid_generator.message_max", liquid, output), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
         }
         return InteractionResult.SUCCESS;
     }

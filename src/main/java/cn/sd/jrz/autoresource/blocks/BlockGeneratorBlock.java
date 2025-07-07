@@ -3,10 +3,9 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.Util;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.network.chat.TranslatableComponent;
+import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -117,9 +116,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.block_generator.message", block, output, percent), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
         } else {
-            player.sendMessage(new TranslatableComponent("screen.autoresource.block_generator.message_max", block, output), Util.NIL_UUID);
+            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
         }
         return InteractionResult.SUCCESS;
     }
