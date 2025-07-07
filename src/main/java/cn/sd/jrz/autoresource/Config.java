@@ -3,7 +3,6 @@ package cn.sd.jrz.autoresource;
 import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
 public class Config {
 
@@ -11,6 +10,7 @@ public class Config {
     public static ForgeConfigSpec.LongValue FE_MAX;
     public static ForgeConfigSpec.LongValue FE_SECOND;
     public static ForgeConfigSpec.LongValue FE_STEP;
+    public static ForgeConfigSpec.LongValue FE_BEACON_STEP;
 
     public static ForgeConfigSpec.LongValue WATER_MIN;
     public static ForgeConfigSpec.LongValue WATER_MAX;
@@ -139,6 +139,7 @@ public class Config {
         FE_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
         FE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 1, 1, Long.MAX_VALUE);
         FE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.").defineInRange("step", 1, 0, Long.MAX_VALUE);
+        FE_BEACON_STEP = SERVER_BUILDER.comment("Control the proportion of each production increase affected by the beacon.The actual data needs to be divided by 10000.").defineInRange("beacon_step", 100, 0, Long.MAX_VALUE);
         SERVER_BUILDER.pop();
 
         SERVER_BUILDER.pop();
