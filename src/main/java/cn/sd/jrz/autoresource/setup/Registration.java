@@ -28,8 +28,7 @@ public class Registration {
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AutoResource.MODID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AutoResource.MODID);
 
-    public static void init() {
-        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
+    public static void init(FMLJavaModLoadingContext context) {
         BLOCKS.register(context.getModEventBus());
         ITEMS.register(context.getModEventBus());
         BLOCK_ENTITIES.register(context.getModEventBus());

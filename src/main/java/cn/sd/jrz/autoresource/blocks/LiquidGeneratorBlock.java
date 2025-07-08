@@ -18,8 +18,8 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
+import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
 import net.minecraftforge.fluids.capability.IFluidHandler;
 import org.jetbrains.annotations.NotNull;
 
@@ -74,7 +74,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler storage = entity.getCapability(CapabilityFluidHandler.FLUID_HANDLER_CAPABILITY, direction.getOpposite()).resolve().filter(handler -> {
+            IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(handler -> {
                 int tanks = handler.getTanks();
                 for (int tank = 0; tank < tanks; tank++) {
                     if (handler.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
