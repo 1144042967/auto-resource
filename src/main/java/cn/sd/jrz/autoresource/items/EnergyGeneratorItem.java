@@ -57,6 +57,7 @@ public class EnergyGeneratorItem extends BlockItem {
             tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.growth_max"));
         }
         tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.step", second, step));
+        tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.group_faster"));
         tooltip.add(new TranslatableComponent("item.autoresource.energy_generator.tooltip.tip"));
     }
 }
