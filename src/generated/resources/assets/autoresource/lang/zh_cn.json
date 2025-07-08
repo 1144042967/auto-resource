@@ -29,6 +29,7 @@
   "item.autoresource.energy_generator.tooltip.growth": "成长: %s%%",
   "item.autoresource.energy_generator.tooltip.growth_max": "成长: 已达上限",
   "item.autoresource.energy_generator.tooltip.step": "每 %s 秒, 产量提高 %s FE/tick",
+  "item.autoresource.energy_generator.tooltip.group_faster": "红石信号,信标放下面,更快成长",
   "item.autoresource.energy_generator.tooltip.tip": "自动向相邻的机器传输FE",
   "screen.autoresource.energy_generator.message": "电量: %s FE   产量: %s FE/tick   成长: %s%%   增量: %s FE/tick",
   "screen.autoresource.energy_generator.message_max": "电量: %s FE   产量: %s FE/tick   成长: 已达上限",
