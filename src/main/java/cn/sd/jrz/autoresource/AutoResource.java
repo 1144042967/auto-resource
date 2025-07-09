@@ -9,8 +9,9 @@ import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 public class AutoResource {
     public static final String MODID = "autoresource";
 
-    public AutoResource(FMLJavaModLoadingContext context) {
-        Config.init(context);
+    public AutoResource() {
+        Config.init();
+        FMLJavaModLoadingContext context = FMLJavaModLoadingContext.get();
         Registration.init(context);
         ItemManager.init(context);
     }
