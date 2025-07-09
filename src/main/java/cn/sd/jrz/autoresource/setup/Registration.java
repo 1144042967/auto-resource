@@ -12,11 +12,12 @@ import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
 import net.minecraft.world.inventory.MenuType;
-import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.Material;
+import net.minecraft.world.level.material.MaterialColor;
 import net.minecraft.world.level.material.PushReaction;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
@@ -36,10 +37,9 @@ public class Registration {
         CONTAINERS.register(context.getModEventBus());
     }
 
-    private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of()
-            .mapColor(DyeColor.BLUE)
-            .pushReaction(PushReaction.DESTROY)
-            .strength(2.5f, 15.0f);
+    private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of(
+            new Material(MaterialColor.COLOR_BLUE, false, true, true, true, false, false, PushReaction.DESTROY)
+    ).strength(2.5f, 15.0f);
 
     // Blocks
 
