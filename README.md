@@ -5,9 +5,10 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## Generator
 - The maximum power generation is 9,223,372,036,854,775,807 FE/t
-- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and it may not reach full power generation in one's lifetime
+- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and you need a beacon to reach the max power
 - The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract FE
 - Synthetic materials require redstone and smooth stone
+- In the case of redstone activation, if there is a beacon below, the increased power generation per second will be an additional 1% of the current power generation
 
 ## Fluid machine
 - Support the generation of Water and Lava
@@ -37,9 +38,10 @@ Added some machines that automatically generate resources, supporting the genera
 ## 发电机
 
 - 最大发电量为 922,3372,0368,5477,5807 FE/t
-- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，一辈子可能见不到满发电量了
+- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，你需要一个信标来达到最大发电功率
 - 发电机会主动向六个贴面均匀传输电量，也可以使用其他MOD的导线抽取电量
 - 合成材料需要红石和平滑石头
+- 在红石激活的情况下，如果在发电机下方有一个信标，发电量每秒将额外增加当前发电量的1%
 
 ## 流体机
 
