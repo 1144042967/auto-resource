@@ -20,7 +20,7 @@ public class EnergyGeneratorItem extends BlockItem {
     private final DataConfig config;
 
     public EnergyGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant().tab(ItemManager.CREATIVE_MODE_TABS));
+        super(block, new Properties().stacksTo(1).fireResistant());
         this.config = config;
     }
 
