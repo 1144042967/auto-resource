@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "block_generator_tuff",
   "key": {
     "#": {
@@ -21,6 +22,7 @@
     "#W#"
   ],
   "result": {
-    "item": "autoresource:block_generator_tuff"
+    "id": "autoresource:block_generator_tuff",
+    "count": 1
   }
 }

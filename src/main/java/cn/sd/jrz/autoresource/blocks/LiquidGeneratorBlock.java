@@ -8,7 +8,9 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -107,15 +109,26 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         generator.setChanged();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public @NotNull InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
+    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
+        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    }
+
+    @Override
+    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack p_330929_, @NotNull BlockState p_335716_, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
+        if (level.isClientSide) {
+            return ItemInteractionResult.SUCCESS;
+        }
+        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    }
+
+    private boolean use(Level level, BlockPos pos, Player player) {
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return InteractionResult.FAIL;
+            return false;
         }
         long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
@@ -125,6 +138,6 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
         }
-        return InteractionResult.SUCCESS;
+        return true;
     }
 }

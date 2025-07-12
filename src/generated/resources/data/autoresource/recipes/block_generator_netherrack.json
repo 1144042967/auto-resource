@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "block_generator_netherrack",
   "key": {
     "#": {
@@ -21,6 +22,7 @@
     "#W#"
   ],
   "result": {
-    "item": "autoresource:block_generator_netherrack"
+    "id": "autoresource:block_generator_netherrack",
+    "count": 1
   }
 }

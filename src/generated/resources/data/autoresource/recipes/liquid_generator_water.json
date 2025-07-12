@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "liquid_generator_water",
   "key": {
     "#": {
@@ -15,6 +16,7 @@
     "#W#"
   ],
   "result": {
-    "item": "autoresource:liquid_generator_water"
+    "id": "autoresource:liquid_generator_water",
+    "count": 1
   }
 }

@@ -50,5 +50,8 @@
   "item.autoresource.block_generator.tooltip.set_block": "Redstone Signal, Place blocks in the air below",
   "item.autoresource.block_generator.tooltip.tip": "Automatically transfer blocks to adjacent containers",
   "screen.autoresource.block_generator.message": "Block: %s   Output: %s/tick   Growth: %s%%",
-  "screen.autoresource.block_generator.message_max": "Block: %s   Output: %s/tick   Growth: Max"
+  "screen.autoresource.block_generator.message_max": "Block: %s   Output: %s/tick   Growth: Max",
+
+
+  "item.autoresource.energy_generator.tooltip.block_entity": "Entity: %s "
 }
