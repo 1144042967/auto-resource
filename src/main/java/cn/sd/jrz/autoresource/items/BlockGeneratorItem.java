@@ -18,8 +18,8 @@ import java.util.List;
 public class BlockGeneratorItem extends BlockItem {
     private final DataConfig config;
 
-    public BlockGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant().component(Registration.BLOCK_DATA.get(), ""));
+    public BlockGeneratorItem(Block block, Properties properties, DataConfig config) {
+        super(block, properties);
         this.config = config;
     }
 

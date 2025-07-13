@@ -8,7 +8,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -110,34 +109,31 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+        return use(level, pos, player);
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack p_330929_, @NotNull BlockState p_335716_, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return ItemInteractionResult.SUCCESS;
-        }
-        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack p_330929_, @NotNull BlockState p_335716_, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
+        return use(level, pos, player);
     }
 
-    private boolean use(Level level, BlockPos pos, Player player) {
+    private InteractionResult use(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return false;
+            return InteractionResult.FAIL;
         }
         long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
+            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent), true);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
+            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output), true);
         }
-        return true;
+        return InteractionResult.SUCCESS;
     }
 }
