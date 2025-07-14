@@ -19,6 +19,7 @@ minecraft {
         configureEach {
             workingDirectory project.file('run')
             property 'forge.logging.console.level', 'debug'
+            property 'eventbus.api.strictRuntimeChecks', 'true'
         }
         client {
             property 'forge.enabledGameTestNamespaces', mod_id
@@ -36,7 +37,6 @@ minecraft {
         }
     }
 }
-
 sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
     mavenCentral()
@@ -62,6 +62,7 @@ repositories {
 }
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    annotationProcessor 'net.minecraftforge:eventbus-validator:7.0-beta.10'
 }
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
@@ -72,7 +73,6 @@ tasks.named('processResources', ProcessResources).configure {
             mod_authors         : mod_authors, mod_description: mod_description,
     ]
     inputs.properties replaceProperties
-
     filesMatching(['META-INF/mods.toml', 'pack.mcmeta']) {
         expand replaceProperties + [project: project]
     }

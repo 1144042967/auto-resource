@@ -16,7 +16,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.codec.ByteBufCodecs;
-import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -40,10 +39,10 @@ public class Registration {
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(ForgeRegistries.BLOCK_ENTITY_TYPES, AutoResource.MODID);
 
     public static void init(FMLJavaModLoadingContext context) {
-        DATA_COMPONENT_TYPES.register(context.getModEventBus());
-        BLOCKS.register(context.getModEventBus());
-        ITEMS.register(context.getModEventBus());
-        BLOCK_ENTITIES.register(context.getModEventBus());
+        DATA_COMPONENT_TYPES.register(context.getModBusGroup());
+        BLOCKS.register(context.getModBusGroup());
+        ITEMS.register(context.getModBusGroup());
+        BLOCK_ENTITIES.register(context.getModBusGroup());
     }
 
     // DataComponentType

@@ -46,6 +46,6 @@ public class ItemManager {
     );
 
     public static void init(FMLJavaModLoadingContext context) {
-        CREATIVE_MODE_TABS.register(context.getModEventBus());
+        CREATIVE_MODE_TABS.register(context.getModBusGroup());
     }
 }
