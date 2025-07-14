@@ -7,9 +7,9 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraftforge.common.capabilities.Capability;
@@ -42,7 +42,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentInput input) {
+    protected void applyImplicitComponents(@NotNull DataComponentGetter input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -73,17 +73,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     @Override
     public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("energy", Tag.TAG_LONG)) {
-            energy = Tool.suit(nbt.getLong("energy"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
-        if (nbt.contains("beaconIncrease", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("beaconIncrease"));
-        }
+        nbt.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
+        nbt.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));
+        nbt.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
+        nbt.getLong("beaconIncrease").ifPresent(it -> this.beaconIncrease = Tool.suit(it));
     }
 }
