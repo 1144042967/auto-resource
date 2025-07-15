@@ -13,7 +13,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.CapabilityEnergy;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -39,16 +38,18 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt) {
-        super.saveAdditional(nbt);
+    @Nonnull
+    public CompoundTag save(@Nonnull CompoundTag nbt) {
+        nbt = super.save(nbt);
         nbt.putLong("output", output);
         nbt.putLong("energy", energy);
         nbt.putLong("tickCount", tickCount);
         nbt.putLong("beaconIncrease", beaconIncrease);
+        return nbt;
     }
 
     @Override
-    public void load(@NotNull CompoundTag nbt) {
+    public void load(@Nonnull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));

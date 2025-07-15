@@ -1,27 +1,28 @@
 modLoader="javafml"
-loaderVersion="${loader_version_range}"
+loaderVersion="[37,)"
 issueTrackerURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
-license="${mod_license}"
-logoFile="modIcon.png"
+license="GNU LGPL v3"
 [[mods]]
-    modId="${mod_id}"
-    version="${mod_version}"
-    displayName="${mod_name}"
+    modId="autoresource"
+    version="0.1.5"
+    displayName="Auto Resource"
+    logoFile="modIcon.png"
+    credits="Thanks for All"
     updateJSONURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/update.json"
     displayURL="https://gitee.com/scrambled_egg_with_eek/auto-resource"
-    authors="${mod_authors}"
+    authors="JRZ"
     description='''
-      ${mod_description}
-      '''
-[[dependencies.${mod_id}]]
+    Water, Lava, Stone, Forge Energy and more.
+    '''
+[[dependencies.autoresource]]
     modId="forge"
     mandatory=true
-    versionRange="${forge_version_range}"
+    versionRange="[37,)"
     ordering="NONE"
     side="BOTH"
-[[dependencies.${mod_id}]]
+[[dependencies.autoresource]]
     modId="minecraft"
     mandatory=true
-    versionRange="${minecraft_version_range}"
+    versionRange="[1.17.1,1.18)"
     ordering="NONE"
     side="BOTH"
