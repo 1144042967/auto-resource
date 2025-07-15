@@ -72,21 +72,6 @@ public class Config {
     public static ForgeConfigSpec.LongValue ANDESITE_SECOND;
     public static ForgeConfigSpec.LongValue ANDESITE_STEP;
 
-    public static ForgeConfigSpec.LongValue CALCITE_MIN;
-    public static ForgeConfigSpec.LongValue CALCITE_MAX;
-    public static ForgeConfigSpec.LongValue CALCITE_SECOND;
-    public static ForgeConfigSpec.LongValue CALCITE_STEP;
-
-    public static ForgeConfigSpec.LongValue TUFF_MIN;
-    public static ForgeConfigSpec.LongValue TUFF_MAX;
-    public static ForgeConfigSpec.LongValue TUFF_SECOND;
-    public static ForgeConfigSpec.LongValue TUFF_STEP;
-
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_MIN;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_MAX;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_SECOND;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_STEP;
-
     public static ForgeConfigSpec.LongValue PRISMARINE_MIN;
     public static ForgeConfigSpec.LongValue PRISMARINE_MAX;
     public static ForgeConfigSpec.LongValue PRISMARINE_SECOND;
@@ -232,27 +217,6 @@ public class Config {
         ANDESITE_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.The actual data needs to be divided by 1000.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
         ANDESITE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
         ANDESITE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
-        SERVER_BUILDER.pop();
-
-        SERVER_BUILDER.push("Calcite");
-        CALCITE_MIN = SERVER_BUILDER.comment("Control the minimum rate of production.The actual data needs to be divided by 1000.").defineInRange("min", 50, 1, Long.MAX_VALUE);
-        CALCITE_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.The actual data needs to be divided by 1000.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
-        CALCITE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
-        CALCITE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
-        SERVER_BUILDER.pop();
-
-        SERVER_BUILDER.push("Tuff");
-        TUFF_MIN = SERVER_BUILDER.comment("Control the minimum rate of production.The actual data needs to be divided by 1000.").defineInRange("min", 50, 1, Long.MAX_VALUE);
-        TUFF_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.The actual data needs to be divided by 1000.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
-        TUFF_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
-        TUFF_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
-        SERVER_BUILDER.pop();
-
-        SERVER_BUILDER.push("Cobbled Deepslate");
-        COBBLED_DEEPSLATE_MIN = SERVER_BUILDER.comment("Control the minimum rate of production.The actual data needs to be divided by 1000.").defineInRange("min", 50, 1, Long.MAX_VALUE);
-        COBBLED_DEEPSLATE_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.The actual data needs to be divided by 1000.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
-        COBBLED_DEEPSLATE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
-        COBBLED_DEEPSLATE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
         SERVER_BUILDER.pop();
 
         SERVER_BUILDER.push("Prismarine");
