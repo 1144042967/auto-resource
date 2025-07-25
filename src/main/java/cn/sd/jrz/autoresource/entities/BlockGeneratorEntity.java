@@ -1,28 +1,19 @@
 package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.connection.BlockConnection;
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraftforge.common.capabilities.Capability;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
-import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProvider {
-    private final LazyOptional<BlockConnection> fecOptional = LazyOptional.of(() -> new BlockConnection(this));
+public class BlockGeneratorEntity extends BlockEntity {
     public final DataConfig config;
     public long output;
     public long block = 0;
@@ -35,13 +26,7 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction direction) {
-        return capability == ForgeCapabilities.ITEM_HANDLER ? fecOptional.cast() : super.getCapability(capability, direction);
-    }
-
-    @Override
-    protected void applyImplicitComponents(@NotNull DataComponentInput input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentInput input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -54,13 +39,13 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + block + "," + tickCount);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void saveAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.saveAdditional(nbt, provider);
         nbt.putLong("output", output);
         nbt.putLong("block", block);
@@ -68,7 +53,7 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));

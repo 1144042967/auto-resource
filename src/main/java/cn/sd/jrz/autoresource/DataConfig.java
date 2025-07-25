@@ -7,7 +7,7 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.minecraftforge.common.ForgeConfigSpec;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public abstract class DataConfig {
     public static final DataConfig ENERGY_GENERATOR_FE = new DataConfig(Config.FE_MIN, Config.FE_MAX, Config.FE_SECOND, Config.FE_STEP) {
@@ -287,12 +287,12 @@ public abstract class DataConfig {
         }
     };
 
-    private final ForgeConfigSpec.LongValue min;
-    private final ForgeConfigSpec.LongValue max;
-    private final ForgeConfigSpec.LongValue second;
-    private final ForgeConfigSpec.LongValue step;
+    private final ModConfigSpec.LongValue min;
+    private final ModConfigSpec.LongValue max;
+    private final ModConfigSpec.LongValue second;
+    private final ModConfigSpec.LongValue step;
 
-    public DataConfig(ForgeConfigSpec.LongValue min, ForgeConfigSpec.LongValue max, ForgeConfigSpec.LongValue second, ForgeConfigSpec.LongValue step) {
+    public DataConfig(ModConfigSpec.LongValue min, ModConfigSpec.LongValue max, ModConfigSpec.LongValue second, ModConfigSpec.LongValue step) {
         this.min = min;
         this.max = max;
         this.second = second;

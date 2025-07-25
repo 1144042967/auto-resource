@@ -2,9 +2,10 @@ package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+
+import javax.annotation.Nonnull;
 
 public class LiquidConnection implements IFluidHandler {
     private final LiquidGeneratorEntity owner;
@@ -21,18 +22,18 @@ public class LiquidConnection implements IFluidHandler {
     }
 
     @Override
-    public @NotNull FluidStack getFluidInTank(int tank) {
+    public @Nonnull FluidStack getFluidInTank(int tank) {
         stack.setAmount(Tool.suitInt(owner.liquid));
         return stack;
     }
 
     @Override
-    public int fill(FluidStack fluidStack, IFluidHandler.FluidAction fluidAction) {
+    public int fill(@Nonnull FluidStack fluidStack, @Nonnull IFluidHandler.FluidAction fluidAction) {
         return 0;
     }
 
     @Override
-    public @NotNull FluidStack drain(int amount, IFluidHandler.FluidAction fluidAction) {
+    public @Nonnull FluidStack drain(int amount, @Nonnull IFluidHandler.FluidAction fluidAction) {
         int maxOutput = Tool.suitInt(owner.liquid);
         if (maxOutput <= 0 || amount <= 0) {
             return new FluidStack(owner.config.getFluid(), 0);
@@ -46,7 +47,7 @@ public class LiquidConnection implements IFluidHandler {
     }
 
     @Override
-    public @NotNull FluidStack drain(FluidStack fluidStack, IFluidHandler.FluidAction fluidAction) {
+    public @Nonnull FluidStack drain(FluidStack fluidStack, @Nonnull IFluidHandler.FluidAction fluidAction) {
         if (fluidStack.getFluid() == owner.config.getFluid()) {
             return drain(fluidStack.getAmount(), fluidAction);
         } else {
@@ -60,7 +61,7 @@ public class LiquidConnection implements IFluidHandler {
     }
 
     @Override
-    public boolean isFluidValid(int tank, @NotNull FluidStack stack) {
+    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
         return false;
     }
 }

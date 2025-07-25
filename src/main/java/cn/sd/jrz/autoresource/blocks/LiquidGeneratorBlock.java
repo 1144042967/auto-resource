@@ -20,11 +20,11 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.fluids.FluidStack;
-import net.minecraftforge.fluids.capability.IFluidHandler;
-import org.jetbrains.annotations.NotNull;
+import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.fluids.FluidStack;
+import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
@@ -38,13 +38,13 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
+    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         return new LiquidGeneratorEntity(pos, state, config);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
         return (l, p, s, tile) -> tick(l, tile);
     }
 
@@ -76,19 +76,21 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler storage = entity.getCapability(ForgeCapabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(handler -> {
-                int tanks = handler.getTanks();
-                for (int tank = 0; tank < tanks; tank++) {
-                    if (handler.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
-                        return true;
-                    }
-                }
-                return false;
-            }).orElse(null);
-            if (storage == null) {
+            IFluidHandler capability = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, direction.getOpposite());
+            if (capability == null) {
                 continue;
             }
-            int result = storage.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
+            boolean canFill = false;
+            for (int tank = 0; tank < capability.getTanks(); tank++) {
+                if (capability.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
+                    canFill = true;
+                    break;
+                }
+            }
+            if (!canFill) {
+                continue;
+            }
+            int result = capability.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
             if (result < 0) {
                 result = 0;
             }
@@ -110,7 +112,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }
@@ -118,7 +120,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack p_330929_, @NotNull BlockState p_335716_, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
+    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         if (level.isClientSide) {
             return ItemInteractionResult.SUCCESS;
         }

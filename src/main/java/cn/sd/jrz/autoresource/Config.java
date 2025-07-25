@@ -1,136 +1,136 @@
 package cn.sd.jrz.autoresource;
 
-import net.minecraftforge.common.ForgeConfigSpec;
-import net.minecraftforge.fml.config.ModConfig;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.neoforged.fml.ModContainer;
+import net.neoforged.fml.config.ModConfig;
+import net.neoforged.neoforge.common.ModConfigSpec;
 
 public class Config {
 
-    public static ForgeConfigSpec.LongValue FE_MIN;
-    public static ForgeConfigSpec.LongValue FE_MAX;
-    public static ForgeConfigSpec.LongValue FE_SECOND;
-    public static ForgeConfigSpec.LongValue FE_STEP;
-    public static ForgeConfigSpec.LongValue FE_BEACON_STEP;
+    public static ModConfigSpec.LongValue FE_MIN;
+    public static ModConfigSpec.LongValue FE_MAX;
+    public static ModConfigSpec.LongValue FE_SECOND;
+    public static ModConfigSpec.LongValue FE_STEP;
+    public static ModConfigSpec.LongValue FE_BEACON_STEP;
 
-    public static ForgeConfigSpec.LongValue WATER_MIN;
-    public static ForgeConfigSpec.LongValue WATER_MAX;
-    public static ForgeConfigSpec.LongValue WATER_SECOND;
-    public static ForgeConfigSpec.LongValue WATER_STEP;
+    public static ModConfigSpec.LongValue WATER_MIN;
+    public static ModConfigSpec.LongValue WATER_MAX;
+    public static ModConfigSpec.LongValue WATER_SECOND;
+    public static ModConfigSpec.LongValue WATER_STEP;
 
-    public static ForgeConfigSpec.LongValue LAVA_MIN;
-    public static ForgeConfigSpec.LongValue LAVA_MAX;
-    public static ForgeConfigSpec.LongValue LAVA_SECOND;
-    public static ForgeConfigSpec.LongValue LAVA_STEP;
+    public static ModConfigSpec.LongValue LAVA_MIN;
+    public static ModConfigSpec.LongValue LAVA_MAX;
+    public static ModConfigSpec.LongValue LAVA_SECOND;
+    public static ModConfigSpec.LongValue LAVA_STEP;
 
-    public static ForgeConfigSpec.LongValue DIRT_MIN;
-    public static ForgeConfigSpec.LongValue DIRT_MAX;
-    public static ForgeConfigSpec.LongValue DIRT_SECOND;
-    public static ForgeConfigSpec.LongValue DIRT_STEP;
+    public static ModConfigSpec.LongValue DIRT_MIN;
+    public static ModConfigSpec.LongValue DIRT_MAX;
+    public static ModConfigSpec.LongValue DIRT_SECOND;
+    public static ModConfigSpec.LongValue DIRT_STEP;
 
-    public static ForgeConfigSpec.LongValue COBBLESTONE_MIN;
-    public static ForgeConfigSpec.LongValue COBBLESTONE_MAX;
-    public static ForgeConfigSpec.LongValue COBBLESTONE_SECOND;
-    public static ForgeConfigSpec.LongValue COBBLESTONE_STEP;
+    public static ModConfigSpec.LongValue COBBLESTONE_MIN;
+    public static ModConfigSpec.LongValue COBBLESTONE_MAX;
+    public static ModConfigSpec.LongValue COBBLESTONE_SECOND;
+    public static ModConfigSpec.LongValue COBBLESTONE_STEP;
 
-    public static ForgeConfigSpec.LongValue STONE_MIN;
-    public static ForgeConfigSpec.LongValue STONE_MAX;
-    public static ForgeConfigSpec.LongValue STONE_SECOND;
-    public static ForgeConfigSpec.LongValue STONE_STEP;
+    public static ModConfigSpec.LongValue STONE_MIN;
+    public static ModConfigSpec.LongValue STONE_MAX;
+    public static ModConfigSpec.LongValue STONE_SECOND;
+    public static ModConfigSpec.LongValue STONE_STEP;
 
-    public static ForgeConfigSpec.LongValue SMOOTH_STONE_MIN;
-    public static ForgeConfigSpec.LongValue SMOOTH_STONE_MAX;
-    public static ForgeConfigSpec.LongValue SMOOTH_STONE_SECOND;
-    public static ForgeConfigSpec.LongValue SMOOTH_STONE_STEP;
+    public static ModConfigSpec.LongValue SMOOTH_STONE_MIN;
+    public static ModConfigSpec.LongValue SMOOTH_STONE_MAX;
+    public static ModConfigSpec.LongValue SMOOTH_STONE_SECOND;
+    public static ModConfigSpec.LongValue SMOOTH_STONE_STEP;
 
-    public static ForgeConfigSpec.LongValue CLAY_MIN;
-    public static ForgeConfigSpec.LongValue CLAY_MAX;
-    public static ForgeConfigSpec.LongValue CLAY_SECOND;
-    public static ForgeConfigSpec.LongValue CLAY_STEP;
+    public static ModConfigSpec.LongValue CLAY_MIN;
+    public static ModConfigSpec.LongValue CLAY_MAX;
+    public static ModConfigSpec.LongValue CLAY_SECOND;
+    public static ModConfigSpec.LongValue CLAY_STEP;
 
-    public static ForgeConfigSpec.LongValue SAND_MIN;
-    public static ForgeConfigSpec.LongValue SAND_MAX;
-    public static ForgeConfigSpec.LongValue SAND_SECOND;
-    public static ForgeConfigSpec.LongValue SAND_STEP;
+    public static ModConfigSpec.LongValue SAND_MIN;
+    public static ModConfigSpec.LongValue SAND_MAX;
+    public static ModConfigSpec.LongValue SAND_SECOND;
+    public static ModConfigSpec.LongValue SAND_STEP;
 
-    public static ForgeConfigSpec.LongValue GRAVEL_MIN;
-    public static ForgeConfigSpec.LongValue GRAVEL_MAX;
-    public static ForgeConfigSpec.LongValue GRAVEL_SECOND;
-    public static ForgeConfigSpec.LongValue GRAVEL_STEP;
+    public static ModConfigSpec.LongValue GRAVEL_MIN;
+    public static ModConfigSpec.LongValue GRAVEL_MAX;
+    public static ModConfigSpec.LongValue GRAVEL_SECOND;
+    public static ModConfigSpec.LongValue GRAVEL_STEP;
 
-    public static ForgeConfigSpec.LongValue GRANITE_MIN;
-    public static ForgeConfigSpec.LongValue GRANITE_MAX;
-    public static ForgeConfigSpec.LongValue GRANITE_SECOND;
-    public static ForgeConfigSpec.LongValue GRANITE_STEP;
+    public static ModConfigSpec.LongValue GRANITE_MIN;
+    public static ModConfigSpec.LongValue GRANITE_MAX;
+    public static ModConfigSpec.LongValue GRANITE_SECOND;
+    public static ModConfigSpec.LongValue GRANITE_STEP;
 
-    public static ForgeConfigSpec.LongValue DIORITE_MIN;
-    public static ForgeConfigSpec.LongValue DIORITE_MAX;
-    public static ForgeConfigSpec.LongValue DIORITE_SECOND;
-    public static ForgeConfigSpec.LongValue DIORITE_STEP;
+    public static ModConfigSpec.LongValue DIORITE_MIN;
+    public static ModConfigSpec.LongValue DIORITE_MAX;
+    public static ModConfigSpec.LongValue DIORITE_SECOND;
+    public static ModConfigSpec.LongValue DIORITE_STEP;
 
-    public static ForgeConfigSpec.LongValue ANDESITE_MIN;
-    public static ForgeConfigSpec.LongValue ANDESITE_MAX;
-    public static ForgeConfigSpec.LongValue ANDESITE_SECOND;
-    public static ForgeConfigSpec.LongValue ANDESITE_STEP;
+    public static ModConfigSpec.LongValue ANDESITE_MIN;
+    public static ModConfigSpec.LongValue ANDESITE_MAX;
+    public static ModConfigSpec.LongValue ANDESITE_SECOND;
+    public static ModConfigSpec.LongValue ANDESITE_STEP;
 
-    public static ForgeConfigSpec.LongValue CALCITE_MIN;
-    public static ForgeConfigSpec.LongValue CALCITE_MAX;
-    public static ForgeConfigSpec.LongValue CALCITE_SECOND;
-    public static ForgeConfigSpec.LongValue CALCITE_STEP;
+    public static ModConfigSpec.LongValue CALCITE_MIN;
+    public static ModConfigSpec.LongValue CALCITE_MAX;
+    public static ModConfigSpec.LongValue CALCITE_SECOND;
+    public static ModConfigSpec.LongValue CALCITE_STEP;
 
-    public static ForgeConfigSpec.LongValue TUFF_MIN;
-    public static ForgeConfigSpec.LongValue TUFF_MAX;
-    public static ForgeConfigSpec.LongValue TUFF_SECOND;
-    public static ForgeConfigSpec.LongValue TUFF_STEP;
+    public static ModConfigSpec.LongValue TUFF_MIN;
+    public static ModConfigSpec.LongValue TUFF_MAX;
+    public static ModConfigSpec.LongValue TUFF_SECOND;
+    public static ModConfigSpec.LongValue TUFF_STEP;
 
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_MIN;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_MAX;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_SECOND;
-    public static ForgeConfigSpec.LongValue COBBLED_DEEPSLATE_STEP;
+    public static ModConfigSpec.LongValue COBBLED_DEEPSLATE_MIN;
+    public static ModConfigSpec.LongValue COBBLED_DEEPSLATE_MAX;
+    public static ModConfigSpec.LongValue COBBLED_DEEPSLATE_SECOND;
+    public static ModConfigSpec.LongValue COBBLED_DEEPSLATE_STEP;
 
-    public static ForgeConfigSpec.LongValue PRISMARINE_MIN;
-    public static ForgeConfigSpec.LongValue PRISMARINE_MAX;
-    public static ForgeConfigSpec.LongValue PRISMARINE_SECOND;
-    public static ForgeConfigSpec.LongValue PRISMARINE_STEP;
+    public static ModConfigSpec.LongValue PRISMARINE_MIN;
+    public static ModConfigSpec.LongValue PRISMARINE_MAX;
+    public static ModConfigSpec.LongValue PRISMARINE_SECOND;
+    public static ModConfigSpec.LongValue PRISMARINE_STEP;
 
-    public static ForgeConfigSpec.LongValue OBSIDIAN_MIN;
-    public static ForgeConfigSpec.LongValue OBSIDIAN_MAX;
-    public static ForgeConfigSpec.LongValue OBSIDIAN_SECOND;
-    public static ForgeConfigSpec.LongValue OBSIDIAN_STEP;
+    public static ModConfigSpec.LongValue OBSIDIAN_MIN;
+    public static ModConfigSpec.LongValue OBSIDIAN_MAX;
+    public static ModConfigSpec.LongValue OBSIDIAN_SECOND;
+    public static ModConfigSpec.LongValue OBSIDIAN_STEP;
 
-    public static ForgeConfigSpec.LongValue NETHERRACK_MIN;
-    public static ForgeConfigSpec.LongValue NETHERRACK_MAX;
-    public static ForgeConfigSpec.LongValue NETHERRACK_SECOND;
-    public static ForgeConfigSpec.LongValue NETHERRACK_STEP;
+    public static ModConfigSpec.LongValue NETHERRACK_MIN;
+    public static ModConfigSpec.LongValue NETHERRACK_MAX;
+    public static ModConfigSpec.LongValue NETHERRACK_SECOND;
+    public static ModConfigSpec.LongValue NETHERRACK_STEP;
 
-    public static ForgeConfigSpec.LongValue SOUL_SAND_MIN;
-    public static ForgeConfigSpec.LongValue SOUL_SAND_MAX;
-    public static ForgeConfigSpec.LongValue SOUL_SAND_SECOND;
-    public static ForgeConfigSpec.LongValue SOUL_SAND_STEP;
+    public static ModConfigSpec.LongValue SOUL_SAND_MIN;
+    public static ModConfigSpec.LongValue SOUL_SAND_MAX;
+    public static ModConfigSpec.LongValue SOUL_SAND_SECOND;
+    public static ModConfigSpec.LongValue SOUL_SAND_STEP;
 
-    public static ForgeConfigSpec.LongValue SOUL_SOIL_MIN;
-    public static ForgeConfigSpec.LongValue SOUL_SOIL_MAX;
-    public static ForgeConfigSpec.LongValue SOUL_SOIL_SECOND;
-    public static ForgeConfigSpec.LongValue SOUL_SOIL_STEP;
+    public static ModConfigSpec.LongValue SOUL_SOIL_MIN;
+    public static ModConfigSpec.LongValue SOUL_SOIL_MAX;
+    public static ModConfigSpec.LongValue SOUL_SOIL_SECOND;
+    public static ModConfigSpec.LongValue SOUL_SOIL_STEP;
 
-    public static ForgeConfigSpec.LongValue BLACKSTONE_MIN;
-    public static ForgeConfigSpec.LongValue BLACKSTONE_MAX;
-    public static ForgeConfigSpec.LongValue BLACKSTONE_SECOND;
-    public static ForgeConfigSpec.LongValue BLACKSTONE_STEP;
+    public static ModConfigSpec.LongValue BLACKSTONE_MIN;
+    public static ModConfigSpec.LongValue BLACKSTONE_MAX;
+    public static ModConfigSpec.LongValue BLACKSTONE_SECOND;
+    public static ModConfigSpec.LongValue BLACKSTONE_STEP;
 
-    public static ForgeConfigSpec.LongValue BASALT_MIN;
-    public static ForgeConfigSpec.LongValue BASALT_MAX;
-    public static ForgeConfigSpec.LongValue BASALT_SECOND;
-    public static ForgeConfigSpec.LongValue BASALT_STEP;
+    public static ModConfigSpec.LongValue BASALT_MIN;
+    public static ModConfigSpec.LongValue BASALT_MAX;
+    public static ModConfigSpec.LongValue BASALT_SECOND;
+    public static ModConfigSpec.LongValue BASALT_STEP;
 
-    public static ForgeConfigSpec.LongValue END_STONE_MIN;
-    public static ForgeConfigSpec.LongValue END_STONE_MAX;
-    public static ForgeConfigSpec.LongValue END_STONE_SECOND;
-    public static ForgeConfigSpec.LongValue END_STONE_STEP;
+    public static ModConfigSpec.LongValue END_STONE_MIN;
+    public static ModConfigSpec.LongValue END_STONE_MAX;
+    public static ModConfigSpec.LongValue END_STONE_SECOND;
+    public static ModConfigSpec.LongValue END_STONE_STEP;
 
-    public static ForgeConfigSpec SERVER_CONFIG;
+    public static ModConfigSpec SERVER_CONFIG;
 
     static {
-        ForgeConfigSpec.Builder SERVER_BUILDER = new ForgeConfigSpec.Builder();
+        ModConfigSpec.Builder SERVER_BUILDER = new ModConfigSpec.Builder();
 
         SERVER_BUILDER.comment("Energy Generator Settings").push("Energy");
 
@@ -316,7 +316,7 @@ public class Config {
         SERVER_CONFIG = SERVER_BUILDER.build();
     }
 
-    public static void init(FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
+    public static void init(ModContainer container) {
+        container.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
     }
 }
