@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -105,34 +104,31 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
-        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player);
     }
 
     @Override
-    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return ItemInteractionResult.SUCCESS;
-        }
-        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player);
     }
 
-    private boolean use(Level level, BlockPos pos, Player player) {
+    private InteractionResult use(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide) {
+            return InteractionResult.SUCCESS;
+        }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return false;
+            return InteractionResult.FAIL;
         }
         long block = generator.block / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
+            player.displayClientMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent), true);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
+            player.displayClientMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output), true);
         }
-        return true;
+        return InteractionResult.SUCCESS;
     }
 }

@@ -8,25 +8,32 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
-import java.util.List;
+import java.util.function.Consumer;
 
 public class EnergyGeneratorItem extends BlockItem {
     private final DataConfig config;
 
-    public EnergyGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant().component(Registration.BLOCK_DATA.get(), ""));
+    public EnergyGeneratorItem(Block block, Properties properties, DataConfig config) {
+        super(block, properties);
         this.config = config;
     }
 
     @Override
-    @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flagIn) {
-        super.appendHoverText(stack, context, tooltip, flagIn);
+    @SuppressWarnings("deprecation")
+    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay tooltipDisplay, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag flagIn) {
+        super.appendHoverText(stack, context, tooltipDisplay, tooltip, flagIn);
+        //noinspection resource
+        Level level = context.level();
+        if (level == null || !level.isClientSide) {
+            return;
+        }
         double output = config.getMin();
         long energy = 0;
         long tickCount = 0;
@@ -40,15 +47,15 @@ public class EnergyGeneratorItem extends BlockItem {
             tickCount = Tool.suit(dataArray[2]);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
         if (output < config.getMax()) {
-            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
         } else {
-            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
         }
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster"));
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster"));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
     }
 }

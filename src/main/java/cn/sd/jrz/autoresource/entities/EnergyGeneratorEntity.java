@@ -4,13 +4,15 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public class EnergyGeneratorEntity extends BlockEntity {
     public final DataConfig config;
@@ -26,7 +28,7 @@ public class EnergyGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentInput input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -46,28 +48,20 @@ public class EnergyGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
-        super.saveAdditional(nbt, provider);
-        nbt.putLong("output", output);
-        nbt.putLong("energy", energy);
-        nbt.putLong("tickCount", tickCount);
-        nbt.putLong("beaconIncrease", beaconIncrease);
+    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        valueOutput.putLong("output", output);
+        valueOutput.putLong("energy", energy);
+        valueOutput.putLong("tickCount", tickCount);
+        valueOutput.putLong("beaconIncrease", beaconIncrease);
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
-        super.loadAdditional(nbt, provider);
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("energy", Tag.TAG_LONG)) {
-            energy = Tool.suit(nbt.getLong("energy"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
-        if (nbt.contains("beaconIncrease", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("beaconIncrease"));
-        }
+    public void loadAdditional(@NotNull ValueInput valueInput) {
+        super.loadAdditional(valueInput);
+        valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
+        valueInput.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));
+        valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
+        valueInput.getLong("beaconIncrease").ifPresent(it -> this.beaconIncrease = Tool.suit(it));
     }
 }
