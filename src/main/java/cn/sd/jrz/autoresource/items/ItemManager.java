@@ -6,7 +6,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
-import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
+import net.minecraftforge.eventbus.api.IEventBus;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.RegistryObject;
 
@@ -45,7 +45,7 @@ public class ItemManager {
             .build()
     );
 
-    public static void init(FMLJavaModLoadingContext context) {
-        CREATIVE_MODE_TABS.register(context.getModEventBus());
+    public static void init(IEventBus bus) {
+        CREATIVE_MODE_TABS.register(bus);
     }
 }
