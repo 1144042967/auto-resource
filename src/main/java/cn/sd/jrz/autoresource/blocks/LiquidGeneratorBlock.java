@@ -6,6 +6,10 @@ import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
 import net.minecraft.entity.player.PlayerEntity;
+import net.minecraft.fluid.Fluids;
+import net.minecraft.inventory.EquipmentSlotType;
+import net.minecraft.item.ItemStack;
+import net.minecraft.item.Items;
 import net.minecraft.tileentity.TileEntity;
 import net.minecraft.util.ActionResultType;
 import net.minecraft.util.Hand;
@@ -44,6 +48,9 @@ public class LiquidGeneratorBlock extends Block implements ITileEntityProvider {
         if (generator == null) {
             return ActionResultType.FAIL;
         }
+        if (generator.liquid >= 1000 && useBucket(player, generator)) {
+            return ActionResultType.SUCCESS;
+        }
         long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
@@ -53,5 +60,33 @@ public class LiquidGeneratorBlock extends Block implements ITileEntityProvider {
             player.sendMessage(new TranslationTextComponent("screen.autoresource.liquid_generator.message_max", liquid, output), Util.NIL_UUID);
         }
         return ActionResultType.SUCCESS;
+    }
+
+    private boolean useBucket(PlayerEntity player, LiquidGeneratorEntity generator) {
+        EquipmentSlotType type;
+        if (player.getMainHandItem().getItem() == Items.BUCKET) {
+            type = EquipmentSlotType.MAINHAND;
+        } else if (player.getOffhandItem().getItem() == Items.BUCKET) {
+            type = EquipmentSlotType.OFFHAND;
+        } else {
+            return false;
+        }
+        int count = player.getItemBySlot(type).getCount();
+        if (count == 1) {
+            player.setItemSlot(type, getBucket());
+        } else if (count > 1) {
+            player.setItemSlot(type, new ItemStack(Items.BUCKET, count - 1));
+            player.addItem(getBucket());
+        }
+        generator.liquid -= 1000L;
+        return true;
+    }
+
+    private ItemStack getBucket() {
+        if (config.getFluid() == Fluids.WATER) {
+            return new ItemStack(Items.WATER_BUCKET);
+        } else {
+            return new ItemStack(Items.LAVA_BUCKET);
+        }
     }
 }
