@@ -13,7 +13,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.capability.CapabilityFluidHandler;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -38,7 +37,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt) {
+    public void saveAdditional(@Nonnull CompoundTag nbt) {
         super.saveAdditional(nbt);
         nbt.putLong("output", output);
         nbt.putLong("liquid", liquid);
@@ -46,7 +45,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    public void load(@NotNull CompoundTag nbt) {
+    public void load(@Nonnull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));
