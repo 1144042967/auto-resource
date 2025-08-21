@@ -112,6 +112,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
+        if (generator.block >= 1000 && useEmpty(player, generator)) {
+            return InteractionResult.SUCCESS;
+        }
         long block = generator.block / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
@@ -121,5 +124,15 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
         }
         return InteractionResult.SUCCESS;
+    }
+
+    private boolean useEmpty(Player player, BlockGeneratorEntity generator) {
+        ItemStack stack = player.getMainHandItem();
+        if (stack != ItemStack.EMPTY && stack.getItem() != config.getBlock().asItem()) {
+            return false;
+        }
+        player.addItem(new ItemStack(config.getBlock().asItem()));
+        generator.block -= 1000L;
+        return true;
     }
 }
