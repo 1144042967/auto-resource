@@ -17,6 +17,7 @@ Added some machines that automatically generate resources, supporting the genera
 - Fluid will actively transfer fluid evenly to the six veneers, or other MOD pipelines can be used to extract fluid
 - Synthetic materials require water buckets/lava buckets and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place fluid into the air block below the machine
+- When the main / off hand right clicks on the fluid machine with an empty bucket, a bucket of liquid will be taken out
 
 ## Block machine
 - Support the production of dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone
@@ -25,6 +26,7 @@ Added some machines that automatically generate resources, supporting the genera
 - The block machine actively transfers blocks evenly to the six veneers, or can use other MOD pipelines to extract blocks
 - Synthetic materials require water buckets, lava buckets, corresponding products, and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place a block into the air block below the machine
+- When the main hand is empty/holding the same block and right clicking on the block machine, a block will be taken out
 
 ## Image
 
@@ -51,6 +53,7 @@ Added some machines that automatically generate resources, supporting the genera
 - 流体机会主动向六个贴面均匀传输流体，也可以使用其他MOD的管道抽取流体
 - 合成材料需要水桶/岩浆桶和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
+- 主手/副手拿空桶右击流体机时，将取出一桶液体
 
 ## 方块机
 
@@ -60,6 +63,7 @@ Added some machines that automatically generate resources, supporting the genera
 - 方块机会主动向六个贴面均匀传输方块，也可以使用其他MOD的管道抽取方块
 - 合成材料需要水桶、岩浆桶、对应产物和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置方块
+- 主手为空/主手拿相同方块右击方块机时，将取出一个方块
 
 
 
