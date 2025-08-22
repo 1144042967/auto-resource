@@ -22,7 +22,7 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
 import net.neoforged.neoforge.fluids.capability.IFluidHandler;
 
@@ -78,19 +78,21 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler storage = entity.getCapability(Capabilities.FLUID_HANDLER, direction.getOpposite()).resolve().filter(handler -> {
-                int tanks = handler.getTanks();
-                for (int tank = 0; tank < tanks; tank++) {
-                    if (handler.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
-                        return true;
-                    }
-                }
-                return false;
-            }).orElse(null);
-            if (storage == null) {
+            IFluidHandler capability = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, direction.getOpposite());
+            if (capability == null) {
                 continue;
             }
-            int result = storage.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
+            boolean canFill = false;
+            for (int tank = 0; tank < capability.getTanks(); tank++) {
+                if (capability.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
+                    canFill = true;
+                    break;
+                }
+            }
+            if (!canFill) {
+                continue;
+            }
+            int result = capability.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
             if (result < 0) {
                 result = 0;
             }

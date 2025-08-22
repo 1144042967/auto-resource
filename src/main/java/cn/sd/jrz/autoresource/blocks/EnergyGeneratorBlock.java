@@ -18,7 +18,7 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nonnull;
@@ -74,8 +74,8 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IEnergyStorage storage = entity.getCapability(Capabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).orElse(null);
-            if (storage == null) {
+            IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction.getOpposite());
+            if (storage == null || !storage.canReceive()) {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.energy);

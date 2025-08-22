@@ -1,24 +1,16 @@
 package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.connection.EnergyConnection;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.neoforged.neoforge.common.capabilities.Capabilities;
-import net.neoforged.neoforge.common.capabilities.Capability;
-import net.neoforged.neoforge.common.capabilities.ICapabilityProvider;
-import net.neoforged.neoforge.common.util.LazyOptional;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 
-public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityProvider {
-    private final LazyOptional<EnergyConnection> fecOptional = LazyOptional.of(() -> new EnergyConnection(this));
+public class EnergyGeneratorEntity extends BlockEntity {
     public final DataConfig config;
     public long output;
     public long energy = 0;
@@ -29,12 +21,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         super(config.getEntityType(), pos, state);
         this.config = config;
         this.output = config.getMin();
-    }
-
-    @Override
-    @Nonnull
-    public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction direction) {
-        return capability == Capabilities.ENERGY ? fecOptional.cast() : super.getCapability(capability, direction);
     }
 
     @Override
