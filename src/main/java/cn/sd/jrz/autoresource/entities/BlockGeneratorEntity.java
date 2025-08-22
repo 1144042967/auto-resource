@@ -16,7 +16,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +40,7 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentInput input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentInput input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -54,13 +53,13 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + block + "," + tickCount);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void saveAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.saveAdditional(nbt, provider);
         nbt.putLong("output", output);
         nbt.putLong("block", block);
@@ -68,7 +67,7 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));
