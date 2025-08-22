@@ -2,7 +2,7 @@ package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.energy.IEnergyStorage;
 
 public class EnergyConnection implements IEnergyStorage {
     private final EnergyGeneratorEntity owner;
