@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
@@ -65,6 +66,7 @@ public class BlockGeneratorBlock extends Block implements ITileEntityProvider {
             return false;
         }
         player.addItem(new ItemStack(config.getBlock().asItem()));
+        Tool.takeItem(player, stack);
         generator.block -= 1000L;
         return true;
     }

@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.block.Block;
 import net.minecraft.block.BlockState;
 import net.minecraft.block.ITileEntityProvider;
@@ -76,7 +77,7 @@ public class LiquidGeneratorBlock extends Block implements ITileEntityProvider {
             player.setItemSlot(type, getBucket());
         } else if (count > 1) {
             player.setItemSlot(type, new ItemStack(Items.BUCKET, count - 1));
-            player.addItem(getBucket());
+            Tool.takeItem(player, getBucket());
         }
         generator.liquid -= 1000L;
         return true;
