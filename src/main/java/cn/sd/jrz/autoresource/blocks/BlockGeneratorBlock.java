@@ -132,7 +132,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         if (stack != ItemStack.EMPTY && stack.getItem() != config.getBlock().asItem()) {
             return false;
         }
-        player.addItem(new ItemStack(config.getBlock().asItem()));
+        Tool.takeItem(player, new ItemStack(config.getBlock().asItem()));
         generator.block -= 1000L;
         return true;
     }
