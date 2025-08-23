@@ -4,7 +4,6 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.client.Minecraft;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -13,6 +12,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -139,10 +139,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
 
     private boolean useEmpty(Player player, BlockGeneratorEntity generator) {
         ItemStack stack = player.getMainHandItem();
-        if (stack != ItemStack.EMPTY && stack.getItem() != config.getBlock().asItem()) {
+        if (stack != ItemStack.EMPTY && stack.getItem() != Items.AIR && stack.getItem() != config.getBlock().asItem()) {
             return false;
         }
-        Minecraft.getInstance().options.keyUse.setDown(false);
         Tool.takeItem(player, new ItemStack(config.getBlock().asItem()));
         generator.block -= 1000L;
         return true;
