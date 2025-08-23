@@ -149,7 +149,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             player.setItemSlot(type, getBucket());
         } else if (count > 1) {
             player.setItemSlot(type, new ItemStack(Items.BUCKET, count - 1));
-            player.addItem(getBucket());
+            Tool.takeItem(player, getBucket());
         }
         generator.liquid -= 1000L;
         return true;
