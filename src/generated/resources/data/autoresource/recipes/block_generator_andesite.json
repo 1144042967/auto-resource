@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "block_generator_andesite",
   "key": {
     "#": {
@@ -21,6 +22,7 @@
     "#W#"
   ],
   "result": {
-    "item": "autoresource:block_generator_andesite"
+    "id": "autoresource:block_generator_andesite",
+    "count": 1
   }
 }

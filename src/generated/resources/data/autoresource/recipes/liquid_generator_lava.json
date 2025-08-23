@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "liquid_generator_lava",
   "key": {
     "#": {
@@ -15,6 +16,7 @@
     "#L#"
   ],
   "result": {
-    "item": "autoresource:liquid_generator_lava"
+    "id": "autoresource:liquid_generator_lava",
+    "count": 1
   }
 }

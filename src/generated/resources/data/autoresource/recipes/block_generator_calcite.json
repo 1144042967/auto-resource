@@ -1,5 +1,6 @@
 {
   "type": "minecraft:crafting_shaped",
+  "category": "misc",
   "group": "block_generator_calcite",
   "key": {
     "#": {
@@ -21,6 +22,7 @@
     "#W#"
   ],
   "result": {
-    "item": "autoresource:block_generator_calcite"
+    "id": "autoresource:block_generator_calcite",
+    "count": 1
   }
 }

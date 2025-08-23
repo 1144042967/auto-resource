@@ -14,7 +14,10 @@ import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
+import com.mojang.serialization.Codec;
+import net.minecraft.core.component.DataComponentType;
 import net.minecraft.core.registries.Registries;
+import net.minecraft.network.codec.ByteBufCodecs;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.level.block.Block;
@@ -28,11 +31,13 @@ import net.neoforged.neoforge.registries.DeferredHolder;
 import net.neoforged.neoforge.registries.DeferredRegister;
 
 public class Registration {
+    public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, AutoResource.MODID);
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.Blocks.createBlocks(AutoResource.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.Items.createItems(AutoResource.MODID);
     private static final DeferredRegister<BlockEntityType<?>> BLOCK_ENTITIES = DeferredRegister.create(Registries.BLOCK_ENTITY_TYPE, AutoResource.MODID);
 
     public static void init(IEventBus bus) {
+        DATA_COMPONENT_TYPES.register(bus);
         BLOCKS.register(bus);
         ITEMS.register(bus);
         BLOCK_ENTITIES.register(bus);
@@ -71,6 +76,10 @@ public class Registration {
             .pushReaction(PushReaction.DESTROY)
             .strength(2.5f, 15.0f);
 
+    // DataComponentType
+
+    public static final DeferredHolder<DataComponentType<?>, DataComponentType<String>> BLOCK_DATA = DATA_COMPONENT_TYPES.register("block_data", () -> DataComponentType.<String>builder().persistent(Codec.STRING).networkSynchronized(ByteBufCodecs.STRING_UTF8).build());
+
     // Blocks
 
     public static final DeferredHolder<Block, EnergyGeneratorBlock> ENERGY_GENERATOR_FE = BLOCKS.register("energy_generator_fe", () -> new EnergyGeneratorBlock(BLOCK_PROPERTIES, DataConfig.ENERGY_GENERATOR_FE));
@@ -97,6 +106,7 @@ public class Registration {
     public static final DeferredHolder<Block, BlockGeneratorBlock> BLOCK_GENERATOR_BLACKSTONE = BLOCKS.register("block_generator_blackstone", () -> new BlockGeneratorBlock(BLOCK_PROPERTIES, DataConfig.BLOCK_GENERATOR_BLACKSTONE));
     public static final DeferredHolder<Block, BlockGeneratorBlock> BLOCK_GENERATOR_BASALT = BLOCKS.register("block_generator_basalt", () -> new BlockGeneratorBlock(BLOCK_PROPERTIES, DataConfig.BLOCK_GENERATOR_BASALT));
     public static final DeferredHolder<Block, BlockGeneratorBlock> BLOCK_GENERATOR_END_STONE = BLOCKS.register("block_generator_end_stone", () -> new BlockGeneratorBlock(BLOCK_PROPERTIES, DataConfig.BLOCK_GENERATOR_END_STONE));
+
     // Items
 
     public static final DeferredHolder<Item, EnergyGeneratorItem> ENERGY_GENERATOR_FE_ITEM = ITEMS.register("energy_generator_fe", () -> new EnergyGeneratorItem(ENERGY_GENERATOR_FE.get(), DataConfig.ENERGY_GENERATOR_FE));

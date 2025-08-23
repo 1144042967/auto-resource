@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -103,18 +104,26 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         generator.setChanged();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull InteractionResult use(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+    }
+
+    @Override
+    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    }
+
+    private boolean use(Level level, BlockPos pos, Player player) {
         if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
+            return true;
         }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return InteractionResult.FAIL;
+            return false;
         }
         if (generator.block >= 1000 && useEmpty(player, generator)) {
-            return InteractionResult.SUCCESS;
+            return true;
         }
         long block = generator.block / 1000;
         double output = generator.output / 1000D;
@@ -124,7 +133,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
         }
-        return InteractionResult.SUCCESS;
+        return true;
     }
 
     private boolean useEmpty(Player player, BlockGeneratorEntity generator) {

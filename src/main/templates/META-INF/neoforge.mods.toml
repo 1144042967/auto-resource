@@ -8,7 +8,7 @@ issueTrackerURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
     displayName="${mod_name}"
     updateJSONURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/update.json"
     displayURL="https://gitee.com/scrambled_egg_with_eek/auto-resource"
-    logoFile= "modIcon.png"
+    logoFile="modIcon.png"
     authors="${mod_authors}"
     description='''${mod_description}'''
 [[dependencies.${mod_id}]]
