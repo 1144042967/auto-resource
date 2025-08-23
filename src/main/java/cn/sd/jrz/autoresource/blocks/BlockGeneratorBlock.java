@@ -12,6 +12,7 @@ import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -24,8 +25,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.items.IItemHandler;
 import net.minecraftforge.items.ItemHandlerHelper;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 public class BlockGeneratorBlock extends Block implements EntityBlock {
@@ -39,13 +40,13 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public BlockEntity newBlockEntity(@NotNull BlockPos pos, @NotNull BlockState state) {
+    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
         return new BlockGeneratorEntity(pos, state, config);
     }
 
     @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@NotNull Level level, @NotNull BlockState state, @NotNull BlockEntityType<T> type) {
+    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
         return (l, p, s, tile) -> tick(l, tile);
     }
 
@@ -105,25 +106,25 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
+    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
         return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
     @Override
-    protected @NotNull ItemInteractionResult useItemOn(@NotNull ItemStack p_330929_, @NotNull BlockState p_335716_, @NotNull Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return ItemInteractionResult.SUCCESS;
-        }
+    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
     }
 
     private boolean use(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide) {
+            return true;
+        }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
             return false;
+        }
+        if (generator.block >= 1000 && useEmpty(player, generator)) {
+            return true;
         }
         long block = generator.block / 1000;
         double output = generator.output / 1000D;
@@ -133,6 +134,16 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         } else {
             player.sendSystemMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
         }
+        return true;
+    }
+
+    private boolean useEmpty(Player player, BlockGeneratorEntity generator) {
+        ItemStack stack = player.getMainHandItem();
+        if (stack != ItemStack.EMPTY && stack.getItem() != Items.AIR && stack.getItem() != config.getBlock().asItem()) {
+            return false;
+        }
+        Tool.takeItem(player, new ItemStack(config.getBlock().asItem()));
+        generator.block -= 1000L;
         return true;
     }
 }
