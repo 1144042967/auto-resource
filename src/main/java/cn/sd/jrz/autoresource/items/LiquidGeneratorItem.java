@@ -18,8 +18,8 @@ import java.util.List;
 public class LiquidGeneratorItem extends BlockItem {
     private final DataConfig config;
 
-    public LiquidGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant().component(Registration.BLOCK_DATA.get(), ""));
+    public LiquidGeneratorItem(Block block, Item.Properties properties, DataConfig config) {
+        super(block, properties);
         this.config = config;
     }
 

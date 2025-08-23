@@ -18,8 +18,8 @@ import java.util.List;
 public class EnergyGeneratorItem extends BlockItem {
     private final DataConfig config;
 
-    public EnergyGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant().component(Registration.BLOCK_DATA.get(), ""));
+    public EnergyGeneratorItem(Block block, Item.Properties properties, DataConfig config) {
+        super(block, properties);
         this.config = config;
     }
 

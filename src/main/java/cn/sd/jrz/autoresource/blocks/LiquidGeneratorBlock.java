@@ -8,7 +8,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
-import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -116,34 +115,34 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
 
     @Override
     public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        return use(level, pos, player);
     }
 
     @Override
-    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player);
     }
 
-    private boolean use(Level level, BlockPos pos, Player player) {
+    private InteractionResult use(Level level, BlockPos pos, Player player) {
         if (level.isClientSide) {
-            return true;
+            return InteractionResult.SUCCESS;
         }
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return false;
+            return InteractionResult.FAIL;
         }
         if (generator.liquid >= 1000 && useBucket(player, generator)) {
-            return true;
+            return InteractionResult.SUCCESS;
         }
         long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
+            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent), true);
         } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
+            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output), true);
         }
-        return true;
+        return InteractionResult.SUCCESS;
     }
 
     private boolean useBucket(Player player, LiquidGeneratorEntity generator) {

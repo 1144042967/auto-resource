@@ -3,18 +3,10 @@
   "category": "misc",
   "group": "block_generator_dirt",
   "key": {
-    "#": {
-      "item": "minecraft:smooth_stone"
-    },
-    "W": {
-      "item": "minecraft:water_bucket"
-    },
-    "L": {
-      "item": "minecraft:lava_bucket"
-    },
-    "S": {
-      "item": "minecraft:dirt"
-    }
+    "#": "minecraft:smooth_stone",
+    "W": "minecraft:water_bucket",
+    "L": "minecraft:lava_bucket",
+    "S": "minecraft:dirt"
   },
   "pattern": [
     "#L#",
