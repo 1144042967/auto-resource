@@ -16,7 +16,6 @@ import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,7 +40,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentGetter input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -54,13 +53,13 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + liquid + "," + tickCount);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void saveAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.saveAdditional(nbt, provider);
         nbt.putLong("output", output);
         nbt.putLong("liquid", liquid);
@@ -68,7 +67,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
         nbt.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         nbt.getLong("liquid").ifPresent(it -> this.liquid = Tool.suit(it));
