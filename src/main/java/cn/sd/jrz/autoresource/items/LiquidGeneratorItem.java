@@ -12,8 +12,8 @@ import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
-import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
 public class LiquidGeneratorItem extends BlockItem {
@@ -27,7 +27,7 @@ public class LiquidGeneratorItem extends BlockItem {
     @SuppressWarnings("deprecation")
     @Override
     @OnlyIn(Dist.CLIENT)
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext context, @NotNull TooltipDisplay display, @NotNull Consumer<Component> consumer, @NotNull TooltipFlag flag) {
+    public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> consumer, @Nonnull TooltipFlag flag) {
         super.appendHoverText(stack, context, display, consumer, flag);
         double output = config.getMin() / 1000D;
         long liquid = 0;
