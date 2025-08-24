@@ -5,9 +5,9 @@ import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.HolderLookup;
+import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -26,7 +26,7 @@ public class BlockGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(@Nonnull DataComponentInput input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -55,14 +55,8 @@ public class BlockGeneratorEntity extends BlockEntity {
     @Override
     public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("block", Tag.TAG_LONG)) {
-            block = Tool.suit(nbt.getLong("block"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
+        nbt.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
+        nbt.getLong("block").ifPresent(it -> this.block = Tool.suit(it));
+        nbt.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
     }
 }

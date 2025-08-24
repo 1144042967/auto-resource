@@ -1,5 +1,3 @@
-modLoader = "javafml"
-loaderVersion = "${loader_version_range}"
 license = "${mod_license}"
 issueTrackerURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
 [[mods]]
