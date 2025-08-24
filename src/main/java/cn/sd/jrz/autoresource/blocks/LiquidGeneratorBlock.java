@@ -8,8 +8,10 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -18,6 +20,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.fluids.FluidStack;
@@ -128,6 +131,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
+        if (generator.liquid >= 1000 && useBucket(player, generator)) {
+            return InteractionResult.SUCCESS;
+        }
         long liquid = generator.liquid / 1000;
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
@@ -137,5 +143,33 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output), true);
         }
         return InteractionResult.SUCCESS;
+    }
+
+    private boolean useBucket(Player player, LiquidGeneratorEntity generator) {
+        EquipmentSlot type;
+        if (player.getMainHandItem().getItem() == Items.BUCKET) {
+            type = EquipmentSlot.MAINHAND;
+        } else if (player.getOffhandItem().getItem() == Items.BUCKET) {
+            type = EquipmentSlot.OFFHAND;
+        } else {
+            return false;
+        }
+        int count = player.getItemBySlot(type).getCount();
+        if (count == 1) {
+            player.setItemSlot(type, getBucket());
+        } else if (count > 1) {
+            player.setItemSlot(type, new ItemStack(Items.BUCKET, count - 1));
+            Tool.takeItem(player, getBucket());
+        }
+        generator.liquid -= 1000L;
+        return true;
+    }
+
+    private ItemStack getBucket() {
+        if (config.getFluid() == Fluids.WATER) {
+            return new ItemStack(Items.WATER_BUCKET);
+        } else {
+            return new ItemStack(Items.LAVA_BUCKET);
+        }
     }
 }

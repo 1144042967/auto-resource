@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 
@@ -42,13 +41,13 @@ public class EnergyGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + energy + "," + tickCount + "," + beaconIncrease);
     }
 
     @Override
-    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+    public void saveAdditional(@Nonnull ValueOutput valueOutput) {
         super.saveAdditional(valueOutput);
         valueOutput.putLong("output", output);
         valueOutput.putLong("energy", energy);
@@ -57,7 +56,7 @@ public class EnergyGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    public void loadAdditional(@NotNull ValueInput valueInput) {
+    public void loadAdditional(@Nonnull ValueInput valueInput) {
         super.loadAdditional(valueInput);
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));

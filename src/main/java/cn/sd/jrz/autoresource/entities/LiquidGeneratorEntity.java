@@ -10,7 +10,8 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public class LiquidGeneratorEntity extends BlockEntity {
     public final DataConfig config;
@@ -25,7 +26,7 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentGetter input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -38,13 +39,13 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + liquid + "," + tickCount);
     }
 
     @Override
-    public void saveAdditional(@NotNull ValueOutput valueOutput) {
+    public void saveAdditional(@Nonnull ValueOutput valueOutput) {
         super.saveAdditional(valueOutput);
         valueOutput.putLong("output", output);
         valueOutput.putLong("liquid", liquid);
@@ -52,7 +53,7 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    public void loadAdditional(@NotNull ValueInput valueInput) {
+    public void loadAdditional(@Nonnull ValueInput valueInput) {
         super.loadAdditional(valueInput);
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("liquid").ifPresent(it -> this.liquid = Tool.suit(it));
