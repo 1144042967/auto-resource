@@ -4,12 +4,12 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nonnull;
 
@@ -47,20 +47,20 @@ public class EnergyGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
-        super.saveAdditional(nbt, provider);
-        nbt.putLong("output", output);
-        nbt.putLong("energy", energy);
-        nbt.putLong("tickCount", tickCount);
-        nbt.putLong("beaconIncrease", beaconIncrease);
+    public void saveAdditional(@Nonnull ValueOutput valueOutput) {
+        super.saveAdditional(valueOutput);
+        valueOutput.putLong("output", output);
+        valueOutput.putLong("energy", energy);
+        valueOutput.putLong("tickCount", tickCount);
+        valueOutput.putLong("beaconIncrease", beaconIncrease);
     }
 
     @Override
-    public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
-        super.loadAdditional(nbt, provider);
-        nbt.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
-        nbt.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));
-        nbt.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        nbt.getLong("beaconIncrease").ifPresent(it -> this.beaconIncrease = Tool.suit(it));
+    public void loadAdditional(@Nonnull ValueInput valueInput) {
+        super.loadAdditional(valueInput);
+        valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
+        valueInput.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));
+        valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
+        valueInput.getLong("beaconIncrease").ifPresent(it -> this.beaconIncrease = Tool.suit(it));
     }
 }
