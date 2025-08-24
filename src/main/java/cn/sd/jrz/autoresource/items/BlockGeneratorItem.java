@@ -9,9 +9,8 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;
@@ -26,9 +25,13 @@ public class BlockGeneratorItem extends BlockItem {
 
     @SuppressWarnings("deprecation")
     @Override
-    @OnlyIn(Dist.CLIENT)
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay display, @Nonnull Consumer<Component> consumer, @Nonnull TooltipFlag flag) {
         super.appendHoverText(stack, context, display, consumer, flag);
+        //noinspection resource
+        Level level = context.level();
+        if (level == null || !level.isClientSide) {
+            return;
+        }
         double output = config.getMin() / 1000D;
         long block = 0;
         long tickCount = 0;
