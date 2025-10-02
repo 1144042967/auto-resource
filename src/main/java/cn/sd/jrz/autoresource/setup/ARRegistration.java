@@ -32,7 +32,7 @@ import net.minecraftforge.registries.RegistryObject;
 import java.util.Set;
 import java.util.function.BiFunction;
 
-public class Registration {
+public class ARRegistration {
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, AutoResource.MODID);
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AutoResource.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AutoResource.MODID);

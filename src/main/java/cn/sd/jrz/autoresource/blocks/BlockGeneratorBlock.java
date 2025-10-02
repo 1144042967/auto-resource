@@ -50,7 +50,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
         if (!(tile instanceof BlockGeneratorEntity generator)) {
@@ -115,7 +115,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     private InteractionResult use(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);

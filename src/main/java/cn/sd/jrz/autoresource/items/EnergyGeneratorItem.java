@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.items;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -34,7 +34,7 @@ public class EnergyGeneratorItem extends BlockItem {
         long tickCount = 0;
         long second = config.getSecond();
         long step = config.getStep();
-        String blockData = stack.getOrDefault(Registration.BLOCK_DATA.get(), "");
+        String blockData = stack.getOrDefault(ARRegistration.BLOCK_DATA.get(), "");
         if (!blockData.isEmpty()) {
             String[] dataArray = blockData.split(",");
             output = Tool.suit(dataArray[0]);

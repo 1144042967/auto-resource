@@ -47,7 +47,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
         if (!(tile instanceof EnergyGeneratorEntity generator)) {
@@ -106,7 +106,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private InteractionResult use(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         EnergyGeneratorEntity generator = (EnergyGeneratorEntity) level.getBlockEntity(pos);
