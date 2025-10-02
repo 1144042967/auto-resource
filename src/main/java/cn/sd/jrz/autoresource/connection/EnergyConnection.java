@@ -2,9 +2,12 @@ package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
-public class EnergyConnection implements IEnergyStorage {
+import javax.annotation.Nonnull;
+
+public class EnergyConnection implements EnergyHandler {
     private final EnergyGeneratorEntity owner;
 
     public EnergyConnection(EnergyGeneratorEntity owner) {
@@ -12,41 +15,29 @@ public class EnergyConnection implements IEnergyStorage {
     }
 
     @Override
-    public int getEnergyStored() {
-        return Tool.suitInt(owner.energy);
+    public long getAmountAsLong() {
+        return owner.energy;
     }
 
     @Override
-    public int receiveEnergy(int maxReceive, boolean simulate) {
+    public long getCapacityAsLong() {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public int insert(int amount, @Nonnull TransactionContext transaction) {
         return 0;
     }
 
     @Override
-    public int extractEnergy(int maxExtract, boolean simulate) {
+    public int extract(int amount, @Nonnull TransactionContext transaction) {
         int maxOutput = Tool.suitInt(owner.energy);
-        if (maxOutput <= 0 || maxExtract <= 0) {
+        if (maxOutput <= 0 || amount <= 0) {
             return 0;
         }
-        int ret = Math.min(maxOutput, maxExtract);
-        if (!simulate) {
-            owner.energy -= ret;
-            owner.setChanged();
-        }
+        int ret = Math.min(maxOutput, amount);
+        owner.energy -= ret;
+        owner.setChanged();
         return ret;
-    }
-
-    @Override
-    public int getMaxEnergyStored() {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean canExtract() {
-        return true;
-    }
-
-    @Override
-    public boolean canReceive() {
-        return false;
     }
 }

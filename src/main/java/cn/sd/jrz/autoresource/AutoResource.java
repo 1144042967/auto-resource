@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.items.ItemManager;
-import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.setup.ARRegistration;
 import net.neoforged.bus.api.IEventBus;
 import net.neoforged.fml.ModContainer;
 import net.neoforged.fml.common.Mod;
@@ -12,7 +12,7 @@ public class AutoResource {
 
     public AutoResource(IEventBus bus, ModContainer container) {
         Config.init(container);
-        Registration.init(bus);
+        ARRegistration.init(bus);
         ItemManager.init(bus);
     }
 }

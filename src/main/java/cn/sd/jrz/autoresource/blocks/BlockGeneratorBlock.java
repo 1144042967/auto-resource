@@ -22,8 +22,9 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.IItemHandler;
-import net.neoforged.neoforge.items.ItemHandlerHelper;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -50,7 +51,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
         if (!(tile instanceof BlockGeneratorEntity generator)) {
@@ -77,20 +78,19 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IItemHandler handler = level.getCapability(Capabilities.ItemHandler.BLOCK, pos, direction.getOpposite());
+            ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, direction.getOpposite());
             if (handler == null) {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.block / 1000);
-            ItemStack result = ItemHandlerHelper.insertItemStacked(handler, new ItemStack(config.getBlock(), maxOutput), false);
-            int count = result.getCount();
+            int count = ResourceHandlerUtil.insertStacking(handler, ItemResource.of(config.getBlock()), maxOutput, null);
             if (count < 0) {
                 count = 0;
             }
             if (count > maxOutput) {
                 count = maxOutput;
             }
-            generator.block -= (maxOutput - count) * 1000L;
+            generator.block -= count * 1000L;
             if (generator.block / 1000 <= 0) {
                 break;
             }
@@ -110,12 +110,12 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         return use(level, pos, player);
     }
 
     private InteractionResult use(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);

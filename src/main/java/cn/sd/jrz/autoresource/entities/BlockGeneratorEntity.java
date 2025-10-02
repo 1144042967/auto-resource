@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -10,7 +10,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
-import javax.annotation.Nonnull;
 
 import javax.annotation.Nonnull;
 
@@ -29,7 +28,7 @@ public class BlockGeneratorEntity extends BlockEntity {
     @Override
     protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
+        String blockData = input.getOrDefault(ARRegistration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
             return;
         }
@@ -42,7 +41,7 @@ public class BlockGeneratorEntity extends BlockEntity {
     @Override
     protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
-        builder.set(Registration.BLOCK_DATA.get(), output + "," + block + "," + tickCount);
+        builder.set(ARRegistration.BLOCK_DATA.get(), output + "," + block + "," + tickCount);
     }
 
     @Override

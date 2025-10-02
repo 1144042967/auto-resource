@@ -39,7 +39,7 @@ import net.neoforged.neoforge.registries.DeferredRegister;
 
 import java.util.function.BiFunction;
 
-public class Registration {
+public class ARRegistration {
     public static final DeferredRegister<DataComponentType<?>> DATA_COMPONENT_TYPES = DeferredRegister.create(Registries.DATA_COMPONENT_TYPE, AutoResource.MODID);
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.Blocks.createBlocks(AutoResource.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.Items.createItems(AutoResource.MODID);
@@ -50,34 +50,34 @@ public class Registration {
         BLOCKS.register(bus);
         ITEMS.register(bus);
         BLOCK_ENTITIES.register(bus);
-        bus.addListener(Registration::initCapabilities);
+        bus.addListener(ARRegistration::initCapabilities);
     }
 
     private static void initCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.EnergyStorage.BLOCK, ENERGY_GENERATOR_FE_ENTITY.get(), (entity, direction) -> new EnergyConnection(entity));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, LIQUID_GENERATOR_WATER_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
-        event.registerBlockEntity(Capabilities.FluidHandler.BLOCK, LIQUID_GENERATOR_LAVA_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_DIRT_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_COBBLESTONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_SMOOTH_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_CLAY_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_SAND_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_GRAVEL_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_GRANITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_DIORITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_ANDESITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_CALCITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_TUFF_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_COBBLED_DEEPSLATE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_PRISMARINE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_OBSIDIAN_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_NETHERRACK_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_SOUL_SAND_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_SOUL_SOIL_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_BLACKSTONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_BASALT_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
-        event.registerBlockEntity(Capabilities.ItemHandler.BLOCK, BLOCK_GENERATOR_END_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ENERGY_GENERATOR_FE_ENTITY.get(), (entity, direction) -> new EnergyConnection(entity));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_WATER_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_LAVA_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_DIRT_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_COBBLESTONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_SMOOTH_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_CLAY_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_SAND_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_GRAVEL_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_GRANITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_DIORITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_ANDESITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_CALCITE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_TUFF_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_COBBLED_DEEPSLATE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_PRISMARINE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_OBSIDIAN_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_NETHERRACK_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_SOUL_SAND_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_SOUL_SOIL_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_BLACKSTONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_BASALT_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_END_STONE_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
     }
 
     // DataComponentType

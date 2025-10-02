@@ -23,8 +23,9 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -51,7 +52,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
         if (!(tile instanceof LiquidGeneratorEntity generator)) {
@@ -78,28 +79,18 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            IFluidHandler capability = level.getCapability(Capabilities.FluidHandler.BLOCK, pos, direction.getOpposite());
-            if (capability == null) {
+            ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
+            if (handler == null) {
                 continue;
             }
-            boolean canFill = false;
-            for (int tank = 0; tank < capability.getTanks(); tank++) {
-                if (capability.isFluidValid(tank, new FluidStack(generator.config.getFluid(), maxOutput))) {
-                    canFill = true;
-                    break;
-                }
+            int count = ResourceHandlerUtil.insertStacking(handler, FluidResource.of(config.getFluid()), maxOutput, null);
+            if (count < 0) {
+                count = 0;
             }
-            if (!canFill) {
-                continue;
+            if (count > maxOutput) {
+                count = maxOutput;
             }
-            int result = capability.fill(new FluidStack(generator.config.getFluid(), maxOutput), IFluidHandler.FluidAction.EXECUTE);
-            if (result < 0) {
-                result = 0;
-            }
-            if (result > maxOutput) {
-                result = maxOutput;
-            }
-            generator.liquid -= result;
+            generator.liquid -= count;
             if (generator.liquid <= 0) {
                 break;
             }
@@ -119,12 +110,12 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         return use(level, pos, player);
     }
 
     private InteractionResult use(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);

@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.items;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
@@ -11,8 +11,6 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;
@@ -31,7 +29,7 @@ public class EnergyGeneratorItem extends BlockItem {
         super.appendHoverText(stack, context, tooltipDisplay, tooltip, flagIn);
         //noinspection resource
         Level level = context.level();
-        if (level == null || !level.isClientSide) {
+        if (level == null || !level.isClientSide()) {
             return;
         }
         double output = config.getMin();
@@ -39,7 +37,7 @@ public class EnergyGeneratorItem extends BlockItem {
         long tickCount = 0;
         long second = config.getSecond();
         long step = config.getStep();
-        String blockData = stack.getOrDefault(Registration.BLOCK_DATA.get(), "");
+        String blockData = stack.getOrDefault(ARRegistration.BLOCK_DATA.get(), "");
         if (!blockData.isEmpty()) {
             String[] dataArray = blockData.split(",");
             output = Tool.suit(dataArray[0]);

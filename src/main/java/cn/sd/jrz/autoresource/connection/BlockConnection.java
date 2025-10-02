@@ -2,57 +2,61 @@ package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.world.item.ItemStack;
-import net.neoforged.neoforge.items.IItemHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import javax.annotation.Nonnull;
 
-public class BlockConnection implements IItemHandler {
+public class BlockConnection implements ResourceHandler<ItemResource> {
     private final BlockGeneratorEntity owner;
-    private final ItemStack stack;
 
     public BlockConnection(BlockGeneratorEntity owner) {
         this.owner = owner;
-        this.stack = new ItemStack(owner.config.getBlock().asItem(), 0);
     }
 
     @Override
-    public int getSlots() {
+    public int size() {
         return 1;
     }
 
     @Override
-    public @Nonnull ItemStack getStackInSlot(int slot) {
-        stack.setCount(Tool.suitInt(owner.block / 1000));
-        return stack;
+    public @Nonnull ItemResource getResource(int index) {
+        return ItemResource.of(owner.config.getBlock().asItem());
     }
 
     @Override
-    public @Nonnull ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
-        return stack;
+    public long getAmountAsLong(int index) {
+        return owner.block / 1000;
     }
 
     @Override
-    public @Nonnull ItemStack extractItem(int slot, int amount, boolean simulate) {
+    public long getCapacityAsLong(int index, @Nonnull ItemResource resource) {
+        return Long.MAX_VALUE / 1000;
+    }
+
+    @Override
+    public boolean isValid(int index, @Nonnull ItemResource resource) {
+        return false;
+    }
+
+    @Override
+    public int insert(int index, @Nonnull ItemResource resource, int amount, @Nonnull TransactionContext transaction) {
+        return 0;
+    }
+
+    @Override
+    public int extract(int index, @Nonnull ItemResource resource, int amount, @Nonnull TransactionContext transaction) {
+        if (!resource.is(owner.config.getBlock().asItem())) {
+            return 0;
+        }
         int maxOutput = Tool.suitInt(owner.block / 1000);
         if (maxOutput <= 0 || amount <= 0) {
-            return ItemStack.EMPTY;
+            return 0;
         }
-        int ret = Math.min(maxOutput, amount);
-        if (!simulate) {
-            owner.block -= ret * 1000L;
-            owner.setChanged();
-        }
-        return new ItemStack(owner.config.getBlock().asItem(), ret);
-    }
-
-    @Override
-    public int getSlotLimit(int slot) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-        return false;
+        int count = Math.min(maxOutput, amount);
+        owner.block -= count * 1000L;
+        owner.setChanged();
+        return count;
     }
 }

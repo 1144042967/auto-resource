@@ -2,66 +2,61 @@ package cn.sd.jrz.autoresource.connection;
 
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.transaction.TransactionContext;
 
 import javax.annotation.Nonnull;
 
-public class LiquidConnection implements IFluidHandler {
+public class LiquidConnection implements ResourceHandler<FluidResource> {
     private final LiquidGeneratorEntity owner;
-    private final FluidStack stack;
 
     public LiquidConnection(LiquidGeneratorEntity owner) {
         this.owner = owner;
-        this.stack = new FluidStack(owner.config.getFluid(), 0);
     }
 
     @Override
-    public int getTanks() {
+    public int size() {
         return 1;
     }
 
     @Override
-    public @Nonnull FluidStack getFluidInTank(int tank) {
-        stack.setAmount(Tool.suitInt(owner.liquid));
-        return stack;
+    public @Nonnull FluidResource getResource(int index) {
+        return FluidResource.of(owner.config.getFluid());
     }
 
     @Override
-    public int fill(@Nonnull FluidStack fluidStack, @Nonnull IFluidHandler.FluidAction fluidAction) {
+    public long getAmountAsLong(int index) {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public long getCapacityAsLong(int index, @Nonnull FluidResource resource) {
+        return Long.MAX_VALUE;
+    }
+
+    @Override
+    public boolean isValid(int index, @Nonnull FluidResource resource) {
+        return false;
+    }
+
+    @Override
+    public int insert(int index, @Nonnull FluidResource resource, int amount, @Nonnull TransactionContext transaction) {
         return 0;
     }
 
     @Override
-    public @Nonnull FluidStack drain(int amount, @Nonnull IFluidHandler.FluidAction fluidAction) {
+    public int extract(int index, @Nonnull FluidResource resource, int amount, @Nonnull TransactionContext transaction) {
+        if (!resource.is(owner.config.getFluid())) {
+            return 0;
+        }
         int maxOutput = Tool.suitInt(owner.liquid);
         if (maxOutput <= 0 || amount <= 0) {
-            return new FluidStack(owner.config.getFluid(), 0);
+            return 0;
         }
-        int ret = Math.min(maxOutput, amount);
-        if (fluidAction.execute()) {
-            owner.liquid -= ret;
-            owner.setChanged();
-        }
-        return new FluidStack(owner.config.getFluid(), ret);
-    }
-
-    @Override
-    public @Nonnull FluidStack drain(FluidStack fluidStack, @Nonnull IFluidHandler.FluidAction fluidAction) {
-        if (fluidStack.getFluid() == owner.config.getFluid()) {
-            return drain(fluidStack.getAmount(), fluidAction);
-        } else {
-            return new FluidStack(owner.config.getFluid(), 0);
-        }
-    }
-
-    @Override
-    public int getTankCapacity(int tank) {
-        return Integer.MAX_VALUE;
-    }
-
-    @Override
-    public boolean isFluidValid(int tank, @Nonnull FluidStack stack) {
-        return false;
+        int count = Math.min(maxOutput, amount);
+        owner.liquid -= count;
+        owner.setChanged();
+        return count;
     }
 }

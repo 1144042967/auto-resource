@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.entities;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.setup.Registration;
+import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.component.DataComponentGetter;
@@ -29,7 +29,7 @@ public class EnergyGeneratorEntity extends BlockEntity {
     @Override
     protected void applyImplicitComponents(@Nonnull DataComponentGetter input) {
         super.applyImplicitComponents(input);
-        String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
+        String blockData = input.getOrDefault(ARRegistration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
             return;
         }
@@ -43,7 +43,7 @@ public class EnergyGeneratorEntity extends BlockEntity {
     @Override
     protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
-        builder.set(Registration.BLOCK_DATA.get(), output + "," + energy + "," + tickCount + "," + beaconIncrease);
+        builder.set(ARRegistration.BLOCK_DATA.get(), output + "," + energy + "," + tickCount + "," + beaconIncrease);
     }
 
     @Override

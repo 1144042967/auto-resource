@@ -20,7 +20,8 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -47,7 +48,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return;
         }
         if (!(tile instanceof EnergyGeneratorEntity generator)) {
@@ -75,21 +76,24 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction.getOpposite());
-            if (storage == null || !storage.canReceive()) {
+            EnergyHandler handler = level.getCapability(Capabilities.Energy.BLOCK, pos, direction.getOpposite());
+            if (handler == null || handler.getCapacityAsLong() <= handler.getAmountAsLong()) {
                 continue;
             }
+
             int maxOutput = Tool.suitInt(generator.energy);
-            int result = storage.receiveEnergy(maxOutput, false);
-            if (result < 0) {
-                result = 0;
-            }
-            if (result > maxOutput) {
-                result = maxOutput;
-            }
-            generator.energy -= result;
-            if (generator.energy <= 0) {
-                break;
+            try (var tx = Transaction.open(null)) {
+                int result = handler.insert(maxOutput, tx);
+                if (result < 0) {
+                    result = 0;
+                }
+                if (result > maxOutput) {
+                    result = maxOutput;
+                }
+                generator.energy -= result;
+                if (generator.energy <= 0) {
+                    break;
+                }
             }
         }
         generator.setChanged();
@@ -101,12 +105,12 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
         return use(level, pos, player);
     }
 
     private InteractionResult use(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         EnergyGeneratorEntity generator = (EnergyGeneratorEntity) level.getBlockEntity(pos);
