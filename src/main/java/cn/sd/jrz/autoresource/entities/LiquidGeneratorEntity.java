@@ -20,6 +20,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityProvider {
     private final LazyOptional<LiquidConnection> fecOptional = LazyOptional.of(() -> new LiquidConnection(this));
     public final DataConfig config;

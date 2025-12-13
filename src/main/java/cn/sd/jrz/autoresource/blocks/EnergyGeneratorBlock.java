@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -18,12 +19,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
 import net.minecraftforge.energy.IEnergyStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
@@ -67,6 +70,19 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
         }
         generator.energy = Tool.suit(generator.energy + generator.output);
+        //给实体输电
+        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(blockPos.relative(Direction.UP)));
+        for (Player player : playerList) {
+            Inventory inventory = player.getInventory();
+            for (ItemStack stack : inventory) {
+                stack.getCapability(ForgeCapabilities.ENERGY).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> transport(storage, generator));
+                if (generator.energy <= 0) {
+                    generator.setChanged();
+                    return;
+                }
+            }
+        }
+        //给其他面输电
         for (int i = 0; i < directions.length; i++) {
             findIndex = (findIndex + 1) % directions.length;
             Direction direction = directions[findIndex];
@@ -75,24 +91,28 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            IEnergyStorage storage = entity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).orElse(null);
-            if (storage == null) {
-                continue;
-            }
-            int maxOutput = Tool.suitInt(generator.energy);
-            int result = storage.receiveEnergy(maxOutput, false);
-            if (result < 0) {
-                result = 0;
-            }
-            if (result > maxOutput) {
-                result = maxOutput;
-            }
-            generator.energy -= result;
+            entity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> transport(storage, generator));
             if (generator.energy <= 0) {
-                break;
+                generator.setChanged();
+                return;
             }
         }
         generator.setChanged();
+    }
+
+    private void transport(IEnergyStorage storage, EnergyGeneratorEntity generator) {
+        if (storage == null) {
+            return;
+        }
+        int maxOutput = Tool.suitInt(generator.energy);
+        int result = storage.receiveEnergy(maxOutput, false);
+        if (result < 0) {
+            result = 0;
+        }
+        if (result > maxOutput) {
+            result = maxOutput;
+        }
+        generator.energy -= result;
     }
 
     @Override

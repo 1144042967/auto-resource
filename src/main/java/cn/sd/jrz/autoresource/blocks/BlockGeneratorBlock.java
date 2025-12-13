@@ -28,6 +28,7 @@ import net.minecraftforge.items.ItemHandlerHelper;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class BlockGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
     private final Direction[] directions = Direction.values();

@@ -20,6 +20,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProvider {
     private final LazyOptional<BlockConnection> fecOptional = LazyOptional.of(() -> new BlockConnection(this));
     public final DataConfig config;

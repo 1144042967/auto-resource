@@ -16,6 +16,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
+@SuppressWarnings("DuplicatedCode")
 public class LiquidGeneratorItem extends BlockItem {
     private final DataConfig config;
 

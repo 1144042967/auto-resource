@@ -29,6 +29,7 @@ import net.minecraftforge.fluids.capability.IFluidHandler;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
     private final Direction[] directions = Direction.values();

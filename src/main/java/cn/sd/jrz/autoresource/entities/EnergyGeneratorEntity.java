@@ -20,6 +20,7 @@ import net.minecraftforge.common.util.LazyOptional;
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityProvider {
     private final LazyOptional<EnergyConnection> fecOptional = LazyOptional.of(() -> new EnergyConnection(this));
     public final DataConfig config;
