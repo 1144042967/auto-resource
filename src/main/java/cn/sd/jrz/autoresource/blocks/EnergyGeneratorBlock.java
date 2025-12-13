@@ -8,6 +8,7 @@ import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
+import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
@@ -25,7 +27,9 @@ import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
+@SuppressWarnings("DuplicatedCode")
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
@@ -68,6 +72,32 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
         }
         generator.energy = Tool.suit(generator.energy + generator.output);
+        //给实体输电
+        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(blockPos.relative(Direction.UP)));
+        for (Player player : playerList) {
+            Inventory inventory = player.getInventory();
+            for (ItemStack stack : inventory) {
+                EnergyHandler handler = stack.getCapability(Capabilities.Energy.ITEM, null);
+                if (handler == null || handler.getCapacityAsLong() <= handler.getAmountAsLong()) {
+                    continue;
+                }
+                int maxOutput = Tool.suitInt(generator.energy);
+                try (var tx = Transaction.open(null)) {
+                    int result = handler.insert(maxOutput, tx);
+                    if (result < 0) {
+                        result = 0;
+                    }
+                    if (result > maxOutput) {
+                        result = maxOutput;
+                    }
+                    generator.energy -= result;
+                    if (generator.energy <= 0) {
+                        break;
+                    }
+                }
+            }
+        }
+        //给其他面输电
         for (int i = 0; i < directions.length; i++) {
             findIndex = (findIndex + 1) % directions.length;
             Direction direction = directions[findIndex];
@@ -80,7 +110,6 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             if (handler == null || handler.getCapacityAsLong() <= handler.getAmountAsLong()) {
                 continue;
             }
-
             int maxOutput = Tool.suitInt(generator.energy);
             try (var tx = Transaction.open(null)) {
                 int result = handler.insert(maxOutput, tx);
