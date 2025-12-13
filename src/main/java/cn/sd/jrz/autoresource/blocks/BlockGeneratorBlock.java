@@ -25,10 +25,12 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class BlockGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
@@ -78,7 +80,7 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
             if (entity == null) {
                 continue;
             }
-            ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, direction.getOpposite());
+            ResourceHandler<@NotNull ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, direction.getOpposite());
             if (handler == null) {
                 continue;
             }

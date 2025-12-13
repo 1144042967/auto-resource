@@ -5,10 +5,11 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 
-public class BlockConnection implements ResourceHandler<ItemResource> {
+public class BlockConnection implements ResourceHandler<@NotNull ItemResource> {
     private final BlockGeneratorEntity owner;
 
     public BlockConnection(BlockGeneratorEntity owner) {

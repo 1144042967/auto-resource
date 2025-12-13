@@ -13,6 +13,7 @@ import net.minecraft.world.level.storage.ValueOutput;
 
 import javax.annotation.Nonnull;
 
+@SuppressWarnings("DuplicatedCode")
 public class EnergyGeneratorEntity extends BlockEntity {
     public final DataConfig config;
     public long output;

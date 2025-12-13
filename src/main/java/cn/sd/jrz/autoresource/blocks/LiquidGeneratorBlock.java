@@ -26,10 +26,12 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
+@SuppressWarnings("DuplicatedCode")
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
@@ -79,7 +81,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             int maxOutput = Tool.suitInt(generator.liquid);
-            ResourceHandler<FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
+            ResourceHandler<@NotNull FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
             if (handler == null) {
                 continue;
             }

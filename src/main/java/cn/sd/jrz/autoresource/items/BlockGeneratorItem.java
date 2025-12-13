@@ -15,6 +15,7 @@ import net.minecraft.world.level.block.Block;
 import javax.annotation.Nonnull;
 import java.util.function.Consumer;
 
+@SuppressWarnings("DuplicatedCode")
 public class BlockGeneratorItem extends BlockItem {
     private final DataConfig config;
 

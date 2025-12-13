@@ -5,10 +5,11 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.transaction.TransactionContext;
+import org.jetbrains.annotations.NotNull;
 
 import javax.annotation.Nonnull;
 
-public class LiquidConnection implements ResourceHandler<FluidResource> {
+public class LiquidConnection implements ResourceHandler<@NotNull FluidResource> {
     private final LiquidGeneratorEntity owner;
 
     public LiquidConnection(LiquidGeneratorEntity owner) {
