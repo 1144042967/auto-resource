@@ -19,12 +19,14 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.List;
 
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
@@ -68,6 +70,20 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
         }
         generator.energy = Tool.suit(generator.energy + generator.output);
+        //给实体输电
+        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(blockPos.relative(Direction.UP)));
+        for (Player player : playerList) {
+            Iterable<ItemStack> slots = player.getAllSlots();
+            for (ItemStack stack : slots) {
+                IEnergyStorage storage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
+                transportEnergy(generator, storage);
+                if (generator.energy <= 0) {
+                    generator.setChanged();
+                    return;
+                }
+            }
+        }
+        //给其他面输电
         for (int i = 0; i < directions.length; i++) {
             findIndex = (findIndex + 1) % directions.length;
             Direction direction = directions[findIndex];
@@ -77,23 +93,28 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
                 continue;
             }
             IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction.getOpposite());
-            if (storage == null || !storage.canReceive()) {
-                continue;
-            }
-            int maxOutput = Tool.suitInt(generator.energy);
-            int result = storage.receiveEnergy(maxOutput, false);
-            if (result < 0) {
-                result = 0;
-            }
-            if (result > maxOutput) {
-                result = maxOutput;
-            }
-            generator.energy -= result;
+            transportEnergy(generator, storage);
             if (generator.energy <= 0) {
+                generator.setChanged();
                 break;
             }
         }
         generator.setChanged();
+    }
+
+    private void transportEnergy(EnergyGeneratorEntity generator, IEnergyStorage storage) {
+        if (storage == null || !storage.canReceive()) {
+            return;
+        }
+        int maxOutput = Tool.suitInt(generator.energy);
+        int result = storage.receiveEnergy(maxOutput, false);
+        if (result < 0) {
+            result = 0;
+        }
+        if (result > maxOutput) {
+            result = maxOutput;
+        }
+        generator.energy -= result;
     }
 
     @Override
