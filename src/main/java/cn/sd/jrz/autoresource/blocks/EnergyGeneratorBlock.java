@@ -118,22 +118,19 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     @Override
-    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return InteractionResult.SUCCESS;
-        }
+    public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
         return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
     @Override
     protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        if (level.isClientSide) {
-            return ItemInteractionResult.SUCCESS;
-        }
         return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
     }
 
     private boolean use(Level level, BlockPos pos, Player player) {
+        if (level.isClientSide) {
+            return true;
+        }
         EnergyGeneratorEntity generator = (EnergyGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
             return false;

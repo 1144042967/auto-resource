@@ -10,7 +10,8 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 public class LiquidGeneratorEntity extends BlockEntity {
     public final DataConfig config;
@@ -25,7 +26,7 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void applyImplicitComponents(@NotNull DataComponentInput input) {
+    protected void applyImplicitComponents(@Nonnull DataComponentInput input) {
         super.applyImplicitComponents(input);
         String blockData = input.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (blockData.isEmpty()) {
@@ -38,13 +39,13 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    protected void collectImplicitComponents(DataComponentMap.@NotNull Builder builder) {
+    protected void collectImplicitComponents(@Nonnull DataComponentMap.Builder builder) {
         super.collectImplicitComponents(builder);
         builder.set(Registration.BLOCK_DATA.get(), output + "," + liquid + "," + tickCount);
     }
 
     @Override
-    public void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void saveAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.saveAdditional(nbt, provider);
         nbt.putLong("output", output);
         nbt.putLong("liquid", liquid);
@@ -52,7 +53,7 @@ public class LiquidGeneratorEntity extends BlockEntity {
     }
 
     @Override
-    public void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider provider) {
+    public void loadAdditional(@Nonnull CompoundTag nbt, @Nonnull HolderLookup.Provider provider) {
         super.loadAdditional(nbt, provider);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));
