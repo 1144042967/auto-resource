@@ -26,12 +26,15 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("DuplicatedCode")
 public class BlockGeneratorBlock extends Block implements EntityBlock {
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlockGeneratorBlock.class);
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
     private int findIndex = 0;
@@ -49,7 +52,13 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
-        return (l, p, s, tile) -> tick(l, tile);
+        return (l, _, _, tile) -> {
+            try {
+                tick(l, tile);
+            } catch (Throwable e) {
+                LOGGER.error("BlockGeneratorBlock.getTicker error", e);
+            }
+        };
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
@@ -131,9 +140,9 @@ public class BlockGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         if (output < generator.config.getMax()) {
-            player.displayClientMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.block_generator.message", block, output, percent));
         } else {
-            player.displayClientMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.block_generator.message_max", block, output));
         }
         return InteractionResult.SUCCESS;
     }

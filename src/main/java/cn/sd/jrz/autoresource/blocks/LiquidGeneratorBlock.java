@@ -27,12 +27,16 @@ import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import org.jetbrains.annotations.NotNull;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 @SuppressWarnings("DuplicatedCode")
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
+    private static final Logger LOGGER = LoggerFactory.getLogger(LiquidGeneratorBlock.class);
+
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
     private int findIndex = 0;
@@ -50,7 +54,13 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
-        return (l, p, s, tile) -> tick(l, tile);
+        return (l, _, _, tile) -> {
+            try {
+                tick(l, tile);
+            } catch (Throwable e) {
+                LOGGER.error("LiquidGeneratorBlock.getTicker error", e);
+            }
+        };
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
@@ -131,9 +141,9 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
         double output = generator.output / 1000D;
         double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
         if (output < generator.config.getMax()) {
-            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
         } else {
-            player.displayClientMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
         }
         return InteractionResult.SUCCESS;
     }

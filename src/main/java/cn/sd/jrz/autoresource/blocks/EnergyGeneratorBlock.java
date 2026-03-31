@@ -24,6 +24,8 @@ import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -31,6 +33,7 @@ import java.util.List;
 
 @SuppressWarnings("DuplicatedCode")
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
+    private static final Logger LOGGER = LoggerFactory.getLogger(EnergyGeneratorBlock.class);
     private final DataConfig config;
     private final Direction[] directions = Direction.values();
     private int findIndex = 0;
@@ -48,7 +51,13 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     @Nullable
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
-        return (l, p, s, tile) -> tick(l, tile);
+        return (l, _, _, tile) -> {
+            try {
+                tick(l, tile);
+            } catch (Throwable e) {
+                LOGGER.error("EnergyGeneratorBlock.getTicker error", e);
+            }
+        };
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
@@ -151,9 +160,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
         long increase = generator.beaconIncrease;
         if (output < generator.config.getMax()) {
-            player.displayClientMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase));
         } else {
-            player.displayClientMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output), true);
+            player.sendOverlayMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
         }
         return InteractionResult.SUCCESS;
     }

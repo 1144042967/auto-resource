@@ -8,8 +8,8 @@ issueTrackerURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
     updateJSONURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/update.json"
     displayURL="https://gitee.com/scrambled_egg_with_eek/auto-resource"
     logoFile="modIcon.png"
-    authors = "${mod_authors}"
-    description = '''${mod_description}'''
+    authors = "JRZ"
+    description = '''Water, Lava, Stone, Forge Energy and more.'''
 [[dependencies.${ mod_id }]]
     modId = "neoforge"
     type = "required"
