@@ -22,6 +22,7 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
 import net.neoforged.neoforge.capabilities.Capabilities;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 import org.slf4j.Logger;
@@ -86,7 +87,11 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         for (Player player : playerList) {
             Inventory inventory = player.getInventory();
             for (ItemStack stack : inventory) {
-                EnergyHandler handler = stack.getCapability(Capabilities.Energy.ITEM, null);
+                if (stack.isEmpty()) {
+                    continue;
+                }
+                ItemAccess itemAccess = ItemAccess.forStack(stack);
+                EnergyHandler handler = itemAccess.getCapability(Capabilities.Energy.ITEM);
                 if (handler == null || handler.getCapacityAsLong() <= handler.getAmountAsLong()) {
                     continue;
                 }
@@ -99,6 +104,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
                     if (result > maxOutput) {
                         result = maxOutput;
                     }
+                    tx.commit();
                     generator.energy -= result;
                     if (generator.energy <= 0) {
                         break;
@@ -128,6 +134,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
                 if (result > maxOutput) {
                     result = maxOutput;
                 }
+                tx.commit();
                 generator.energy -= result;
                 if (generator.energy <= 0) {
                     break;
