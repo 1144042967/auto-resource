@@ -32,6 +32,8 @@ Added some machines that automatically generate resources, supporting the genera
 
 ![all machine image](https://github.com/1144042967/auto-resource/raw/master/docs/block.png)
 
+![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe.webp)
+
 
 # AutoResource
 
@@ -70,3 +72,5 @@ Added some machines that automatically generate resources, supporting the genera
 ## 图片
 
 ![所有机器的图片](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/block.png)
+
+![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe.webp)
