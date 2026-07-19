@@ -1,0 +1,272 @@
+# AutoResource — Minecraft NeoForge 1.21.1 Mod
+
+## 项目概述
+
+一个添加自动资源生成机器的 Minecraft NeoForge 模组。支持自动生成 FE（电力）、水、岩浆以及 22 种不同类型的方块。机器产量会随时间逐渐增长，且可通过信标加速。
+
+- **Mod ID**: `autoresource`
+- **Group**: `cn.sd.jrz`
+- **Minecraft 版本**: `1.21.1`
+- **NeoForge 版本**: `21.1.x`
+- **Java 版本**: `21`
+- **Mappings**: `parchment`
+- **许可证**: `GNU LGPL v3`
+
+> **与 1.20.1 版本的区别**: 本版本基于 NeoForge，使用 ModConfigSpec 配置系统、DataComponentType 数据持久化、RegisterCapabilitiesEvent 注册 Capability。1.20.1 版本基于 Forge，使用 NBT BlockEntityTag 数据持久化。功能层面两个版本相同。详见项目 master 分支中的合并文档。
+
+## 构建和开发
+
+```bash
+# 运行客户端
+./gradlew runClient
+
+# 运行服务端
+./gradlew runServer
+
+# 构建 mod jar
+./gradlew build
+
+# 运行数据生成
+./gradlew runData
+```
+
+## 项目架构
+
+```
+src/main/java/cn/sd/jrz/autoresource/
+├── AutoResource.java              # 主 mod 类 (@Mod, NeoForge IEventBus)
+├── Config.java                    # 配置文件 (ModConfigSpec)
+├── DataConfig.java                # 生成器数据配置
+├── blocks/                         # 方块类
+│   ├── EnergyGeneratorBlock.java   # 发电机方块
+│   ├── LiquidGeneratorBlock.java   # 流体生成器方块
+│   └── BlockGeneratorBlock.java    # 方块生成器方块
+├── entities/                       # BlockEntity 类
+│   ├── EnergyGeneratorEntity.java  # 发电机实体
+│   ├── LiquidGeneratorEntity.java  # 流体生成器实体
+│   └── BlockGeneratorEntity.java   # 方块生成器实体
+├── items/                          # 物品类
+│   ├── ItemManager.java            # 物品事件管理
+│   ├── EnergyGeneratorItem.java    # 发电机物品
+│   ├── LiquidGeneratorItem.java    # 流体生成器物品
+│   └── BlockGeneratorItem.java     # 方块生成器物品
+├── connection/                     # NeoForge Capability 实现
+│   ├── EnergyConnection.java       # 能量 IEnergyStorage
+│   ├── LiquidConnection.java       # 流体 IFluidHandler
+│   └── BlockConnection.java        # 物品 IItemHandler
+├── setup/                          # 注册
+│   └── Registration.java           # 所有方块/物品/实体的注册
+└── util/                           # 工具类
+    └── Tool.java                   # 数值裁剪等工具方法
+```
+
+## 注册体系
+
+`Registration.java` 是中心注册文件，使用 NeoForge 的 `DeferredRegister` 模式：
+
+- 4 个 `DeferredRegister`: DATA_COMPONENT_TYPES, BLOCKS, ITEMS, BLOCK_ENTITIES
+- 在 `init(IEventBus)` 中注册所有内容
+- Capability 通过 `RegisterCapabilitiesEvent` 事件注册
+- `DeferredHolder<Block, ...>` / `DeferredHolder<Item, ...>` / `DeferredHolder<BlockEntityType<?>, ...>`
+- 方块属性: 蓝色、活塞推动时销毁、硬度 2.5、抗性 15
+
+### DataComponent 系统 (1.21.1 独有)
+
+使用 NeoForge 的 `DataComponentType` 进行数据持久化：
+- `BLOCK_DATA` (`DataComponentType<String>`): 存储机器状态数据（逗号分隔: `output,energy,tickCount,beaconIncrease`）
+- 通过 `Codec.STRING` + `ByteBufCodecs.STRING_UTF8` 实现序列化与网络同步
+- 在物品构造时通过 `component(BLOCK_DATA.get(), "")` 注册默认值
+- BlockEntity 通过 `applyImplicitComponents`/`collectImplicitComponents` 读写组件数据
+- Item hover 文本通过 `stack.getOrDefault(BLOCK_DATA.get(), "")` 读取数据
+
+### Capability 注册 (1.21.1 独有)
+
+使用 `RegisterCapabilitiesEvent` 事件注册：
+- `Capabilities.EnergyStorage.BLOCK` → `EnergyConnection`
+- `Capabilities.FluidHandler.BLOCK` → `LiquidConnection`
+- `Capabilities.ItemHandler.BLOCK` → `BlockConnection`
+
+在 Block tick 中使用 `level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction)` 获取能力。
+
+### 注册的机器类型
+
+**发电机（1种）**:
+- `energy_generator_fe` — FE发电机
+
+**流体机（2种）**:
+- `liquid_generator_water` — 水生成器
+- `liquid_generator_lava` — 岩浆生成器
+
+**方块机（22种）**:
+- 泥土、圆石、石头、平滑石头、粘土、沙子、沙砾
+- 花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石
+- 海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
+
+## 功能模块
+
+### 1. 发电机 (`EnergyGeneratorBlock` / `EnergyGeneratorEntity`)
+
+自动生成 FE 电力的机器。
+
+- **最大发电量**: `Long.MAX_VALUE` FE/t (9,223,372,036,854,775,807 FE/t)
+- **初始发电量**: 1 FE/t，每 1 秒增加 1 FE/t
+- 发电量无上限时，需要信标来达到最大功率
+
+**信标加速机制**:
+- 红石激活时，检查机器下方
+- 若下方为信标 (`Blocks.BEACON`)，每秒额外增加当前发电量的 `beacon_step / 10000` (默认1%)
+- `beaconIncrease` 变量存储每次增加量
+
+**能量传输**:
+- 优先给站在机器上方的玩家物品栏中可充电物品充电（使用 `Capabilities.EnergyStorage.ITEM`）
+- 剩余能量通过六个面均匀输出到相邻方块（使用轮询索引 `findIndex` 实现负载均衡）
+
+**交互 (1.21.1 NeoForge 分离模式)**:
+- `useWithoutItem()`: 空手右击查看状态
+- `useItemOn()`: 手持物品右击查看状态
+- 显示: 存储能量、输出功率、增长百分比、信标加成
+
+**数据持久化**:
+- `saveAdditional(CompoundTag, HolderLookup.Provider)`: 带 HolderLookup 的新签名
+- `applyImplicitComponents`/`collectImplicitComponents`: DataComponentType 读写
+
+### 2. 流体生成器 (`LiquidGeneratorBlock` / `LiquidGeneratorEntity`)
+
+支持水和岩浆的自动生成。
+
+- **最大产量**: `Long.MAX_VALUE / 1000` B/t
+- **初始产量**: 0.05 B/t (即 1 B/s)，每 10 秒增加 0.05 B/t
+- 内部存储单位为 mB/1000（即 B）
+
+**流体传输**:
+- 通过六个面输出到相邻方块（轮询索引负载均衡）
+- 使用 `level.getCapability(Capabilities.FluidHandler.BLOCK, pos, direction)` 获取目标
+
+**红石模式 - 放置流体**:
+- 红石激活时，每 5 ticks 尝试向下方的空气方块放置对应流体
+- 每次放置消耗 1000 mB
+
+**桶提取**:
+- 主手或副手持有空桶右击，消耗 1000 mB 返回对应桶（水桶/岩浆桶）
+- 支持堆叠桶的批量提取
+
+**交互 (1.21.1 NeoForge 分离模式)**:
+- `useWithoutItem()`: 空手右击查看状态
+- `useItemOn()`: 手持物品（空桶等）右击提取或查看状态
+
+### 3. 方块生成器 (`BlockGeneratorBlock` / `BlockGeneratorEntity`)
+
+支持 22 种方块的自动生成。
+
+- **最大产量**: `Long.MAX_VALUE / 1000` Block/t
+- **初始产量**: 0.05 Block/t (即 1 Block/s)，每 10 秒增加 0.05 Block/t
+- 内部存储单位为 Block/1000
+
+**方块传输**:
+- 通过六个面输出到相邻方块的 `IItemHandler` 管道（轮询索引负载均衡）
+- 使用 `ItemHandlerHelper.insertItemStacked` 插入
+
+**红石模式 - 放置方块**:
+- 红石激活时，每 5 ticks 尝试向下方的空气方块放置对应方块
+- 每次放置消耗 1000 单位
+
+**方块提取**:
+- 主手为空或手持同种方块时右击，消耗 1000 单位取出 1 个方块
+
+**交互 (1.21.1 NeoForge 分离模式)**:
+- `useWithoutItem()`: 空手右击提取方块或查看状态
+- `useItemOn()`: 手持物品右击提取方块或查看状态
+
+## Capability 系统
+
+使用 NeoForge Capability 实现与其他 Mod 的互操作：
+
+- **EnergyConnection** (`IEnergyStorage`): 
+  - 实现 `receiveEnergy` (返回 0，禁止输入) 和 `extractEnergy` (输出当前存储)
+  - `canReceive` 返回 `false`, `canExtract` 返回 `true`
+
+- **LiquidConnection** (`IFluidHandler`):
+  - 实现 `fill` (返回 0，禁止输入) 和 `drain` (输出流体)
+  - 使用机器的 `FluidStack` 类型
+
+- **BlockConnection** (`IItemHandler`):
+  - 实现 `extractItem` (提取方块物品)
+  - `insertItem` 返回原物品（禁止输入）
+
+## 配置系统
+
+`Config.java` 使用 `ModConfigSpec` (NeoForge 的配置框架) 实现所有机器的参数配置：
+
+**发电机配置**:
+- `FE_MIN/MAX/SECOND/STEP/BEACON_STEP` — 最小/最大产量、增长速度间隔、每次增量、信标加成比例
+
+**每种流体/方块机配置** (以 Water 为例):
+- `WATER_MIN/MAX/SECOND/STEP` — 最小/最大产量、增长速度间隔、每次增量
+
+配置类型: `ModConfig.Type.SERVER`（服务端配置）
+
+配置注册: `container.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG)` (NeoForge 的 `ModContainer` 参数)
+
+## Tool 工具方法
+
+- `suit(long)`: 防溢出裁剪，检测 `value + step < value` (溢出) 或 `value < 0` → 返回 `Long.MAX_VALUE`
+- `suitInt(long)`: 同上但返回 int，负值返回 `Integer.MAX_VALUE`
+- `suit(String)`: 解析字符串为 long，调用 `suit(long)`
+- `takeItem(Player, ItemStack)`: 尝试给玩家物品，失败则丢到世界
+
+## 数据持久化
+
+各 Entity 通过 `saveAdditional`/`loadAdditional` 持久化数据（1.21.1 带 `HolderLookup.Provider` 参数）:
+
+- **EnergyGeneratorEntity**: `output`, `energy`, `tickCount`, `beaconIncrease`
+- **LiquidGeneratorEntity**: `output`, `liquid`, `tickCount`
+- **BlockGeneratorEntity**: `output`, `block`, `tickCount`
+
+物品级别的数据通过 `DataComponentType` + `applyImplicitComponents`/`collectImplicitComponents` 实现，替代了旧版的 NBT `BlockEntityTag` 方式。
+
+Item hover 文本从 `DataComponentType` 读取机器状态：
+```java
+String blockData = stack.getOrDefault(Registration.BLOCK_DATA.get(), "");
+// 格式: "output,storage,tickCount" 用逗号分隔
+```
+
+## 资源文件
+
+- `src/main/resources/assets/autoresource/` — 纹理、语言文件、模型
+- `src/generated/resources/` — 数据生成产物 (blockstates, models, loot_tables, recipes)
+
+## 依赖
+
+- **NeoForge** 21.1.x (唯一硬依赖)
+- 无其他 Mod 依赖
+
+## 命名规范
+
+- 所有注册名格式: `<type>_generator_<material>` (如 `energy_generator_fe`, `block_generator_dirt`)
+- 语言键格式: `block.autoresource.<name>`, `item.autoresource.<name>`, `screen.autoresource.<name>`
+- 类名驼峰命名，包名全小写
+
+## 代码风格约定
+
+- 所有文件使用 UTF-8 编码
+- 使用 `@Nonnull`/`@Nullable` 注解标记参数
+- tick 逻辑内嵌在 Block 类中，通过匿名 lambda 直接实现
+- 使用 `findIndex` 轮询索引实现六面均匀输出
+- 产量使用 scaled long 存储（*1000 避免浮点运算）
+- 使用 NeoForge 的 `useWithoutItem()` + `useItemOn()` 分离交互模式
+
+## 与 1.20.1 (Forge) 版本的关键差异
+
+| 特性 | 1.20.1 (Forge) | 1.21.1 (NeoForge) |
+|------|---------------|-------------------|
+| 加载器 | Forge 47.x | NeoForge 21.1.x |
+| Java | 17 | 21 |
+| 配置系统 | `ForgeConfigSpec` | `ModConfigSpec` (NeoForge) |
+| Config初始化 | `FMLJavaModLoadingContext` | `ModContainer` |
+| 数据持久化 | NBT `BlockEntityTag` | `DataComponentType` |
+| Capability获取 | `entity.getCapability()` | `level.getCapability()` |
+| Capability注册 | `ICapabilityProvider` 接口 | `RegisterCapabilitiesEvent` |
+| 交互方法 | `use()` | `useWithoutItem()` + `useItemOn()` |
+| NBT保存签名 | `saveAdditional(CompoundTag)` | `saveAdditional(CompoundTag, HolderLookup.Provider)` |
+| Item tooltip反序列化 | `stack.getTagElement("BlockEntityTag")` | `stack.getOrDefault(BLOCK_DATA.get(), "")` |
+| import来源 | `net.minecraftforge.*` | `net.neoforged.neoforge.*` |

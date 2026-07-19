@@ -5,9 +5,10 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## Generator
 - The maximum power generation is 9,223,372,036,854,775,807 FE/t
-- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and it may not reach full power generation in one's lifetime
+- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and you need a beacon to reach the max power
 - The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract FE
 - Synthetic materials require redstone and smooth stone
+- In the case of redstone activation, if there is a beacon below, the increased power generation per second will be an additional 1% of the current power generation
 
 ## Fluid machine
 - Support the generation of Water and Lava
@@ -16,6 +17,7 @@ Added some machines that automatically generate resources, supporting the genera
 - Fluid will actively transfer fluid evenly to the six veneers, or other MOD pipelines can be used to extract fluid
 - Synthetic materials require water buckets/lava buckets and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place fluid into the air block below the machine
+- When the main / off hand right clicks on the fluid machine with an empty bucket, a bucket of liquid will be taken out
 
 ## Block machine
 - Support the production of dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone
@@ -24,10 +26,13 @@ Added some machines that automatically generate resources, supporting the genera
 - The block machine actively transfers blocks evenly to the six veneers, or can use other MOD pipelines to extract blocks
 - Synthetic materials require water buckets, lava buckets, corresponding products, and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place a block into the air block below the machine
+- When the main hand is empty/holding the same block and right clicking on the block machine, a block will be taken out
 
 ## Image
 
 ![all machine image](https://github.com/1144042967/auto-resource/raw/master/docs/block.png)
+
+![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe.webp)
 
 
 # AutoResource
@@ -37,9 +42,10 @@ Added some machines that automatically generate resources, supporting the genera
 ## 发电机
 
 - 最大发电量为 922,3372,0368,5477,5807 FE/t
-- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，一辈子可能见不到满发电量了
+- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，你需要一个信标来达到最大发电功率
 - 发电机会主动向六个贴面均匀传输电量，也可以使用其他MOD的导线抽取电量
 - 合成材料需要红石和平滑石头
+- 在红石激活的情况下，如果在发电机下方有一个信标，发电量每秒将额外增加当前发电量的1%
 
 ## 流体机
 
@@ -49,6 +55,7 @@ Added some machines that automatically generate resources, supporting the genera
 - 流体机会主动向六个贴面均匀传输流体，也可以使用其他MOD的管道抽取流体
 - 合成材料需要水桶/岩浆桶和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
+- 主手/副手拿空桶右击流体机时，将取出一桶液体
 
 ## 方块机
 
@@ -58,9 +65,10 @@ Added some machines that automatically generate resources, supporting the genera
 - 方块机会主动向六个贴面均匀传输方块，也可以使用其他MOD的管道抽取方块
 - 合成材料需要水桶、岩浆桶、对应产物和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置方块
-
-
+- 主手为空/主手拿相同方块右击方块机时，将取出一个方块
 
 ## 图片
 
 ![所有机器的图片](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/block.png)
+
+![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe.webp)
