@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及 22 种不同类型的方块。机器产量会随时间逐渐增长，且可通过信标加速。
+一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及 21 种不同类型的方块。机器产量会随时间逐渐增长，且可通过信标加速。
 
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
@@ -78,7 +78,7 @@ src/main/java/cn/sd/jrz/autoresource/
 - `liquid_generator_water` — 水生成器
 - `liquid_generator_lava` — 岩浆生成器
 
-**方块机（22种）**:
+**方块机（21种）**:
 - 泥土、圆石、石头、平滑石头、粘土、沙子、沙砾
 - 花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石
 - 海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
@@ -135,7 +135,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 ### 3. 方块生成器 (`BlockGeneratorBlock` / `BlockGeneratorEntity`)
 
-支持 22 种方块的自动生成。
+支持 21 种方块的自动生成。
 
 - **最大产量**: `Long.MAX_VALUE / 1000` Block/t
 - **初始产量**: 0.05 Block/t (即 1 Block/s)，每 10 秒增加 0.05 Block/t
