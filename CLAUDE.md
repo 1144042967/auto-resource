@@ -25,10 +25,18 @@
 
 # 构建 mod jar
 ./gradlew build
-
-# 运行数据生成
-./gradlew runData
 ```
+
+### 添加新方块生成机
+
+使用 `BlockGeneratorAdder` 工具一键生成所有文件：
+
+1. 在 IDEA 中打开 `src/test/java/cn/sd/jrz/autoresource/generator/BlockGeneratorAdder.java`
+2. 修改文件顶部 `配置参数` 区域的常量：`BLOCK_ID`、`EN_NAME`、`ZH_NAME`、`SOURCE_ITEM`、`SOURCE_TEXTURE_PATH`
+3. 准备好目标方块的 16×16 纹理 PNG 文件
+4. 右键 `BlockGeneratorAdder` → Run 'BlockGeneratorAdder.main()'
+5. 工具自动完成：生成 5 个 JSON（blockstate、model×2、loot_table、recipe）+ 合成纹理 PNG + 修改 6 个 Java/config 文件（Config.java、DataConfig.java、Registration.java、ItemManager.java、en_us.json、zh_cn.json）
+6. 运行 `./gradlew runClient` 验证
 
 ## 项目架构
 
