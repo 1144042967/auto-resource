@@ -28,6 +28,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +52,10 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
 
     // 无线充电开关（逐台保存）
     public boolean wirelessOn = false;
-    public int wirelessTimer = 0;
+    /** 当前扫描到的分片序号（每 tick 推进一片） */
+    public int scanIndex = 0;
+    /** 已记录的支持电量接收的位置（分片扫描时更新，传输时遍历） */
+    public final List<BlockPos> wirelessTargets = new ArrayList<>();
 
     // 无线充电参数（逐台保存，可在 GUI 修改）
     public int wirelessInterval = 5;
@@ -132,15 +136,11 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         chargeChargeSlot();
         // 上方实体充电
         chargePlayersAbove();
-        // 六面输电（重复传电次数同样生效）
+        // 六面输电（有线传输优先级更高）
         outputToSides();
-        // 无线充电
+        // 无线充电（优先级更低）
         if (wirelessOn) {
-            wirelessTimer++;
-            if (wirelessTimer / 20 >= Math.max(1, wirelessInterval)) {
-                wirelessTimer = 0;
-                wirelessCharge();
-            }
+            wirelessTick();
         }
         setChanged();
     }
@@ -249,49 +249,109 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     }
 
-    /** 无线充电：扫描区块范围内已加载区块中的能量接收方并输电，重复传电次数生效 */
-    private void wirelessCharge() {
+    /**
+     * 无线充电每 tick 处理：
+     * 每 tick 推进一片扫描（整个区域按扫描间隔秒数均分，在 interval 个 tick 内扫完并记录支持电量接收的位置），
+     * 然后按重复传电次数遍历已记录位置尝试输电。
+     */
+    private void wirelessTick() {
+        // 扫描推进：每 tick 扫一片
+        scanWirelessSlice();
+        scanIndex = (scanIndex + 1) % Math.max(1, wirelessInterval);
+        // 每 tick 遍历所有已记录目标，按重复传电次数循环输电
+        wirelessTransfer();
+    }
+
+    /** 扫描当前分片：把整个扫描区域按扫描间隔秒数均分为若干片，刷新该片内支持电量接收的位置 */
+    private void scanWirelessSlice() {
+        Level level = getLevel();
+        if (level == null) {
+            return;
+        }
+        int interval = Math.max(1, wirelessInterval);
+        int range = Tool.normalizeWirelessRange(wirelessRange);
+        // range=1 -> half=0（1x1 区块），range=3 -> half=1（3x3），range=5 -> half=2（5x5）
+        int half = range >> 1;
+        BlockPos pos = getBlockPos();
+        int originX = pos.getX() >> 4 << 4;
+        int originZ = pos.getZ() >> 4 << 4;
+        int minX = originX - half * 16;
+        int minZ = originZ - half * 16;
+        int width = range * 16;
+        // 按 X 轴均分为 interval 片，本片只扫描 bandStartX..bandEndX 这一段
+        int bandWidth = Math.max(1, (width + interval - 1) / interval);
+        int slice = scanIndex % interval;
+        int bandStartX = minX + slice * bandWidth;
+        int bandEndX = Math.min(minX + width - 1, bandStartX + bandWidth - 1);
+        if (bandEndX < bandStartX) {
+            // 超出区域的分片（interval 大于区域宽度时），本次不扫描
+            return;
+        }
+        // 刷新本片的记录：先移除本片旧目标，再重新添加
+        wirelessTargets.removeIf(bp -> bp.getX() >= bandStartX && bp.getX() <= bandEndX);
+        int cMinX = bandStartX >> 4;
+        int cMaxX = bandEndX >> 4;
+        int cMinZ = minZ >> 4;
+        int cMaxZ = (minZ + width - 1) >> 4;
+        for (int cx = cMinX; cx <= cMaxX; cx++) {
+            for (int cz = cMinZ; cz <= cMaxZ; cz++) {
+                // 只处理已加载的区块，避免强制生成区块
+                if (!level.isLoaded(new BlockPos(cx << 4, pos.getY(), cz << 4))) {
+                    continue;
+                }
+                LevelChunk chunk = level.getChunk(cx, cz);
+                if (chunk == null) {
+                    continue;
+                }
+                for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
+                    BlockPos bp = entry.getKey();
+                    if (bp.getX() < bandStartX || bp.getX() > bandEndX) {
+                        continue;
+                    }
+                    BlockEntity target = entry.getValue();
+                    if (target == this) {
+                        continue;
+                    }
+                    // 记录支持电量接收的位置
+                    target.getCapability(ForgeCapabilities.ENERGY, null).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
+                        if (!wirelessTargets.contains(bp)) {
+                            wirelessTargets.add(bp);
+                        }
+                    });
+                }
+            }
+        }
+    }
+
+    /** 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量 */
+    private void wirelessTransfer() {
         Level level = getLevel();
         if (level == null || energy <= 0) {
             return;
         }
-        int range = Tool.normalizeWirelessRange(wirelessRange);
         int repeat = Math.max(1, transferRepeat);
-        int chunkX = getBlockPos().getX() >> 4;
-        int chunkZ = getBlockPos().getZ() >> 4;
-        // range=1 -> half=0（1x1 区块），range=3 -> half=1（3x3），range=5 -> half=2（5x5）
-        int half = range >> 1;
         for (int rep = 0; rep < repeat && energy > 0; rep++) {
-            for (int cz = chunkZ - half; cz <= chunkZ + half && energy > 0; cz++) {
-                for (int cx = chunkX - half; cx <= chunkX + half && energy > 0; cx++) {
-                    // 只处理已加载的区块，避免强制生成区块
-                    if (!level.isLoaded(new BlockPos(cx << 4, getBlockPos().getY(), cz << 4))) {
-                        continue;
-                    }
-                    LevelChunk chunk = level.getChunk(cx, cz);
-                    if (chunk == null) {
-                        continue;
-                    }
-                    for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
-                        BlockEntity target = entry.getValue();
-                        if (target == this || energy <= 0) {
-                            continue;
-                        }
-                        target.getCapability(ForgeCapabilities.ENERGY, null).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
-                            int maxOutput = Tool.suitInt(energy);
-                            int result = storage.receiveEnergy(maxOutput, false);
-                            if (result < 0) {
-                                result = 0;
-                            }
-                            if (result > maxOutput) {
-                                result = maxOutput;
-                            }
-                            if (result > 0) {
-                                energy -= result;
-                            }
-                        });
-                    }
+            for (BlockPos targetPos : wirelessTargets) {
+                if (energy <= 0) {
+                    return;
                 }
+                BlockEntity target = level.getBlockEntity(targetPos);
+                if (target == null || target == this) {
+                    continue;
+                }
+                target.getCapability(ForgeCapabilities.ENERGY, null).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
+                    int maxOutput = Tool.suitInt(energy);
+                    int result = storage.receiveEnergy(maxOutput, false);
+                    if (result < 0) {
+                        result = 0;
+                    }
+                    if (result > maxOutput) {
+                        result = maxOutput;
+                    }
+                    if (result > 0) {
+                        energy -= result;
+                    }
+                });
             }
         }
     }
@@ -334,7 +394,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         nbt.putLong("tickCount", tickCount);
         nbt.putLong("nextIncrease", nextIncrease);
         nbt.putBoolean("wirelessOn", wirelessOn);
-        nbt.putInt("wirelessTimer", wirelessTimer);
         nbt.putInt("wirelessInterval", wirelessInterval);
         nbt.putInt("wirelessRange", wirelessRange);
         nbt.putInt("transferRepeat", transferRepeat);
@@ -368,9 +427,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
         if (nbt.contains("wirelessOn", Tag.TAG_BYTE)) {
             wirelessOn = nbt.getBoolean("wirelessOn");
-        }
-        if (nbt.contains("wirelessTimer", Tag.TAG_INT)) {
-            wirelessTimer = nbt.getInt("wirelessTimer");
         }
         if (nbt.contains("wirelessInterval", Tag.TAG_INT)) {
             wirelessInterval = Math.max(1, nbt.getInt("wirelessInterval"));

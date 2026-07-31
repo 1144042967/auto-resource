@@ -62,7 +62,11 @@ public class EnergyGeneratorItem extends BlockItem {
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
-        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease));
+        if (output >= config.getMax()) {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.next_max"));
+        } else {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease));
+        }
         if (output < config.getMax()) {
             tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
         } else {

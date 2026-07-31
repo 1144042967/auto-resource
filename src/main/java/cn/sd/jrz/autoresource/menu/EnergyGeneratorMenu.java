@@ -107,6 +107,10 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.nextIncrease : clientNextIncrease;
     }
 
+    public long getMax() {
+        return entity != null ? entity.config.getMax() : Long.MAX_VALUE;
+    }
+
     public int getTickCount() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.tickCount) : clientTickCount;
     }

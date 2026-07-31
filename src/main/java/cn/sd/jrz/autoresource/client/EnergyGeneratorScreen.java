@@ -97,10 +97,11 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
     protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         EnergyGeneratorMenu menu = this.menu;
-        // 信息面板（大数值用单位缩写）
+        boolean maxed = menu.getOutput() >= menu.getMax();
+        // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 18, TEXT_COLOR, false);
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 28, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.next", Tool.formatLong(menu.getNextIncrease())), 12, 38, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 38, TEXT_COLOR, false);
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 48, TEXT_COLOR, false);
         // 无线充电参数（间隔带单位）
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 78, TEXT_COLOR, false);
@@ -136,8 +137,11 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
     }
 
-    /** 计算增长百分比（0-100） */
+    /** 计算增长百分比（0-100）；达最大发电量时固定为 100% */
     private int growthPercent() {
+        if (this.menu.getOutput() >= this.menu.getMax()) {
+            return 100;
+        }
         int second = Math.max(1, this.menu.getSecond());
         double percent = this.menu.getTickCount() / (second * 20.0) * 100.0;
         return (int) Math.max(0, Math.min(100, percent));
