@@ -2,35 +2,26 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
-import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
 import net.minecraft.world.phys.BlockHitResult;
-import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.energy.IEnergyStorage;
+import net.minecraft.server.level.ServerPlayer;
+import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.List;
 
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
-    private final Direction[] directions = Direction.values();
-    private int findIndex = 0;
 
     public EnergyGeneratorBlock(Properties properties, DataConfig config) {
         super(properties);
@@ -49,69 +40,10 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide || !(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
-        if (!(tile instanceof EnergyGeneratorEntity generator)) {
-            return;
-        }
-        BlockPos blockPos = generator.getBlockPos();
-        generator.tickCount = Tool.suit(generator.tickCount + 1);
-        if (generator.tickCount / 20 >= generator.config.getSecond()) {
-            generator.tickCount = 0;
-            generator.beaconIncrease = generator.config.getStep();
-            if (level.hasNeighborSignal(blockPos)) {
-                BlockPos pos = blockPos.relative(Direction.DOWN);
-                if (level.getBlockState(pos).getBlock() == Blocks.BEACON) {
-                    generator.beaconIncrease = Tool.suit((long) (generator.output / 10000.0 * config.getBeaconStep()) + generator.config.getStep());
-                }
-            }
-            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
-        }
-        generator.energy = Tool.suit(generator.energy + generator.output);
-        //给实体输电
-        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(blockPos.relative(Direction.UP)));
-        for (Player player : playerList) {
-            Iterable<ItemStack> slots = player.getAllSlots();
-            for (ItemStack stack : slots) {
-                stack.getCapability(ForgeCapabilities.ENERGY).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> transport(storage, generator));
-                if (generator.energy <= 0) {
-                    generator.setChanged();
-                    return;
-                }
-            }
-        }
-        //给其他面输电
-        for (int i = 0; i < directions.length; i++) {
-            findIndex = (findIndex + 1) % directions.length;
-            Direction direction = directions[findIndex];
-            BlockPos pos = blockPos.relative(direction);
-            BlockEntity entity = level.getBlockEntity(pos);
-            if (entity == null) {
-                continue;
-            }
-            entity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> transport(storage, generator));
-            if (generator.energy <= 0) {
-                generator.setChanged();
-                return;
-            }
-        }
-        generator.setChanged();
-    }
-
-    private void transport(IEnergyStorage storage, EnergyGeneratorEntity generator) {
-        if (storage == null) {
-            return;
-        }
-        int maxOutput = Tool.suitInt(generator.energy);
-        int result = storage.receiveEnergy(maxOutput, false);
-        if (result < 0) {
-            result = 0;
-        }
-        if (result > maxOutput) {
-            result = maxOutput;
-        }
-        generator.energy -= result;
+        generator.serverTick();
     }
 
     @SuppressWarnings("deprecation")
@@ -124,14 +56,9 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
-        long energy = generator.energy;
-        long output = generator.output;
-        double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
-        long increase = generator.beaconIncrease;
-        if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase));
-        } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
+        // 右键打开 GUI
+        if (player instanceof ServerPlayer serverPlayer) {
+            NetworkHooks.openScreen(serverPlayer, generator, pos);
         }
         return InteractionResult.SUCCESS;
     }

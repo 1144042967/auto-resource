@@ -11,6 +11,7 @@ import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
+import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -18,6 +19,7 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
+import net.minecraftforge.common.extensions.IForgeMenuType;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
@@ -121,4 +123,8 @@ public class Registration {
     public static final RegistryObject<BlockEntityType<BlockGeneratorEntity>> BLOCK_GENERATOR_BLACKSTONE_ENTITY = BLOCK_ENTITIES.register("block_generator_blackstone", () -> BlockEntityType.Builder.of((pos, state) -> new BlockGeneratorEntity(pos, state, DataConfig.BLOCK_GENERATOR_BLACKSTONE), BLOCK_GENERATOR_BLACKSTONE.get()).build(null));
     public static final RegistryObject<BlockEntityType<BlockGeneratorEntity>> BLOCK_GENERATOR_BASALT_ENTITY = BLOCK_ENTITIES.register("block_generator_basalt", () -> BlockEntityType.Builder.of((pos, state) -> new BlockGeneratorEntity(pos, state, DataConfig.BLOCK_GENERATOR_BASALT), BLOCK_GENERATOR_BASALT.get()).build(null));
     public static final RegistryObject<BlockEntityType<BlockGeneratorEntity>> BLOCK_GENERATOR_END_STONE_ENTITY = BLOCK_ENTITIES.register("block_generator_end_stone", () -> BlockEntityType.Builder.of((pos, state) -> new BlockGeneratorEntity(pos, state, DataConfig.BLOCK_GENERATOR_END_STONE), BLOCK_GENERATOR_END_STONE.get()).build(null));
+
+    // Menus
+
+    public static final RegistryObject<MenuType<EnergyGeneratorMenu>> ENERGY_GENERATOR_MENU = CONTAINERS.register("energy_generator", () -> IForgeMenuType.create((id, inv, buf) -> new EnergyGeneratorMenu(id, inv, buf.readBlockPos())));
 }

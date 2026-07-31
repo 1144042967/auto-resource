@@ -62,8 +62,13 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── EnergyConnection.java       # 能量 IEnergyStorage
 │   ├── LiquidConnection.java       # 流体 IFluidHandler
 │   └── BlockConnection.java        # 物品 IItemHandler
+├── menu/                           # 容器
+│   └── EnergyGeneratorMenu.java    # FE发电机容器（数据槽同步 + 按钮交互）
+├── client/                         # 客户端
+│   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
+│   └── EnergyGeneratorScreen.java  # FE发电机 GUI
 ├── setup/                          # 注册
-│   └── Registration.java           # 所有方块/物品/实体的注册
+│   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
     └── Tool.java                   # 数值裁剪等工具方法
 ```
@@ -95,26 +100,40 @@ src/main/java/cn/sd/jrz/autoresource/
 
 ### 1. 发电机 (`EnergyGeneratorBlock` / `EnergyGeneratorEntity`)
 
-自动生成 FE 电力的机器。
+自动生成 FE 电力的机器，带有右键 GUI。
 
 - **最大发电量**: `Long.MAX_VALUE` FE/t (9,223,372,036,854,775,807 FE/t)
 - **初始发电量**: 1 FE/t，每 1 秒增加 1 FE/t
-- 发电量无上限时，需要信标来达到最大功率
+- 增长量无上限时，可通过**加速槽**达到最大功率
 
-**信标加速机制**:
-- 红石激活时，检查机器下方的方块
-- 若下方为信标 (`Blocks.BEACON`)，每秒额外增加当前发电量的 `beacon_step / 10000` (默认1%)
-- `beaconIncrease` 变量存储每次增加量
+**增长机制**:
+- 默认每次增长 `step`
+- `nextIncrease` 变量存储**下次增长的发电量**，每 tick 重新计算（GUI 中实时展示）
+- **加速槽**：放入配置指定的物品（默认下界之星）后，增长的发电量变为当前发电量的 1%（至少 1，避免低产量时停止增长）；加速物品可通过配置文件 `star_item` 修改
 
 **能量传输**:
-- 优先给站在机器上方的玩家物品栏中可充电物品充电（轮询 `ForgeCapabilities.ENERGY`）
-- 剩余能量通过六个面均匀输出到相邻方块（使用轮询索引 `findIndex` 实现负载均衡）
+- 优先给充电槽中的物品充电（可放入任意可充电物品）
+- 再给站在机器上方的玩家物品栏中可充电物品充电（轮询 `ForgeCapabilities.ENERGY`）
+- 剩余能量通过六个面均匀输出到相邻方块（轮询索引 `findIndex` 负载均衡）
+- **输电面开关**：六个面可分别启用/禁用（GUI 中可逐台修改，默认全启用）
+
+**无线充电**（默认关闭）:
+- 通过 GUI 按钮开关（状态持久化到 NBT）
+- 按扫描间隔（秒）周期性扫描**已加载**区块范围内（1x1/3x3/5x5 区块）的方块实体并输电
+- 只扫描已加载区块，避免强制生成区块（`Level.isLoaded` 守卫）
+
+**逐台独立配置**（GUI 中可修改，NBT 持久化）:
+- 无线充电开关、扫描间隔（1-3600 秒）、区块范围（1x1/3x3/5x5）、重复传电次数（1-256）
+- **重复传电次数对相邻输电和无线输电都生效**
+- 六个输电面开关
 
 **交互**:
-- 右击查看当前状态（存储能量、输出功率、增长百分比、信标加成）
+- 右击打开 GUI（`EnergyGeneratorMenu` / `EnergyGeneratorScreen`），展示当前发电量、当前电量、下次增长的发电量、增长百分比（含进度条），并提供加速槽、充电槽以及所有逐台配置的按钮；大数值用 K/M/G/T/P/E 单位缩写展示
 
 **数据持久化 (NBT)**:
-- `output`(long), `energy`(long), `tickCount`(long), `beaconIncrease`(long)
+- `output`(long), `energy`(long), `tickCount`(long), `nextIncrease`(long)（旧存档 `beaconIncrease` 兼容读取）
+- `wirelessOn`(boolean), `wirelessTimer`(int), `wirelessInterval`(int), `wirelessRange`(int), `transferRepeat`(int)
+- `transferDown/Up/North/South/West/East`(boolean), `starSlot`(CompoundTag), `chargeSlot`(CompoundTag)
 - 加载时通过 `Tool.suit()` 防负数处理
 
 ### 2. 流体生成器 (`LiquidGeneratorBlock` / `LiquidGeneratorEntity`)
@@ -185,7 +204,9 @@ src/main/java/cn/sd/jrz/autoresource/
 `Config.java` 使用 `ForgeConfigSpec` 实现所有机器的参数配置：
 
 **发电机配置**:
-- `FE_MIN/MAX/SECOND/STEP/BEACON_STEP` — 最小/最大产量、增长速度间隔、每次增量、信标加成比例
+- `FE_MIN/MAX/SECOND/STEP` — 最小/最大产量、增长速度间隔、每次增量
+- `FE_STAR_ITEM` — 加速增长所需物品（默认 `minecraft:nether_star`，方便其他作者改为更难的物品）
+- 无线充电参数、输电面开关等均为**每台发电机独立**配置，在 GUI 中修改并保存到 NBT，不属于全局配置
 
 **每种流体/方块机配置** (以 Water 为例):
 - `WATER_MIN/MAX/SECOND/STEP` — 最小/最大产量、增长速度间隔、每次增量
@@ -232,6 +253,8 @@ src/main/java/cn/sd/jrz/autoresource/
 
 - 所有文件使用 UTF-8 编码
 - 使用 `@Nonnull`/`@Nullable` 注解标记参数
-- tick 逻辑内嵌在 Block 类中，通过匿名 lambda 直接实现
+- tick 逻辑内嵌在 Block 类中，通过匿名 lambda 直接实现（FE 发电机的具体逻辑在 `EnergyGeneratorEntity.serverTick()` 中）
 - 使用 `findIndex` 轮询索引实现六面均匀输出
 - 产量使用 scaled long 存储（*1000 避免浮点运算）
+- GUI 使用 vanilla `MenuType` + `Menu` + `AbstractContainerScreen` 实现；数据同步用 `DataSlot`（long 拆高低 32 位）；按钮交互用 `clickMenuButton` + `ServerboundContainerButtonClickPacket`
+- 客户端类放在 `client/` 包，仅通过 `@Mod.EventBusSubscriber(Dist.CLIENT)` 注册，避免服务端加载

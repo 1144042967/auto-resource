@@ -2,12 +2,18 @@ package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.resources.ResourceLocation;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.registries.ForgeRegistries;
+
+import javax.annotation.Nullable;
 
 public abstract class DataConfig {
     public static final DataConfig ENERGY_GENERATOR_FE = new DataConfig(Config.FE_MIN, Config.FE_MAX, Config.FE_SECOND, Config.FE_STEP) {
@@ -17,8 +23,11 @@ public abstract class DataConfig {
         }
 
         @Override
-        public long getBeaconStep() {
-            return Config.FE_BEACON_STEP.get();
+        public Item getStarItem() {
+            String id = Config.FE_STAR_ITEM.get();
+            ResourceLocation loc = ResourceLocation.tryParse(id);
+            Item item = loc != null ? ForgeRegistries.ITEMS.getValue(loc) : null;
+            return item != null ? item : Items.NETHER_STAR;
         }
     };
     public static final DataConfig LIQUID_GENERATOR_WATER = new DataConfig(Config.WATER_MIN, Config.WATER_MAX, Config.WATER_SECOND, Config.WATER_STEP) {
@@ -325,7 +334,9 @@ public abstract class DataConfig {
         return Blocks.AIR;
     }
 
-    public long getBeaconStep() {
-        return 0;
+    /** 加速增长所需物品（放入后增长量变为当前发电量的 1%），仅 FE 发电机使用，默认返回空 */
+    @Nullable
+    public Item getStarItem() {
+        return null;
     }
 }
