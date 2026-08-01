@@ -4,13 +4,22 @@
 Added some machines that automatically generate resources, supporting the generation of FE, Water, Lava, and various types of stones.
 
 ## Generator
-- The maximum power generation is 9,223,372,036,854,775,807 FE/t
-- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t, and you need a beacon to reach the max power
-- The generator will actively transmit electricity evenly to the six veneers, or other MOD wires can be used to extract FE
-- Synthetic materials require redstone and smooth stone
-- In the case of redstone activation, if there is a beacon below, the increased power generation per second will be an additional 1% of the current power generation
+
+- The maximum power generation is 9,223,372,036,854,775,807 FE/t (`Long.MAX_VALUE`)
+- The default initial power generation is 1 FE/t. Every second, the power generation increases by 1 FE/t (configurable via `FE_SECOND` / `FE_STEP` in the server config)
+- **Boost slot**: place the configured item (default `minecraft:nether_star`, configurable via `star_item`) into the boost slot, then each increase becomes 1% of the current output (at least 1), so the output keeps growing until it reaches the maximum
+- **Charge slot**: place any chargeable item into the charge slot to charge it
+- **Charging above**: items in the inventory of any player/entity standing directly above the generator will be charged — including the hotbar, the main storage inventory and the equipment (armor / off-hand) slots
+- **Container charging above**: if there is a container (e.g. chest, hopper) directly above the generator, the chargeable items inside will also be charged
+- The generator actively transmits electricity evenly to the six adjacent sides (load-balanced), or other MOD wires can be used to extract FE
+- Each transmission face can be enabled / disabled independently in the GUI, and the transmission repeat count can be adjusted (applies to both adjacent and wireless transmission)
+- **Wireless charging** (disabled by default): can be toggled in the GUI, with configurable scan interval (seconds), chunk range (1x1 / 3x3 / 5x5) and repeat count; only scans loaded chunks, and wired transmission always has higher priority
+- The GUI displays the current output, stored energy, next increase and a growth progress bar; large numbers use K / M / G / T / P / E abbreviations
+- Synthetic materials require 4 smooth stones, 4 redstone and 1 block of redstone
+- All per-machine parameters (wireless charging switch, scan interval, chunk range, repeat count and face switches) are saved to NBT and kept when the machine is broken
 
 ## Fluid machine
+
 - Support the generation of Water and Lava
 - The maximum output is 9,223,372,036,854,775.807 B/t
 - The default initial production is 0.05 B/t, which is 1 B/second. Every 10 seconds, the production increases by 0.05 B/t
@@ -20,6 +29,7 @@ Added some machines that automatically generate resources, supporting the genera
 - When the main / off hand right clicks on the fluid machine with an empty bucket, a bucket of liquid will be taken out
 
 ## Block machine
+
 - Support the production of dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone
 - The maximum output is 9,223,372,036,854,775.807 Block/t
 - The default initial output is 0.05 Block/t, which is 1 Block/second. Every 10 seconds, the output increases by 0.05 Block/t
@@ -41,18 +51,25 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## 发电机
 
-- 最大发电量为 922,3372,0368,5477,5807 FE/t
-- 默认初始发电量为 1 FE/t，每过 1 秒，发电量增加 1 FE/t，你需要一个信标来达到最大发电功率
-- 发电机会主动向六个贴面均匀传输电量，也可以使用其他MOD的导线抽取电量
-- 合成材料需要红石和平滑石头
-- 在红石激活的情况下，如果在发电机下方有一个信标，发电量每秒将额外增加当前发电量的1%
+- 最大发电量为 9,223,372,036,854,775,807 FE/t（`Long.MAX_VALUE`）
+- 默认初始发电量为 1 FE/t，每过 1 秒发电量增加 1 FE/t（可通过服务端配置 `FE_SECOND` / `FE_STEP` 修改）
+- **加速槽**：放入指定物品（默认 `minecraft:nether_star`，可通过配置 `star_item` 修改）后，每次增长变为当前发电量的 1%（至少 1），可持续增长直至最大发电量
+- **充电槽**：可放入任意可充电物品为其充电
+- **上方充电**：站在发电机正上方的玩家/生物，其物品栏（物品栏、存储栏、装备栏）中的可充电物品都会被充电
+- **上方容器充电**：若发电机正上方是容器（箱子、漏斗等），容器内的可充电物品也会被充电
+- 发电机会主动向六个面均匀传输电量（负载均衡），也可以使用其他 MOD 的导线抽取电量
+- 六个输电面可在 GUI 中逐面独立开关，并可调整重复传电次数（对相邻输电和无线输电都生效）
+- **无线充电**（默认关闭）：可在 GUI 中开关，可配置扫描间隔（秒）、区块范围（1x1 / 3x3 / 5x5）和重复传电次数；只扫描已加载区块，有线传输始终优先
+- GUI 显示当前发电量、当前电量、下次增长量和增长进度条；大数值使用 K / M / G / T / P / E 单位缩写
+- 合成材料需要 4 个平滑石头、4 个红石和 1 个红石块
+- 所有逐台参数（无线充电开关、扫描间隔、区块范围、重复传电次数和输电面开关）均保存到 NBT，拆方块保留
 
 ## 流体机
 
 - 支持产生水和岩浆
-- 最大产量为 9223,3720,3685,4775.807 桶/t
+- 最大产量为 9,223,372,036,854,775.807 桶/t
 - 默认初始产量为 0.05 桶/t，也就是 1 桶/秒，每过 10 秒，产量增加 0.05 桶/t
-- 流体机会主动向六个贴面均匀传输流体，也可以使用其他MOD的管道抽取流体
+- 流体机会主动向六个贴面均匀传输流体，也可以使用其他 MOD 的管道抽取流体
 - 合成材料需要水桶/岩浆桶和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
 - 主手/副手拿空桶右击流体机时，将取出一桶液体
@@ -60,9 +77,9 @@ Added some machines that automatically generate resources, supporting the genera
 ## 方块机
 
 - 支持产生泥土、圆石、石头、平滑石头、粘土、沙子、沙砾、花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石、海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
-- 最大产量为 9223,3720,3685,4775.807 个/t
+- 最大产量为 9,223,372,036,854,775.807 个/t
 - 默认初始产量为 0.05 个/t，也就是 1 个/秒，每过 10 秒，产量增加 0.05 个/t
-- 方块机会主动向六个贴面均匀传输方块，也可以使用其他MOD的管道抽取方块
+- 方块机会主动向六个贴面均匀传输方块，也可以使用其他 MOD 的管道抽取方块
 - 合成材料需要水桶、岩浆桶、对应产物和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置方块
 - 主手为空/主手拿相同方块右击方块机时，将取出一个方块

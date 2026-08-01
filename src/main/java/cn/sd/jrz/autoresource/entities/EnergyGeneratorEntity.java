@@ -10,6 +10,7 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -35,8 +36,9 @@ import java.util.Map;
 /**
  * FE 发电机实体。
  * <p>
- * 负责：发电量自动增长、能量存储、上方实体充电、六面输电（可逐面禁用）、
- * 充电槽物品充电、指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
+ * 负责：发电量自动增长、能量存储、上方实体（玩家/生物）全部槽位充电、
+ * 上方容器内物品充电、六面输电（可逐面禁用）、充电槽物品充电、
+ * 指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
  * 无线充电与输电面等参数均为每台发电机独立保存，可在 GUI 中修改。
  */
 public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityProvider, MenuProvider {
@@ -47,20 +49,28 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
     public long output;
     public long energy = 0;
     public long tickCount = 0;
-    /** 下次增长的发电量（同时用于增长时实际增量） */
+    /**
+     * 下次增长的发电量（同时用于增长时实际增量）
+     */
     public long nextIncrease = 0;
 
     // 无线充电开关（逐台保存）
     public boolean wirelessOn = false;
-    /** 无线扫描游标：记录上次扫描到的线性位置（按全部方块展平），下次从该位置继续 */
+    /**
+     * 无线扫描游标：记录上次扫描到的线性位置（按全部方块展平），下次从该位置继续
+     */
     public long scanCursor = 0;
-    /** 已记录的支持电量接收的位置及其接收面（分片扫描时更新，传输时遍历） */
+    /**
+     * 已记录的支持电量接收的位置及其接收面（分片扫描时更新，传输时遍历）
+     */
     public final Map<BlockPos, Direction> wirelessTargets = new HashMap<>();
 
     // 无线充电参数（逐台保存，可在 GUI 修改）
     public int wirelessInterval = 5;
     public int wirelessRange = 1;
-    /** 重复传电次数，对相邻输电和无线输电都生效 */
+    /**
+     * 重复传电次数，对相邻输电和无线输电都生效
+     */
     public int transferRepeat = 1;
 
     // 六面输电开关（逐台保存，可在 GUI 修改，默认全启用）
@@ -116,7 +126,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         this.output = config.getMin();
     }
 
-    /** 服务端每 tick 调用（由方块的 ticker 触发） */
+    /**
+     * 服务端每 tick 调用（由方块的 ticker 触发）
+     */
     public void serverTick() {
         Level level = getLevel();
         if (level == null || level.isClientSide) {
@@ -134,8 +146,10 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
 
         // 充电槽充电
         chargeChargeSlot();
-        // 上方实体充电
-        chargePlayersAbove();
+        // 上方实体充电（玩家物品栏/存储栏/装备栏全部覆盖）
+        chargeEntitiesAbove();
+        // 上方容器充电
+        chargeContainersAbove();
         // 六面输电（有线传输优先级更高）
         outputToSides();
         // 无线充电（优先级更低）
@@ -145,7 +159,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         setChanged();
     }
 
-    /** 计算下一次增长的发电量并保存到 nextIncrease（原信标功能已由加速槽代替） */
+    /**
+     * 计算下一次增长的发电量并保存到 nextIncrease（原信标功能已由加速槽代替）
+     */
     private void updateNextIncrease() {
         long increase = config.getStep();
         if (!starSlot.getStackInSlot(0).isEmpty()) {
@@ -155,7 +171,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         nextIncrease = increase;
     }
 
-    /** 给充电槽中的物品充电 */
+    /**
+     * 给充电槽中的物品充电
+     */
     private void chargeChargeSlot() {
         if (energy <= 0) {
             return;
@@ -180,15 +198,17 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         });
     }
 
-    /** 给站在机器上方玩家的物品栏中可充电物品充电 */
-    private void chargePlayersAbove() {
+    /**
+     * 给站在机器上方实体的所有槽位中可充电物品充电（玩家物品栏/存储栏/装备栏均覆盖）
+     */
+    private void chargeEntitiesAbove() {
         Level level = getLevel();
         if (level == null) {
             return;
         }
-        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(getBlockPos().relative(Direction.UP)));
-        for (Player player : playerList) {
-            Iterable<ItemStack> slots = player.getAllSlots();
+        List<LivingEntity> entityList = level.getEntitiesOfClass(LivingEntity.class, new AABB(getBlockPos().relative(Direction.UP)));
+        for (LivingEntity livingEntity : entityList) {
+            Iterable<ItemStack> slots = livingEntity.getAllSlots();
             for (ItemStack stack : slots) {
                 if (energy <= 0) {
                     return;
@@ -210,7 +230,49 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     }
 
-    /** 六面输电（跳过被禁用的面），轮询索引实现负载均衡；重复传电次数生效 */
+    /**
+     * 给机器上方容器中的可充电物品充电（箱子、漏斗等带物品栏的方块实体）
+     */
+    private void chargeContainersAbove() {
+        Level level = getLevel();
+        if (level == null || energy <= 0) {
+            return;
+        }
+        BlockEntity blockEntity = level.getBlockEntity(getBlockPos().relative(Direction.UP));
+        if (blockEntity == null) {
+            return;
+        }
+        blockEntity.getCapability(ForgeCapabilities.ITEM_HANDLER).resolve().ifPresent(handler -> {
+            for (int i = 0; i < handler.getSlots(); i++) {
+                if (energy <= 0) {
+                    return;
+                }
+                ItemStack stack = handler.getStackInSlot(i);
+                if (stack.isEmpty()) {
+                    continue;
+                }
+                stack.getCapability(ForgeCapabilities.ENERGY).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
+                    int maxOutput = Tool.suitInt(energy);
+                    int result = storage.receiveEnergy(maxOutput, false);
+                    if (result < 0) {
+                        result = 0;
+                    }
+                    if (result > maxOutput) {
+                        result = maxOutput;
+                    }
+                    if (result > 0) {
+                        energy -= result;
+                        // 修改了容器内物品的能量数据，标记容器已改变以便落盘/同步
+                        blockEntity.setChanged();
+                    }
+                });
+            }
+        });
+    }
+
+    /**
+     * 六面输电（跳过被禁用的面），轮询索引实现负载均衡；重复传电次数生效
+     */
     private void outputToSides() {
         Level level = getLevel();
         if (level == null) {
@@ -302,7 +364,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         scanCursor = end >= volume ? 0 : end;
     }
 
-    /** 扫描线性索引落在 [from, to) 内的方块实体并刷新无线目标 */
+    /**
+     * 扫描线性索引落在 [from, to) 内的方块实体并刷新无线目标
+     */
     private void scanLinearRange(Level level, int minX, int minZ, int width, int minY, long layerSize, long from, long to) {
         if (from >= to) {
             return;
@@ -338,7 +402,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     }
 
-    /** 扫描目标的所有面，找到第一个可输入能量的面截止并缓存该面；没有可接收面则移除旧记录 */
+    /**
+     * 扫描目标的所有面，找到第一个可输入能量的面截止并缓存该面；没有可接收面则移除旧记录
+     */
     private void refreshWirelessTarget(BlockPos bp, BlockEntity target) {
         for (Direction dir : Direction.values()) {
             if (target.getCapability(ForgeCapabilities.ENERGY, dir).resolve().map(IEnergyStorage::canReceive).orElse(false)) {
@@ -349,7 +415,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         wirelessTargets.remove(bp);
     }
 
-    /** 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量（使用扫描时缓存的面） */
+    /**
+     * 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量（使用扫描时缓存的面）
+     */
     private void wirelessTransfer() {
         Level level = getLevel();
         if (level == null || energy <= 0) {
@@ -387,7 +455,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     }
 
-    /** 指定面是否允许输电 */
+    /**
+     * 指定面是否允许输电
+     */
     public boolean isTransferEnabled(Direction direction) {
         return switch (direction) {
             case DOWN -> transferDown;

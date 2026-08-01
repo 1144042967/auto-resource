@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及 21 种不同类型的方块。机器产量会随时间逐渐增长，且可通过信标加速。
+一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及 21 种不同类型的方块。机器产量会随时间逐渐增长，且可通过放入特殊物品加速（FE 发电机）。
 
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
@@ -114,7 +114,8 @@ src/main/java/cn/sd/jrz/autoresource/
 
 **能量传输**:
 - 优先给充电槽中的物品充电（可放入任意可充电物品）
-- 再给站在机器上方的玩家物品栏中可充电物品充电（轮询 `ForgeCapabilities.ENERGY`）
+- 再给站在机器上方的玩家/生物全部槽位中可充电物品充电（覆盖物品栏、存储栏、装备栏，轮询 `ForgeCapabilities.ENERGY`）
+- 若机器正上方是容器，容器内可充电物品也会被充电（轮询 `ForgeCapabilities.ITEM_HANDLER`）
 - 剩余能量通过六个面均匀输出到相邻方块（轮询索引 `findIndex` 负载均衡）
 - **输电面开关**：六个面可分别启用/禁用（GUI 中可逐台修改，默认全启用）
 
@@ -134,7 +135,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 **数据持久化 (NBT)**:
 - `output`(long), `energy`(long), `tickCount`(long), `nextIncrease`(long)（旧存档 `beaconIncrease` 兼容读取）
-- `wirelessOn`(boolean), `wirelessTimer`(int), `wirelessInterval`(int), `wirelessRange`(int), `transferRepeat`(int)
+- `wirelessOn`(boolean), `wirelessInterval`(int), `wirelessRange`(int), `transferRepeat`(int)；`scanCursor`（扫描游标）与 `wirelessTargets` 仅存内存，不持久化
 - `transferDown/Up/North/South/West/East`(boolean), `starSlot`(CompoundTag), `chargeSlot`(CompoundTag)
 - 加载时通过 `Tool.suit()` 防负数处理
 
@@ -228,7 +229,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 所有 Entity 通过 `saveAdditional`/`load` 持久化数据：
 
-- **EnergyGeneratorEntity**: `output`, `energy`, `tickCount`, `beaconIncrease`
+- **EnergyGeneratorEntity**: `output`, `energy`, `tickCount`, `nextIncrease`（旧存档 `beaconIncrease` 兼容）
 - **LiquidGeneratorEntity**: `output`, `liquid`, `tickCount`
 - **BlockGeneratorEntity**: `output`, `block`, `tickCount`
 
