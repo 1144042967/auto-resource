@@ -45,21 +45,21 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
     protected void init() {
         super.init();
         // 无线充电开关
-        this.wirelessButton = new StateButton(this.leftPos + 108, this.topPos + 76, 40, 12, this.menu.isWirelessOn(), Component.empty(), button -> sendButton(EnergyGeneratorMenu.BUTTON_WIRELESS));
+        this.wirelessButton = new StateButton(this.leftPos + 108, this.topPos + 77, 40, 12, this.menu.isWirelessOn(), Component.empty(), button -> sendButton(EnergyGeneratorMenu.BUTTON_WIRELESS));
         this.addRenderableWidget(this.wirelessButton);
         // 扫描间隔
-        this.addRenderableWidget(new MiniButton(this.leftPos + 108, this.topPos + 92, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_INTERVAL_DOWN)));
-        this.addRenderableWidget(new MiniButton(this.leftPos + 132, this.topPos + 92, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_INTERVAL_UP)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 108, this.topPos + 93, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_INTERVAL_DOWN)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 132, this.topPos + 93, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_INTERVAL_UP)));
         // 区块范围
-        this.addRenderableWidget(new MiniButton(this.leftPos + 108, this.topPos + 108, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_RANGE_DOWN)));
-        this.addRenderableWidget(new MiniButton(this.leftPos + 132, this.topPos + 108, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_RANGE_UP)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 108, this.topPos + 109, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_RANGE_DOWN)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 132, this.topPos + 109, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_RANGE_UP)));
         // 重复传电次数（两个框下方独立一行）
-        this.addRenderableWidget(new MiniButton(this.leftPos + 128, this.topPos + 174, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_DOWN)));
-        this.addRenderableWidget(new MiniButton(this.leftPos + 148, this.topPos + 174, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_UP)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 128, this.topPos + 173, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_DOWN)));
+        this.addRenderableWidget(new MiniButton(this.leftPos + 148, this.topPos + 173, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_UP)));
         // 六个输电面（宽 44 以容纳英文面名）
-        this.faceDown = new StateButton(this.leftPos + 17, this.topPos + 135, 44, 12, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_DOWN));
-        this.faceUp = new StateButton(this.leftPos + 66, this.topPos + 135, 44, 12, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_UP));
-        this.faceNorth = new StateButton(this.leftPos + 115, this.topPos + 135, 44, 12, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_NORTH));
+        this.faceDown = new StateButton(this.leftPos + 17, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_DOWN));
+        this.faceUp = new StateButton(this.leftPos + 66, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_UP));
+        this.faceNorth = new StateButton(this.leftPos + 115, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_NORTH));
         this.faceSouth = new StateButton(this.leftPos + 17, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_SOUTH));
         this.faceWest = new StateButton(this.leftPos + 66, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_WEST));
         this.faceEast = new StateButton(this.leftPos + 115, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_EAST));
@@ -71,7 +71,9 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         this.addRenderableWidget(this.faceEast);
     }
 
-    /** 发送容器按钮点击到服务端 */
+    /**
+     * 发送容器按钮点击到服务端
+     */
     private void sendButton(int id) {
         if (this.minecraft != null && this.minecraft.player != null) {
             this.minecraft.player.connection.send(new ServerboundContainerButtonClickPacket(this.menu.containerId, id));
@@ -99,27 +101,27 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 18, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 28, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 38, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 48, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 39, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 无线充电参数（间隔带单位）
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 78, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), 12, 94, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), 64, 94, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.range"), 12, 110, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), 64, 110, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 79, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), 12, 95, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), 64, 95, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.range"), 12, 111, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), 64, 111, TEXT_COLOR, false);
         // 重复传电次数（带单位）
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), 12, 176, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), 56, 176, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), 12, 175, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), 56, 175, TEXT_COLOR, false);
         // 加速槽标签：显示配置的目标物品名
         Item starItem = menu.getStarItem();
         if (starItem != null) {
-            guiGraphics.drawString(this.font, starItem.getDescription(), 28, 196, TEXT_COLOR, false);
+            guiGraphics.drawString(this.font, starItem.getDescription(), 28, 195, TEXT_COLOR, false);
         }
         // 充电槽标签：右对齐贴近充电槽
         Component chargeLabel = Component.translatable("screen.autoresource.energy_generator.charge_slot");
-        guiGraphics.drawString(this.font, chargeLabel, 150 - this.font.width(chargeLabel), 196, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, chargeLabel, 150 - this.font.width(chargeLabel), 195, TEXT_COLOR, false);
     }
 
     @Override
@@ -137,7 +139,9 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
     }
 
-    /** 计算增长百分比（0-100）；达最大发电量时固定为 100% */
+    /**
+     * 计算增长百分比（0-100）；达最大发电量时固定为 100%
+     */
     private int growthPercent() {
         if (this.menu.getOutput() >= this.menu.getMax()) {
             return 100;
@@ -147,7 +151,9 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         return (int) Math.max(0, Math.min(100, percent));
     }
 
-    /** 带状态颜色的开关按钮（开=绿色，关=红色） */
+    /**
+     * 带状态颜色的开关按钮（开=绿色，关=红色）
+     */
     private class StateButton extends SimpleButton {
         private boolean state;
 
@@ -166,7 +172,9 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         }
     }
 
-    /** 灰色小按钮（+/-） */
+    /**
+     * 灰色小按钮（+/-）
+     */
     private class MiniButton extends SimpleButton {
         MiniButton(int x, int y, int width, int height, Component label, OnPress onPress) {
             super(x, y, width, height, label, onPress);
@@ -178,7 +186,9 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         }
     }
 
-    /** 带边框与居中文字的通用按钮 */
+    /**
+     * 带边框与居中文字的通用按钮
+     */
     private abstract class SimpleButton extends Button {
         SimpleButton(int x, int y, int width, int height, Component label, OnPress onPress) {
             super(x, y, width, height, label, onPress, DEFAULT_NARRATION);
