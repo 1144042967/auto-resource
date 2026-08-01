@@ -33,7 +33,7 @@
   "item.autoresource.energy_generator.tooltip.step": "Every %s seconds, Output increases by %s FE/tick",
   "item.autoresource.energy_generator.tooltip.wireless_on": "Wireless Charging: ON",
   "item.autoresource.energy_generator.tooltip.wireless_off": "Wireless Charging: OFF",
-  "item.autoresource.energy_generator.tooltip.group_faster": "Place %s to make the increase equal to 1%% of current output",
+  "item.autoresource.energy_generator.tooltip.group_faster": "Place a special item to make the increase equal to 1%% of current output",
   "item.autoresource.energy_generator.tooltip.tip": "Automatically transmit FE to adjacent machines, wireless charging is available",
   "screen.autoresource.energy_generator.output": "Output: %s FE/tick",
   "screen.autoresource.energy_generator.energy": "Energy: %s FE",

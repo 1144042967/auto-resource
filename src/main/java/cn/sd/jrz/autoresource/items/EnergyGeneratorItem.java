@@ -5,7 +5,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
@@ -74,11 +73,7 @@ public class EnergyGeneratorItem extends BlockItem {
         }
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
         tooltip.add(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off"));
-        // 加速物品名称来自配置文件，方便其他作者修改
-        Item starItem = config.getStarItem();
-        if (starItem != null) {
-            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster", starItem.getDescription()));
-        }
+        tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster"));
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
     }
 }

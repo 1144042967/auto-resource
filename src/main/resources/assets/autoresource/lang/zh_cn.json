@@ -33,7 +33,7 @@
   "item.autoresource.energy_generator.tooltip.step": "每 %s 秒, 产量提高 %s FE/tick",
   "item.autoresource.energy_generator.tooltip.wireless_on": "无线充电: 开",
   "item.autoresource.energy_generator.tooltip.wireless_off": "无线充电: 关",
-  "item.autoresource.energy_generator.tooltip.group_faster": "放入 %s, 增长量变为当前发电量的 1%",
+  "item.autoresource.energy_generator.tooltip.group_faster": "放入特殊物品, 增长量变为当前发电量的 1%",
   "item.autoresource.energy_generator.tooltip.tip": "自动向相邻的机器传输FE, 可开启无线充电",
   "screen.autoresource.energy_generator.output": "发电量: %s FE/tick",
   "screen.autoresource.energy_generator.energy": "电量: %s FE",
