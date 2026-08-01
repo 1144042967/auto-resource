@@ -28,7 +28,7 @@ import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -52,10 +52,10 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
 
     // 无线充电开关（逐台保存）
     public boolean wirelessOn = false;
-    /** 当前扫描到的分片序号（每 tick 推进一片） */
-    public int scanIndex = 0;
-    /** 已记录的支持电量接收的位置（分片扫描时更新，传输时遍历） */
-    public final List<BlockPos> wirelessTargets = new ArrayList<>();
+    /** 无线扫描游标：记录上次扫描到的线性位置（按全部方块展平），下次从该位置继续 */
+    public long scanCursor = 0;
+    /** 已记录的支持电量接收的位置及其接收面（分片扫描时更新，传输时遍历） */
+    public final Map<BlockPos, Direction> wirelessTargets = new HashMap<>();
 
     // 无线充电参数（逐台保存，可在 GUI 修改）
     public int wirelessInterval = 5;
@@ -251,24 +251,25 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
 
     /**
      * 无线充电每 tick 处理：
-     * 每 tick 推进一片扫描（整个区域按扫描间隔秒数均分，在 interval 个 tick 内扫完并记录支持电量接收的位置），
+     * 每 tick 扫描一片（整个区域按全部方块线性均分为 wirelessInterval*20 片，游标记录上次位置下次继续），
      * 然后按重复传电次数遍历已记录位置尝试输电。
      */
     private void wirelessTick() {
         // 扫描推进：每 tick 扫一片
         scanWirelessSlice();
-        scanIndex = (scanIndex + 1) % Math.max(1, wirelessInterval);
         // 每 tick 遍历所有已记录目标，按重复传电次数循环输电
         wirelessTransfer();
     }
 
-    /** 扫描当前分片：把整个扫描区域按扫描间隔秒数均分为若干片，刷新该片内支持电量接收的位置 */
+    /**
+     * 扫描当前分片：把整个扫描区域按全部方块线性均分为 wirelessInterval*20 片，每 tick 扫一片。
+     * 线性索引 index = (x-minX) + (z-minZ)*width + (y-minY)*width*width，scanCursor 记录上次扫描到的位置，下次继续。
+     */
     private void scanWirelessSlice() {
         Level level = getLevel();
         if (level == null) {
             return;
         }
-        int interval = Math.max(1, wirelessInterval);
         int range = Tool.normalizeWirelessRange(wirelessRange);
         // range=1 -> half=0（1x1 区块），range=3 -> half=1（3x3），range=5 -> half=2（5x5）
         int half = range >> 1;
@@ -278,19 +279,37 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         int minX = originX - half * 16;
         int minZ = originZ - half * 16;
         int width = range * 16;
-        // 按 X 轴均分为 interval 片，本片只扫描 bandStartX..bandEndX 这一段
-        int bandWidth = Math.max(1, (width + interval - 1) / interval);
-        int slice = scanIndex % interval;
-        int bandStartX = minX + slice * bandWidth;
-        int bandEndX = Math.min(minX + width - 1, bandStartX + bandWidth - 1);
-        if (bandEndX < bandStartX) {
-            // 超出区域的分片（interval 大于区域宽度时），本次不扫描
+        int minY = level.getMinBuildHeight();
+        long layerSize = (long) width * width; // 单个 Y 层的方块数
+        long volume = layerSize * level.getHeight(); // 整个 3D 扫描体积
+
+        // 缩小范围后清理超出当前区域的目标（无线目标按区块列判断）
+        wirelessTargets.keySet().removeIf(bp -> {
+            int bx = bp.getX() >> 4;
+            int bz = bp.getZ() >> 4;
+            int cx = pos.getX() >> 4;
+            int cz = pos.getZ() >> 4;
+            return Math.abs(bx - cx) > half || Math.abs(bz - cz) > half;
+        });
+
+        // 配置为秒，每秒 20 tick：完整扫描周期 = wirelessInterval 秒，共 wirelessInterval*20 个分片
+        long slices = Math.max(1L, (long) Math.max(1, wirelessInterval) * 20);
+        long sliceSize = Math.max(1L, (volume + slices - 1) / slices);
+        long start = scanCursor;
+        long end = Math.min(volume, start + sliceSize);
+        scanLinearRange(level, minX, minZ, width, minY, layerSize, start, end);
+        // 游标推进：扫完整个体积后回到 0 重新开始
+        scanCursor = end >= volume ? 0 : end;
+    }
+
+    /** 扫描线性索引落在 [from, to) 内的方块实体并刷新无线目标 */
+    private void scanLinearRange(Level level, int minX, int minZ, int width, int minY, long layerSize, long from, long to) {
+        if (from >= to) {
             return;
         }
-        // 刷新本片的记录：先移除本片旧目标，再重新添加
-        wirelessTargets.removeIf(bp -> bp.getX() >= bandStartX && bp.getX() <= bandEndX);
-        int cMinX = bandStartX >> 4;
-        int cMaxX = bandEndX >> 4;
+        BlockPos pos = getBlockPos();
+        int cMinX = minX >> 4;
+        int cMaxX = (minX + width - 1) >> 4;
         int cMinZ = minZ >> 4;
         int cMaxZ = (minZ + width - 1) >> 4;
         for (int cx = cMinX; cx <= cMaxX; cx++) {
@@ -305,25 +324,32 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
                 }
                 for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
                     BlockPos bp = entry.getKey();
-                    if (bp.getX() < bandStartX || bp.getX() > bandEndX) {
+                    if (bp.equals(worldPosition)) {
                         continue;
                     }
-                    BlockEntity target = entry.getValue();
-                    if (target == this) {
+                    // 计算该方块实体的线性索引，仅处理落在本分片范围内的
+                    long idx = (bp.getX() - minX) + (long) (bp.getZ() - minZ) * width + (long) (bp.getY() - minY) * layerSize;
+                    if (idx < from || idx >= to) {
                         continue;
                     }
-                    // 记录支持电量接收的位置
-                    target.getCapability(ForgeCapabilities.ENERGY, null).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
-                        if (!wirelessTargets.contains(bp)) {
-                            wirelessTargets.add(bp);
-                        }
-                    });
+                    refreshWirelessTarget(bp, entry.getValue());
                 }
             }
         }
     }
 
-    /** 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量 */
+    /** 扫描目标的所有面，找到第一个可输入能量的面截止并缓存该面；没有可接收面则移除旧记录 */
+    private void refreshWirelessTarget(BlockPos bp, BlockEntity target) {
+        for (Direction dir : Direction.values()) {
+            if (target.getCapability(ForgeCapabilities.ENERGY, dir).resolve().map(IEnergyStorage::canReceive).orElse(false)) {
+                wirelessTargets.put(bp.immutable(), dir);
+                return;
+            }
+        }
+        wirelessTargets.remove(bp);
+    }
+
+    /** 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量（使用扫描时缓存的面） */
     private void wirelessTransfer() {
         Level level = getLevel();
         if (level == null || energy <= 0) {
@@ -331,15 +357,20 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
         int repeat = Math.max(1, transferRepeat);
         for (int rep = 0; rep < repeat && energy > 0; rep++) {
-            for (BlockPos targetPos : wirelessTargets) {
+            for (Map.Entry<BlockPos, Direction> entry : wirelessTargets.entrySet()) {
                 if (energy <= 0) {
                     return;
+                }
+                BlockPos targetPos = entry.getKey();
+                // 只处理已加载区块，避免强制加载未加载区块
+                if (!level.isLoaded(targetPos)) {
+                    continue;
                 }
                 BlockEntity target = level.getBlockEntity(targetPos);
                 if (target == null || target == this) {
                     continue;
                 }
-                target.getCapability(ForgeCapabilities.ENERGY, null).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
+                target.getCapability(ForgeCapabilities.ENERGY, entry.getValue()).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
                     int maxOutput = Tool.suitInt(energy);
                     int result = storage.receiveEnergy(maxOutput, false);
                     if (result < 0) {
