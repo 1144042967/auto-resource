@@ -127,6 +127,8 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
     @Override
     public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        // 渲染鼠标悬浮物品的信息提示窗（与工作台一致，AbstractContainerScreen.render 不会自动调用）
+        super.renderTooltip(guiGraphics, mouseX, mouseY);
         // 刷新各开关状态
         boolean wireless = this.menu.isWirelessOn();
         this.wirelessButton.setState(wireless);
