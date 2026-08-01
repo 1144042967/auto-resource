@@ -41,7 +41,8 @@ public class Registration {
     private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of()
             .mapColor(DyeColor.BLUE)
             .pushReaction(PushReaction.DESTROY)
-            .strength(0.5f, 3.0f);
+            .strength(0.5f, 3.0f)
+            .lightLevel(state -> 7);
 
     // Blocks
 

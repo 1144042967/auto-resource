@@ -1,6 +1,12 @@
 {
-  "parent": "minecraft:block/cube_all",
+  "parent": "minecraft:block/cube",
   "textures": {
-    "all": "autoresource:block/energy_generator_fe"
+    "up": "autoresource:block/energy_generator_fe_top",
+    "down": "autoresource:block/energy_generator_fe_btm",
+    "east": "autoresource:block/energy_generator_fe_side",
+    "north": "autoresource:block/energy_generator_fe_side",
+    "particle": "autoresource:block/energy_generator_fe_side",
+    "south": "autoresource:block/energy_generator_fe_side",
+    "west": "autoresource:block/energy_generator_fe_side"
   }
 }
