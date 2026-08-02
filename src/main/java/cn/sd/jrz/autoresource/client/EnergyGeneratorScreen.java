@@ -101,8 +101,8 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 19, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 29, TEXT_COLOR, false);
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 39, TEXT_COLOR, false);
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 无线充电参数（间隔带单位）
