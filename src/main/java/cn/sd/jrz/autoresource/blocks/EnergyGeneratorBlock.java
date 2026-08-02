@@ -7,6 +7,7 @@ import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -14,11 +15,15 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
@@ -44,6 +49,21 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
             return;
         }
         generator.serverTick();
+    }
+
+    /**
+     * 破坏时，充电槽中的物品掉落（加速槽内容随物品 NBT 保留，不在此掉落）
+     */
+    @Override
+    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+        List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
+        if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof EnergyGeneratorEntity entity) {
+            ItemStack charge = entity.chargeSlot.getStackInSlot(0);
+            if (!charge.isEmpty()) {
+                drops.add(charge);
+            }
+        }
+        return drops;
     }
 
     @SuppressWarnings("deprecation")

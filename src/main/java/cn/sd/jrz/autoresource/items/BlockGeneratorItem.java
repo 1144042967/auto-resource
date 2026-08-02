@@ -11,6 +11,7 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
+import net.minecraftforge.items.ItemStackHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -33,18 +34,16 @@ public class BlockGeneratorItem extends BlockItem {
         long tickCount = 0;
         long second = config.getSecond();
         long step = config.getStep();
-        if (stack.hasTag()) {
-            CompoundTag tag = stack.getTagElement("BlockEntityTag");
-            if (tag != null) {
-                if (tag.contains("output", Tag.TAG_LONG)) {
-                    output = tag.getLong("output") / 1000D;
-                }
-                if (tag.contains("block", Tag.TAG_LONG)) {
-                    block = tag.getLong("block") / 1000;
-                }
-                if (tag.contains("tickCount", Tag.TAG_LONG)) {
-                    tickCount = tag.getLong("tickCount");
-                }
+        CompoundTag tag = stack.hasTag() ? stack.getTagElement("BlockEntityTag") : null;
+        if (tag != null) {
+            if (tag.contains("output", Tag.TAG_LONG)) {
+                output = tag.getLong("output") / 1000D;
+            }
+            if (tag.contains("block", Tag.TAG_LONG)) {
+                block = tag.getLong("block") / 1000;
+            }
+            if (tag.contains("tickCount", Tag.TAG_LONG)) {
+                tickCount = tag.getLong("tickCount");
             }
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
@@ -56,6 +55,19 @@ public class BlockGeneratorItem extends BlockItem {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
         }
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
+        // 标记槽内容物描述（兼容未标记/为空的情况）
+        if (tag != null && tag.contains("markerSlot", Tag.TAG_COMPOUND)) {
+            ItemStackHandler marker = new ItemStackHandler();
+            marker.deserializeNBT(tag.getCompound("markerSlot"));
+            ItemStack marked = marker.getStackInSlot(0);
+            if (!marked.isEmpty()) {
+                tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.marked", marked.getHoverName()));
+            } else {
+                tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.unmarked"));
+            }
+        } else {
+            tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.unmarked"));
+        }
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.set_block"));
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.tip"));
     }

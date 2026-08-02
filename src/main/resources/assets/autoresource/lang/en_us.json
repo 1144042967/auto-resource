@@ -58,6 +58,8 @@
   "item.autoresource.block_generator.tooltip.growth": "Growth: %s%%",
   "item.autoresource.block_generator.tooltip.growth_max": "Growth: Max",
   "item.autoresource.block_generator.tooltip.step": "Every %s seconds, Output increases by %s/tick",
+  "item.autoresource.block_generator.tooltip.marked": "Marked: %s",
+  "item.autoresource.block_generator.tooltip.unmarked": "Unmarked",
   "item.autoresource.block_generator.tooltip.set_block": "Place blocks in the air below when \"Place Below\" is enabled in the GUI",
   "item.autoresource.block_generator.tooltip.tip": "After placing a block in the marker slot, automatically transfer it to adjacent containers",
   "screen.autoresource.block_generator.message": "Block: %s   Output: %s/tick   Growth: %s%%",

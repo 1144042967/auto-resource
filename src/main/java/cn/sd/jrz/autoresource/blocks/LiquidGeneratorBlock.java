@@ -19,11 +19,15 @@ import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 import net.minecraftforge.network.NetworkHooks;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
@@ -49,6 +53,25 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             return;
         }
         generator.serverTick();
+    }
+
+    /**
+     * 破坏时，输入槽与输出槽中的物品掉落
+     */
+    @Override
+    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+        List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
+        if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof LiquidGeneratorEntity entity) {
+            ItemStack input = entity.inputSlot.getStackInSlot(0);
+            if (!input.isEmpty()) {
+                drops.add(input);
+            }
+            ItemStack output = entity.outputSlot.getStackInSlot(0);
+            if (!output.isEmpty()) {
+                drops.add(output);
+            }
+        }
+        return drops;
     }
 
     @SuppressWarnings("deprecation")

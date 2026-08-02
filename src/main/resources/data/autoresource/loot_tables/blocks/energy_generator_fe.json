@@ -93,11 +93,6 @@
                   "op": "replace",
                   "source": "starSlot",
                   "target": "BlockEntityTag.starSlot"
-                },
-                {
-                  "op": "replace",
-                  "source": "chargeSlot",
-                  "target": "BlockEntityTag.chargeSlot"
                 }
               ],
               "source": "block_entity"

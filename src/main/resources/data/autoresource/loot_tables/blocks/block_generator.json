@@ -38,6 +38,11 @@
                   "op": "replace",
                   "source": "tickCount",
                   "target": "BlockEntityTag.tickCount"
+                },
+                {
+                  "op": "replace",
+                  "source": "markerSlot",
+                  "target": "BlockEntityTag.markerSlot"
                 }
               ],
               "source": "block_entity"
