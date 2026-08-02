@@ -72,6 +72,11 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
+            // 标记槽变化时强制同步到客户端，并触发重新渲染（否则客户端看不到标记的物品）
+            Level level = getLevel();
+            if (level != null && !level.isClientSide) {
+                level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
+            }
         }
     };
 
@@ -252,6 +257,24 @@ public class BlockGeneratorEntity extends BlockEntity implements ICapabilityProv
         nbt.putBoolean("transferEast", transferEast);
         nbt.putBoolean("placeBlockBelow", placeBlockBelow);
         nbt.put("markerSlot", markerSlot.serializeNBT());
+    }
+
+    /**
+     * 初始同步到客户端的数据（包含标记槽），保证进游戏后方块机上即可显示标记物品
+     */
+    @Override
+    @Nonnull
+    public CompoundTag getUpdateTag() {
+        return saveWithoutMetadata();
+    }
+
+    /**
+     * 数据变化时发送给客户端的更新包（标记槽变化后强制刷新渲染）
+     */
+    @Override
+    @Nonnull
+    public net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override

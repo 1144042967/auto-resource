@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
 import net.minecraft.client.Minecraft;
@@ -8,6 +9,7 @@ import net.minecraft.client.renderer.MultiBufferSource;
 import net.minecraft.client.renderer.RenderType;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
 import net.minecraft.world.item.BlockItem;
@@ -43,9 +45,9 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
      */
     private static final Direction[] SIDES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
     /**
-     * 面的四周留边比例（居中矩形约占面 70%）
+     * 面的四周留边比例（居中矩形约占面 55%，即贴图大小为面的 0.55 倍）
      */
-    private static final float INSET = 0.15f;
+    private static final float INSET = 0.275f;
     /**
      * 强制的最低方块光照（15 级 = 全亮），避免贴图太暗看不清
      */
@@ -65,6 +67,10 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         if (sprite == null) {
             return;
         }
+        // 强制从当前方块图集重新解析精灵，确保首次渲染时贴图已加载
+        sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(sprite.contents().name());
+        // 显式绑定方块纹理图集（与物品 GUI 渲染 renderGuiItem 一致）
+        RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
         // 强制至少 15 级方块光照，保留环境天空光
         int blockLight = Math.max(combinedLight & 0xFFFF, MIN_BLOCK_LIGHT);
         int light = (combinedLight & 0xFFFF0000) | blockLight;
