@@ -34,13 +34,15 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## Block machine
 
-- Support the production of dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone
+- A single generic markable generator machine (`block_generator`) — it can produce any of: dirt, cobblestone, stone, smooth stone, clay, sand, gravel, granite, diorite, andesite, calcite, tuff, cobbled deepslate, prismarine, obsidian, netherrack, soul sand, soul soil, blackstone, basalt, and end stone (chosen via the marker slot)
 - The maximum output is 9,223,372,036,854,775.807 Block/t
 - The default initial output is 0.05 Block/t, which is 1 Block/second. Every 10 seconds, the output increases by 0.05 Block/t
-- The block machine actively transfers blocks evenly to the six veneers, or can use other MOD pipelines to extract blocks
-- Synthetic materials require water buckets, lava buckets, corresponding products, and smooth stones
-- In the case of redstone activation, 4 attempts will be made per second to place a block into the air block below the machine
-- When the main hand is empty/holding the same block and right clicking on the block machine, a block will be taken out
+- Right-click to open the GUI (the same style as the fluid machine): displays the stored amount, output, next increase and a growth progress bar; large numbers use K / M / G / T / P / E abbreviations
+- **Marker slot**: put any valid block-generator product (dirt, stone, etc.) into the marker slot; it is locked once placed and determines which block the machine outputs. Generation keeps running, but without a marker nothing can be extracted / transferred; once marked it cannot be changed
+- **Output slot**: displays the marked item. Click to take one, Shift+click to take a stack, Space+click to take until the inventory is full. The marker and output slots do not support pipe input/output
+- **Pipe support**: after marking, the machine actively transfers the marked block evenly to the six faces (each can be enabled / disabled independently in the GUI), and other MOD pipelines can extract the marked block
+- **Place block below**: when the "Place Below" button below the output slot is enabled, 4 attempts will be made per second to place the marked block into the air block below the machine (replaces the old redstone behavior)
+- The recipe uses smooth stone, redstone and a hopper: `#R# / RSR / #R#` with `#` = smooth stone, `R` = redstone, `S` = hopper
 
 ## Image
 
@@ -84,13 +86,15 @@ Added some machines that automatically generate resources, supporting the genera
 
 ## 方块机
 
-- 支持产生泥土、圆石、石头、平滑石头、粘土、沙子、沙砾、花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石、海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
+- 只有一个通用的可标记生成方块机（`block_generator`），可产生泥土、圆石、石头、平滑石头、粘土、沙子、沙砾、花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石、海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石中的任意一种（由标记槽决定）
 - 最大产量为 9,223,372,036,854,775.807 个/t
 - 默认初始产量为 0.05 个/t，也就是 1 个/秒，每过 10 秒，产量增加 0.05 个/t
-- 方块机会主动向六个贴面均匀传输方块，也可以使用其他 MOD 的管道抽取方块
-- 合成材料需要水桶、岩浆桶、对应产物和平滑石头
-- 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置方块
-- 主手为空/主手拿相同方块右击方块机时，将取出一个方块
+- 右击打开 GUI（与流体机同款）：展示存量、产量、下次增长量和增长进度条；大数值使用 K / M / G / T / P / E 单位缩写
+- **标记槽**：把任意合法的方块生成机产品（泥土、石头等）放入标记槽，放入后锁定，决定机器输出的方块种类。自动生成会一直计算，但未标记时无法取出/传输；标记后不可更换
+- **输出槽**：显示标记的物品。单击取出一个，Shift+单击取出一组，空格+单击取出直到背包满。标记槽和输出槽均不支持管道输入输出
+- **管道支持**：标记后，方块机会主动向六个面均匀传输标记的方块（每个面可在 GUI 中独立开关），也可用其他 MOD 的管道抽取标记的方块
+- **下方生成方块**：开启输出槽下方"下方生成方块"按钮后，每秒将尝试 4 次，向机器下方的空气方块中放置标记的方块（替代原红石激活行为）
+- 合成表使用平滑石头、红石和漏斗：`#R# / RSR / #R#`（#=平滑石头，R=红石，S=漏斗）
 
 ## 图片
 

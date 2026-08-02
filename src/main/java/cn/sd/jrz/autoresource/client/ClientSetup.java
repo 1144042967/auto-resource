@@ -17,6 +17,7 @@ public class ClientSetup {
         event.enqueueWork(() -> {
             MenuScreens.register(Registration.ENERGY_GENERATOR_MENU.get(), EnergyGeneratorScreen::new);
             MenuScreens.register(Registration.LIQUID_GENERATOR_MENU.get(), LiquidGeneratorScreen::new);
+            MenuScreens.register(Registration.BLOCK_GENERATOR_MENU.get(), BlockGeneratorScreen::new);
         });
     }
 }

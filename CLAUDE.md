@@ -27,16 +27,9 @@
 ./gradlew build
 ```
 
-### 添加新方块生成机
+### 方块生成机
 
-使用 `BlockGeneratorAdder` 工具一键生成所有文件：
-
-1. 在 IDEA 中打开 `src/test/java/cn/sd/jrz/autoresource/generator/BlockGeneratorAdder.java`
-2. 修改文件顶部 `配置参数` 区域的常量：`BLOCK_ID`、`EN_NAME`、`ZH_NAME`、`SOURCE_ITEM`、`SOURCE_TEXTURE_PATH`
-3. 准备好目标方块的 16×16 纹理 PNG 文件
-4. 右键 `BlockGeneratorAdder` → Run 'BlockGeneratorAdder.main()'
-5. 工具自动完成：生成 5 个 JSON（blockstate、model×2、loot_table、recipe）+ 合成纹理 PNG + 修改 6 个 Java/config 文件（Config.java、DataConfig.java、Registration.java、ItemManager.java、en_us.json、zh_cn.json）
-6. 运行 `./gradlew runClient` 验证
+方块生成机是**单个通用机器** `block_generator`，通过 GUI 标记槽放入任意合法产品（见 `DataConfig.BLOCK_GENERATOR_ITEMS`）决定输出方块种类，不再按方块分多个特化机器。
 
 ## 项目架构
 
@@ -64,11 +57,13 @@ src/main/java/cn/sd/jrz/autoresource/
 │   └── BlockConnection.java        # 物品 IItemHandler
 ├── menu/                           # 容器
 │   ├── EnergyGeneratorMenu.java    # FE发电机容器（数据槽同步 + 按钮交互）
-│   └── LiquidGeneratorMenu.java    # 流体生成器容器（输入/输出槽 + 六面开关按钮）
+│   ├── LiquidGeneratorMenu.java    # 流体生成器容器（输入/输出槽 + 六面开关按钮）
+│   └── BlockGeneratorMenu.java     # 方块生成器容器（标记槽 + 输出展示槽 + 提取按钮）
 ├── client/                         # 客户端
 │   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
 │   ├── EnergyGeneratorScreen.java  # FE发电机 GUI
-│   └── LiquidGeneratorScreen.java  # 流体生成器 GUI
+│   ├── LiquidGeneratorScreen.java  # 流体生成器 GUI
+│   └── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
 ├── setup/                          # 注册
 │   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
@@ -93,10 +88,8 @@ src/main/java/cn/sd/jrz/autoresource/
 - `liquid_generator_water` — 水生成器
 - `liquid_generator_lava` — 岩浆生成器
 
-**方块机（21种）**:
-- 泥土、圆石、石头、平滑石头、粘土、沙子、沙砾
-- 花岗岩、闪长岩、安山岩、方解石、凝灰岩、深板岩圆石
-- 海晶石、黑曜石、下界岩、灵魂沙、灵魂土、黑石、玄武岩、末地石
+**方块机（1种通用）**:
+- `block_generator` — 通用可标记方块生成机（标记槽决定输出 21 种产品之一）
 
 ## 功能模块
 
@@ -164,26 +157,26 @@ src/main/java/cn/sd/jrz/autoresource/
 
 ### 3. 方块生成器 (`BlockGeneratorBlock` / `BlockGeneratorEntity`)
 
-支持 21 种方块的自动生成。
+单个通用可标记生成方块机 `block_generator`，通过标记槽支持 21 种方块的自动生成（输出种类由标记槽决定）。
 
 - **最大产量**: `Long.MAX_VALUE / 1000` Block/t
 - **初始产量**: 0.05 Block/t (即 1 Block/s)，每 10 秒增加 0.05 Block/t
 - 内部存储单位为 Block/1000
 
+**GUI 交互**:
+- 右击打开 GUI（`BlockGeneratorMenu` / `BlockGeneratorScreen`，与流体机同款布局），展示存量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关和"下方生成方块"开关
+- 展示值与进度增长机制与发电机/流体机一致；大数值用 K/M/G/T/P/E 单位缩写
+- **标记槽**（槽位 0）：放入任意合法方块生成机产品（`DataConfig.BLOCK_GENERATOR_ITEMS`，即现有 21 种方块生成机的产品）后锁定（菜单槽 `mayPickup` 返回 false，不可取出/更换），决定机器输出的方块种类；自动生成一直计算，未标记时无法取出/传输/放置
+- **输出展示槽**（槽位 1）：显示标记槽的物品（无实际库存），不支持插入；点击提取通过客户端拦截 + `clickMenuButton` 实现——单击提取 1 个、Shift+单击提取一组（标记物品堆叠上限）、空格+单击提取到背包满（提取逻辑在菜单 `extractBlocks`，背包放不下部分退回存量）
+- **下方生成方块**：输出槽下方有"下方生成方块"开关按钮（替代原红石激活判断，逐台保存到 NBT，默认关闭）；开启后每 5 ticks 尝试向机器下方空气方块放置标记的方块，每次消耗 1000 单位
+
 **方块传输**:
-- 通过六个面输出到相邻方块的 `IItemHandler` 管道（轮询索引负载均衡）
+- 标记后，通过六个面输出标记方块到相邻方块的 `IItemHandler` 管道（轮询索引负载均衡），可在 GUI 中逐面独立开关
 - 使用 `ItemHandlerHelper.insertItemStacked` 插入
 
-**红石模式 - 放置方块**:
-- 红石激活时，每 5 ticks 尝试向下方的空气方块放置对应方块
-- 每次放置消耗 1000 单位
-
-**方块提取**:
-- 主手为空或手持同种方块时右击，消耗 1000 单位取出 1 个方块
-
-**交互**:
-- 空手/同种方块右击提取
-- 其他物品右击查看状态
+**管道输出（BlockConnection）**:
+- 未标记时 `getStackInSlot`/`extractItem` 返回空；标记后按标记物品输出存量方块
+- `insertItem` 返回原物品（禁止输入）
 
 ## Capability 系统
 
@@ -198,7 +191,7 @@ src/main/java/cn/sd/jrz/autoresource/
   - 使用机器的 `FluidStack` 类型
 
 - **BlockConnection** (`IItemHandler`):
-  - 实现 `extractItem` (提取方块物品)
+  - 实现 `extractItem` (按标记物品提取存量方块，未标记时返回空)
   - `insertItem` 返回原物品（禁止输入）
 
 ## 配置系统
@@ -210,8 +203,12 @@ src/main/java/cn/sd/jrz/autoresource/
 - `FE_STAR_ITEM` — 加速增长所需物品（默认 `minecraft:nether_star`，方便其他作者改为更难的物品）
 - 无线充电参数、输电面开关等均为**每台发电机独立**配置，在 GUI 中修改并保存到 NBT，不属于全局配置
 
-**每种流体/方块机配置** (以 Water 为例):
+**流体机配置** (以 Water 为例):
 - `WATER_MIN/MAX/SECOND/STEP` — 最小/最大产量、增长速度间隔、每次增量
+- `LAVA_MIN/MAX/SECOND/STEP` — 岩浆机同结构
+
+**方块机配置**:
+- `BLOCK_MIN/MAX/SECOND/STEP` — 通用方块生成机的产量参数（输出种类由标记槽决定）
 
 配置类型: `ModConfig.Type.SERVER`（服务端配置，世界间不共享）
 
@@ -230,7 +227,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 - **EnergyGeneratorEntity**: `output`, `energy`, `tickCount`, `nextIncrease`（旧存档 `beaconIncrease` 兼容）
 - **LiquidGeneratorEntity**: `output`, `liquid`, `tickCount`，六面开关 `transferDown/Up/North/South/West/East`，`placeFluidBelow`，`inputSlot`、`outputSlot`
-- **BlockGeneratorEntity**: `output`, `block`, `tickCount`
+- **BlockGeneratorEntity**: `output`, `block`, `tickCount`，六面开关 `transferDown/Up/North/South/West/East`，`placeBlockBelow`，`markerSlot`
 
 物品 hover 信息从 NBT `BlockEntityTag` 中读取机器状态并显示。
 
