@@ -32,6 +32,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
     private StateButton faceSouth;
     private StateButton faceWest;
     private StateButton faceEast;
+    private StateButton placeButton;
 
     public LiquidGeneratorScreen(LiquidGeneratorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -56,6 +57,9 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
         this.addRenderableWidget(this.faceSouth);
         this.addRenderableWidget(this.faceWest);
         this.addRenderableWidget(this.faceEast);
+        // "下方生成流体"按钮（位于输出槽下方，开启后向机器下方空气方块放置对应流体）
+        this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceFluidBelow(), Component.translatable("screen.autoresource.liquid_generator.place_below"), button -> sendButton(LiquidGeneratorMenu.BUTTON_PLACE_FLUID));
+        this.addRenderableWidget(this.placeButton);
     }
 
     /**
@@ -124,6 +128,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
         this.faceSouth.setState(this.menu.isFaceEnabled(Direction.SOUTH));
         this.faceWest.setState(this.menu.isFaceEnabled(Direction.WEST));
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
+        this.placeButton.setState(this.menu.isPlaceFluidBelow());
     }
 
     /**

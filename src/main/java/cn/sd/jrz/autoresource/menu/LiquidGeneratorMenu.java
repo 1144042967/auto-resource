@@ -34,6 +34,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
     public static final int BUTTON_TRANSFER_SOUTH = 3;
     public static final int BUTTON_TRANSFER_WEST = 4;
     public static final int BUTTON_TRANSFER_EAST = 5;
+    public static final int BUTTON_PLACE_FLUID = 6;
 
     public final LiquidGeneratorEntity entity;
 
@@ -49,6 +50,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
     private boolean clientTransferSouth;
     private boolean clientTransferWest;
     private boolean clientTransferEast;
+    private boolean clientPlaceFluidBelow;
 
     public LiquidGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.LIQUID_GENERATOR_MENU.get(), id);
@@ -76,6 +78,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         addDataSlot(makeDataSlot(() -> entity.transferSouth ? 1 : 0, v -> clientTransferSouth = v != 0));
         addDataSlot(makeDataSlot(() -> entity.transferWest ? 1 : 0, v -> clientTransferWest = v != 0));
         addDataSlot(makeDataSlot(() -> entity.transferEast ? 1 : 0, v -> clientTransferEast = v != 0));
+        addDataSlot(makeDataSlot(() -> entity.placeFluidBelow ? 1 : 0, v -> clientPlaceFluidBelow = v != 0));
     }
 
     /**
@@ -124,6 +127,11 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         };
     }
 
+    /** 是否开启"下方生成流体"（客户端读同步值，服务端读实体） */
+    public boolean isPlaceFluidBelow() {
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.placeFluidBelow : clientPlaceFluidBelow;
+    }
+
     /**
      * 处理 GUI 按钮点击（六面传输开关）
      */
@@ -139,6 +147,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
             case BUTTON_TRANSFER_SOUTH -> entity.transferSouth = !entity.transferSouth;
             case BUTTON_TRANSFER_WEST -> entity.transferWest = !entity.transferWest;
             case BUTTON_TRANSFER_EAST -> entity.transferEast = !entity.transferEast;
+            case BUTTON_PLACE_FLUID -> entity.placeFluidBelow = !entity.placeFluidBelow;
             default -> {
                 return false;
             }

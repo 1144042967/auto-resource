@@ -29,7 +29,7 @@ Added some machines that automatically generate resources, supporting the genera
 - **Container filling above**: if there is a container (e.g. chest) directly above the machine, the fluid-container items inside will also be filled
 - Each of the six fluid transmission faces can be enabled / disabled independently in the GUI (saved to NBT and kept when the machine is broken); fluid is still evenly transferred to the enabled faces, and other MOD pipelines can be used to extract fluid
 - Synthetic materials require water buckets/lava buckets and smooth stones
-- In the case of redstone activation, 4 attempts will be made per second to place fluid into the air block below the machine
+- **Place fluid below**: when the "Place Below" button below the output slot is enabled in the GUI, 4 attempts will be made per second to place fluid into the air block below the machine
 - When the main / off hand right clicks on the fluid machine with an empty bucket, a bucket of liquid will be taken out
 
 ## Block machine
@@ -79,7 +79,7 @@ Added some machines that automatically generate resources, supporting the genera
 - **上方容器充液**：若机器正上方是容器（如箱子），容器内可容纳流体的物品也会被填充
 - 六个流体传输面可在 GUI 中逐面独立开关（保存到 NBT，拆方块保留）；流体仍会向开启的面均匀传输，也可使用其他 MOD 的管道抽取流体
 - 合成材料需要水桶/岩浆桶和平滑石头
-- 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
+- **下方生成流体**：在 GUI 输出槽下方的"下方生成流体"按钮开启后，每秒将尝试 4 次，向机器下方的空气方块中放置流体
 - 主手/副手拿空桶右击流体机时，仍可直接取出一桶液体
 
 ## 方块机

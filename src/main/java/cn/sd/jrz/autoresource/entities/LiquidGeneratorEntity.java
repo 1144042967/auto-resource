@@ -38,8 +38,8 @@ import javax.annotation.Nullable;
  * 流体生成器实体（水源机/岩浆机）。
  * <p>
  * 负责：产量自动增长、输入槽（空桶/可容纳流体物品）自动填充并转移到输出槽、
- * 上方容器内可容纳流体物品的填充、六面流体传输（可逐面禁用）以及红石放置流体。
- * 六面开关为每台机器独立保存，可在 GUI 中修改。
+ * 上方容器内可容纳流体物品的填充、六面流体传输（可逐面禁用）以及"下方生成流体"。
+ * 六面开关与"下方生成流体"为每台机器独立保存，可在 GUI 中修改。
  */
 public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityProvider, MenuProvider {
     private final LazyOptional<LiquidConnection> fluidOptional = LazyOptional.of(() -> new LiquidConnection(this));
@@ -95,6 +95,9 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     public boolean transferSouth = true;
     public boolean transferWest = true;
     public boolean transferEast = true;
+
+    // 是否在下方空气方块放置对应流体（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
+    public boolean placeFluidBelow = false;
 
     // 输入槽：放入空桶或可容纳本机流体的物品，可放一组物品，组的大小由物品自身堆叠上限决定
     public final ItemStackHandler inputSlot = new ItemStackHandler(1) {
@@ -190,8 +193,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         if (!isBucketPending()) {
             outputToSides();
         }
-        // 红石激活时向下方空气方块放置流体
-        placeLiquidWithRedstone();
+        // 开启"下方生成流体"时，向下方空气方块放置流体
+        placeFluidBelow();
         setChanged();
     }
 
@@ -354,16 +357,15 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
     }
 
     /**
-     * 红石激活时，每 5 ticks 尝试向下方空气方块放置对应流体，每次消耗 1000 mB
+     * 开启"下方生成流体"时，每 5 ticks 尝试向下方空气方块放置对应流体，每次消耗 1000 mB
      */
-    private void placeLiquidWithRedstone() {
+    private void placeFluidBelow() {
         Level level = getLevel();
-        if (level == null) {
+        if (level == null || !placeFluidBelow) {
             return;
         }
-        BlockPos blockPos = getBlockPos();
-        if (level.hasNeighborSignal(blockPos) && liquid >= 1000 && tickCount % 5 == 0) {
-            BlockPos pos = blockPos.relative(Direction.DOWN);
+        if (liquid >= 1000 && tickCount % 5 == 0) {
+            BlockPos pos = getBlockPos().relative(Direction.DOWN);
             if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
                 liquid -= 1000;
             }
@@ -494,6 +496,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         nbt.putBoolean("transferSouth", transferSouth);
         nbt.putBoolean("transferWest", transferWest);
         nbt.putBoolean("transferEast", transferEast);
+        nbt.putBoolean("placeFluidBelow", placeFluidBelow);
         nbt.put("inputSlot", inputSlot.serializeNBT());
         nbt.put("outputSlot", outputSlot.serializeNBT());
     }
@@ -527,6 +530,9 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
         if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
             transferEast = nbt.getBoolean("transferEast");
+        }
+        if (nbt.contains("placeFluidBelow", Tag.TAG_BYTE)) {
+            placeFluidBelow = nbt.getBoolean("placeFluidBelow");
         }
         if (nbt.contains("inputSlot", Tag.TAG_COMPOUND)) {
             inputSlot.deserializeNBT(nbt.getCompound("inputSlot"));
