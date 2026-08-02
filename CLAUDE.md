@@ -63,7 +63,8 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
 │   ├── EnergyGeneratorScreen.java  # FE发电机 GUI
 │   ├── LiquidGeneratorScreen.java  # 流体生成器 GUI
-│   └── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
+│   ├── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
+│   └── BlockGeneratorRenderer.java # 方块生成器方块实体渲染（四侧面显示标记物品）
 ├── setup/                          # 注册
 │   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
@@ -167,6 +168,7 @@ src/main/java/cn/sd/jrz/autoresource/
 - 右击打开 GUI（`BlockGeneratorMenu` / `BlockGeneratorScreen`，与流体机同款布局），展示存量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关和"下方生成方块"开关
 - 展示值与进度增长机制与发电机/流体机一致；大数值用 K/M/G/T/P/E 单位缩写
 - **标记槽**（槽位 0）：放入任意合法方块生成机产品（`DataConfig.BLOCK_GENERATOR_ITEMS`，即现有 21 种方块生成机的产品）后锁定（菜单槽 `mayPickup` 返回 false，不可取出/更换），决定机器输出的方块种类；自动生成一直计算，未标记时无法取出/传输/放置；破坏时标记槽内容随物品 NBT 保留（不掉落），物品 tooltip 显示标记内容（兼容为空）
+- **侧面显示**：`BlockGeneratorRenderer`（BlockEntityRenderer，仿 StorageDrawers）在四个侧面（北/南/东/西，上下除外）用 `ItemRenderer` 把标记物品拍扁后各渲染一次，指示机器输出的方块种类
 - **输出展示槽**（槽位 1）：显示标记槽的物品（无实际库存），不支持插入；点击提取通过客户端拦截 + `clickMenuButton` 实现——单击提取 1 个、Shift+单击提取一组（标记物品堆叠上限）、空格+单击提取到背包满（提取逻辑在菜单 `extractBlocks`，背包放不下部分退回存量）
 - **下方生成方块**：输出槽下方有"下方生成方块"开关按钮（替代原红石激活判断，逐台保存到 NBT，默认关闭）；开启后每 5 ticks 尝试向机器下方空气方块放置标记的方块，每次消耗 1000 单位
 

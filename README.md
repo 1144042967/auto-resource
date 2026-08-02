@@ -40,6 +40,7 @@ Added some machines that automatically generate resources, supporting the genera
 - The default initial output is 0.05 Block/t, which is 1 Block/second. Every 10 seconds, the output increases by 0.05 Block/t
 - Right-click to open the GUI (the same style as the fluid machine): displays the stored amount, output, next increase and a growth progress bar; large numbers use K / M / G / T / P / E abbreviations
 - **Marker slot**: put any valid block-generator product (dirt, stone, etc.) into the marker slot; it is locked once placed and determines which block the machine outputs. Generation keeps running, but without a marker nothing can be extracted / transferred; once marked it cannot be changed. When the machine is broken, the marker is kept in the item (does not drop) and the item's tooltip shows what is marked (or "Unmarked" if empty)
+- **Side display**: when marked, the machine shows the marked block on its four side faces (north / south / east / west); the top and bottom keep the machine's own texture
 - **Output slot**: displays the marked item. Click to take one, Shift+click to take a stack, Space+click to take until the inventory is full. The marker and output slots do not support pipe input/output
 - **Pipe support**: after marking, the machine actively transfers the marked block evenly to the six faces (each can be enabled / disabled independently in the GUI), and other MOD pipelines can extract the marked block
 - **Place block below**: when the "Place Below" button below the output slot is enabled, 4 attempts will be made per second to place the marked block into the air block below the machine (replaces the old redstone behavior)
@@ -93,6 +94,7 @@ Added some machines that automatically generate resources, supporting the genera
 - 默认初始产量为 0.05 个/t，也就是 1 个/秒，每过 10 秒，产量增加 0.05 个/t
 - 右击打开 GUI（与流体机同款）：展示存量、产量、下次增长量和增长进度条；大数值使用 K / M / G / T / P / E 单位缩写
 - **标记槽**：把任意合法的方块生成机产品（泥土、石头等）放入标记槽，放入后锁定，决定机器输出的方块种类。自动生成会一直计算，但未标记时无法取出/传输；标记后不可更换。破坏时标记槽内容随物品保留（不掉落），物品 tooltip 会显示标记内容（为空时显示"未标记"）
+- **侧面显示**：标记后，机器四个侧面（北/南/东/西）会显示标记的方块；上下两面保持机器自身纹理
 - **输出槽**：显示标记的物品。单击取出一个，Shift+单击取出一组，空格+单击取出直到背包满。标记槽和输出槽均不支持管道输入输出
 - **管道支持**：标记后，方块机会主动向六个面均匀传输标记的方块（每个面可在 GUI 中独立开关），也可用其他 MOD 的管道抽取标记的方块
 - **下方生成方块**：开启输出槽下方"下方生成方块"按钮后，每秒将尝试 4 次，向机器下方的空气方块中放置标记的方块（替代原红石激活行为）
