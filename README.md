@@ -23,7 +23,11 @@ Added some machines that automatically generate resources, supporting the genera
 - Support the generation of Water and Lava
 - The maximum output is 9,223,372,036,854,775.807 B/t
 - The default initial production is 0.05 B/t, which is 1 B/second. Every 10 seconds, the production increases by 0.05 B/t
-- Fluid will actively transfer fluid evenly to the six veneers, or other MOD pipelines can be used to extract fluid
+- Right-click to open the GUI, which displays the current liquid amount, output, next increase and a growth progress bar (the same growth mechanic as the generator); large numbers use K / M / G / T / P / E abbreviations. The content is divided by black-outlined boxes in the order: progress → transfer faces → input/output (the transfer faces have no text hint, and the input/output slots have no box)
+- **Input / output slots**: put an empty bucket or any fluid-container item into the input slot; the machine fills it every tick (a bucket is filled with 1000 mB), and when full the filled item is moved to the output slot. The input slot holds one group whose size is the item's own stack limit (e.g. 16 buckets); the output slot holds only 1 item, cannot be manually placed into (only the machine puts filled items there, and players / pipes extract from it)
+- **Pipe / hopper support**: the machine exposes an item handler capability — inserted items always go to the input slot, extracted items always come from the output slot
+- **Container filling above**: if there is a container (e.g. chest) directly above the machine, the fluid-container items inside will also be filled
+- Each of the six fluid transmission faces can be enabled / disabled independently in the GUI (saved to NBT and kept when the machine is broken); fluid is still evenly transferred to the enabled faces, and other MOD pipelines can be used to extract fluid
 - Synthetic materials require water buckets/lava buckets and smooth stones
 - In the case of redstone activation, 4 attempts will be made per second to place fluid into the air block below the machine
 - When the main / off hand right clicks on the fluid machine with an empty bucket, a bucket of liquid will be taken out
@@ -69,10 +73,14 @@ Added some machines that automatically generate resources, supporting the genera
 - 支持产生水和岩浆
 - 最大产量为 9,223,372,036,854,775.807 桶/t
 - 默认初始产量为 0.05 桶/t，也就是 1 桶/秒，每过 10 秒，产量增加 0.05 桶/t
-- 流体机会主动向六个贴面均匀传输流体，也可以使用其他 MOD 的管道抽取流体
+- 右击打开 GUI（紧凑布局），展示当前流体量、产量、下次增长量和增长进度条（增长机制与发电机一致）；大数值使用 K / M / G / T / P / E 单位缩写。内容按黑色线框分区：进度 → 传输面 → 输入输出（传输面无文字提示，输入输出无黑框）
+- **输入/输出槽**：把空桶或任何可容纳流体的物品放入输入槽，机器每 tick 会尽力填充（铁桶需 1000 mB），填满后自动转移到输出槽。输入槽可放一组物品，组的大小由物品自身堆叠上限决定（如铁桶一组 16 个）；输出槽只能放 1 个，且不可主动放入物品（只能由机器放入，玩家/管道从中抽取）
+- **管道/漏斗支持**：机器暴露物品能力，插入的物品总是进入输入槽，抽取的物品总是来自输出槽
+- **上方容器充液**：若机器正上方是容器（如箱子），容器内可容纳流体的物品也会被填充
+- 六个流体传输面可在 GUI 中逐面独立开关（保存到 NBT，拆方块保留）；流体仍会向开启的面均匀传输，也可使用其他 MOD 的管道抽取流体
 - 合成材料需要水桶/岩浆桶和平滑石头
 - 在红石激活的情况下，每秒将尝试 4 次，向机器下方的空气方块中放置流体
-- 主手/副手拿空桶右击流体机时，将取出一桶液体
+- 主手/副手拿空桶右击流体机时，仍可直接取出一桶液体
 
 ## 方块机
 

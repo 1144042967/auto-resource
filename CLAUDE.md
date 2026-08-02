@@ -63,10 +63,12 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── LiquidConnection.java       # 流体 IFluidHandler
 │   └── BlockConnection.java        # 物品 IItemHandler
 ├── menu/                           # 容器
-│   └── EnergyGeneratorMenu.java    # FE发电机容器（数据槽同步 + 按钮交互）
+│   ├── EnergyGeneratorMenu.java    # FE发电机容器（数据槽同步 + 按钮交互）
+│   └── LiquidGeneratorMenu.java    # 流体生成器容器（输入/输出槽 + 六面开关按钮）
 ├── client/                         # 客户端
 │   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
-│   └── EnergyGeneratorScreen.java  # FE发电机 GUI
+│   ├── EnergyGeneratorScreen.java  # FE发电机 GUI
+│   └── LiquidGeneratorScreen.java  # 流体生成器 GUI
 ├── setup/                          # 注册
 │   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
@@ -148,20 +150,21 @@ src/main/java/cn/sd/jrz/autoresource/
 - 内部存储单位为 mB/1000（即 B）
 
 **流体传输**:
-- 通过六个面输出到相邻方块（轮询索引负载均衡）
+- 通过六个面输出到相邻方块（轮询索引负载均衡），可在 GUI 中逐面独立开关（默认全启用，保存到 NBT）
 - 检查目标方块的 `IFluidHandler` 是否接受该流体类型
+
+**GUI 交互**:
+- 右击打开 GUI（`LiquidGeneratorMenu` / `LiquidGeneratorScreen`），紧凑布局展示当前流体量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关
+- 展示值与进度增长机制与发电机一致；大数值用 K/M/G/T/P/E 单位缩写
+- **分区黑框**：内容按黑色 1px 线框分区（与发电机按钮边框风格一致），顺序为 进度（信息+进度条）→ 传输面（六个开关，无文字提示）→ 输入/输出（无黑框）
+- **输入/输出槽**：输入槽放入空桶或可容纳流体的物品（通过 `FLUID_HANDLER_ITEM` 能力判断），可放一组物品、组的大小由物品自身堆叠上限决定（`getStackLimit` 返回 `stack.getMaxStackSize()`）；机器每 tick 优先填充输入槽物品（铁桶需 1000 mB），填满后转移到输出槽；输出槽只能放 1 个（`getSlotLimit`/`getStackLimit` 均为 1），且 `isItemValid` 返回 false（不可主动放入，只能由机器放入、玩家/管道抽取）；有待填充的铁桶时保留液体、暂不向六面输出
+- **物品管道能力**：实体额外暴露 `ITEM_HANDLER`（包装输入/输出槽），插入的物品只能进输入槽，抽取的物品只能来自输出槽（输入槽不可抽取、输出槽不可插入）
+- **上方容器充液**：机器正上方容器内的空桶/可容纳流体物品也会被填充（空桶直接转换为流体桶）
+- 保留空桶右击直接提取一桶液体（主手或副手，消耗 1000 mB）
 
 **红石模式 - 放置流体**:
 - 红石激活时，每 5 ticks 尝试向下方的空气方块放置对应流体
 - 每次放置消耗 1000 mB
-
-**桶提取**:
-- 主手或副手持有空桶右击，消耗 1000 mB 返回对应桶（水桶/岩浆桶）
-- 支持堆叠桶的批量提取
-
-**交互**:
-- 空桶右击提取液体
-- 空手/其他物品右击查看状态
 
 ### 3. 方块生成器 (`BlockGeneratorBlock` / `BlockGeneratorEntity`)
 
@@ -230,7 +233,7 @@ src/main/java/cn/sd/jrz/autoresource/
 所有 Entity 通过 `saveAdditional`/`load` 持久化数据：
 
 - **EnergyGeneratorEntity**: `output`, `energy`, `tickCount`, `nextIncrease`（旧存档 `beaconIncrease` 兼容）
-- **LiquidGeneratorEntity**: `output`, `liquid`, `tickCount`
+- **LiquidGeneratorEntity**: `output`, `liquid`, `tickCount`，六面开关 `transferDown/Up/North/South/West/East`，`inputSlot`、`outputSlot`
 - **BlockGeneratorEntity**: `output`, `block`, `tickCount`
 
 物品 hover 信息从 NBT `BlockEntityTag` 中读取机器状态并显示。

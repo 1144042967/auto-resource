@@ -12,6 +12,7 @@ import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
+import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
 import net.minecraft.world.item.Item;
@@ -128,4 +129,5 @@ public class Registration {
     // Menus
 
     public static final RegistryObject<MenuType<EnergyGeneratorMenu>> ENERGY_GENERATOR_MENU = CONTAINERS.register("energy_generator", () -> IForgeMenuType.create((id, inv, buf) -> new EnergyGeneratorMenu(id, inv, buf.readBlockPos())));
+    public static final RegistryObject<MenuType<LiquidGeneratorMenu>> LIQUID_GENERATOR_MENU = CONTAINERS.register("liquid_generator", () -> IForgeMenuType.create((id, inv, buf) -> new LiquidGeneratorMenu(id, inv, buf.readBlockPos())));
 }

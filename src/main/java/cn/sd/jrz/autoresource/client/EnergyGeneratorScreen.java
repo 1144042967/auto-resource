@@ -38,7 +38,7 @@ public class EnergyGeneratorScreen extends AbstractContainerScreen<EnergyGenerat
         super(menu, playerInventory, title);
         this.imageWidth = 176;
         this.imageHeight = 310;
-        this.inventoryLabelY = 212;
+        this.inventoryLabelY = 214;
     }
 
     @Override

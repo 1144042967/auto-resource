@@ -14,6 +14,9 @@ public class ClientSetup {
 
     @SubscribeEvent
     public static void onClientSetup(FMLClientSetupEvent event) {
-        event.enqueueWork(() -> MenuScreens.register(Registration.ENERGY_GENERATOR_MENU.get(), EnergyGeneratorScreen::new));
+        event.enqueueWork(() -> {
+            MenuScreens.register(Registration.ENERGY_GENERATOR_MENU.get(), EnergyGeneratorScreen::new);
+            MenuScreens.register(Registration.LIQUID_GENERATOR_MENU.get(), LiquidGeneratorScreen::new);
+        });
     }
 }
