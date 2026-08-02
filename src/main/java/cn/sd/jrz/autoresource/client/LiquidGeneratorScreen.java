@@ -10,6 +10,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -68,7 +70,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
     @Override
     protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        // 增长进度条
+        // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -76,8 +78,20 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
         int percent = growthPercent();
         if (percent > 0) {
             int fill = (trackRight - trackLeft) * percent / 100;
-            guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, 0xFF00AA00);
+            guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, progressColor());
         }
+    }
+
+    /** 进度条填充色：根据本机流体返回对应颜色（水=蓝、岩浆=橙），其余默认绿色 */
+    private int progressColor() {
+        Fluid fluid = this.menu.getFluid();
+        if (fluid == Fluids.WATER || fluid == Fluids.FLOWING_WATER) {
+            return 0xFF3F76E4; // 水蓝色
+        }
+        if (fluid == Fluids.LAVA || fluid == Fluids.FLOWING_LAVA) {
+            return 0xFFFF8800; // 岩浆橙
+        }
+        return 0xFF00AA00;
     }
 
     @Override

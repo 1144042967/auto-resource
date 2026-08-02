@@ -11,6 +11,8 @@ import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
+import net.minecraft.world.level.material.Fluid;
+import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
@@ -93,6 +95,11 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
 
     public long getMax() {
         return entity != null ? entity.config.getMax() : Long.MAX_VALUE;
+    }
+
+    /** 本机对应的流体（水源机为水，岩浆机为岩浆），用于 GUI 进度条配色 */
+    public Fluid getFluid() {
+        return entity != null ? entity.config.getFluid() : Fluids.WATER;
     }
 
     public int getTickCount() {
