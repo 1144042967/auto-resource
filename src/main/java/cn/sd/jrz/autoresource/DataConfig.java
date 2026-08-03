@@ -2,7 +2,9 @@ package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
+import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
@@ -15,7 +17,7 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.registries.ForgeRegistries;
 
 import javax.annotation.Nullable;
-import java.util.Set;
+import java.util.List;
 
 public abstract class DataConfig {
     public static final DataConfig ENERGY_GENERATOR_FE = new DataConfig(Config.FE_MIN, Config.FE_MAX, Config.FE_SECOND, Config.FE_STEP) {
@@ -117,16 +119,38 @@ public abstract class DataConfig {
         return null;
     }
 
-    /** 所有方块生成机产品的物品集合（用于方块生成机标记槽的合法性判断） */
-    public static final Set<Item> BLOCK_GENERATOR_ITEMS = Set.of(
-            Items.DIRT, Items.COBBLESTONE, Items.STONE, Items.SMOOTH_STONE, Items.CLAY,
-            Items.SAND, Items.GRAVEL, Items.GRANITE, Items.DIORITE, Items.ANDESITE,
-            Items.CALCITE, Items.TUFF, Items.COBBLED_DEEPSLATE, Items.PRISMARINE, Items.OBSIDIAN,
-            Items.NETHERRACK, Items.SOUL_SAND, Items.SOUL_SOIL, Items.BLACKSTONE, Items.BASALT,
-            Items.END_STONE);
-
-    /** 判断物品是否为合法的方块生成机产品（可放入标记槽） */
+    /** 判断物品是否为合法的方块生成机产品（可放入标记槽）：支持配置的物品 ID（如 minecraft:dirt）或 # 标签（如 #minecraft:planks） */
     public static boolean isBlockGeneratorItem(ItemStack stack) {
-        return !stack.isEmpty() && BLOCK_GENERATOR_ITEMS.contains(stack.getItem());
+        if (stack.isEmpty()) {
+            return false;
+        }
+        for (String entry : Config.BLOCK_GENERATOR_ITEMS.get()) {
+            if (entry == null) {
+                continue;
+            }
+            String id = entry.trim();
+            if (id.isEmpty()) {
+                continue;
+            }
+            if (id.startsWith("#")) {
+                // 标签形式：#minecraft:planks
+                ResourceLocation loc = ResourceLocation.tryParse(id.substring(1));
+                if (loc != null && stack.is(TagKey.create(Registries.ITEM, loc))) {
+                    return true;
+                }
+            } else {
+                // 物品 ID 形式：minecraft:dirt
+                ResourceLocation loc = ResourceLocation.tryParse(id);
+                if (loc != null && stack.getItem() == ForgeRegistries.ITEMS.getValue(loc)) {
+                    return true;
+                }
+            }
+        }
+        return false;
+    }
+
+    /** 配置的方块生成机可生成产品列表（原始配置内容，用于物品 tooltip 展示） */
+    public static List<? extends String> getBlockGeneratorItems() {
+        return Config.BLOCK_GENERATOR_ITEMS.get();
     }
 }

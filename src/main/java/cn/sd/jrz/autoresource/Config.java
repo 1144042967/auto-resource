@@ -4,6 +4,8 @@ import net.minecraftforge.common.ForgeConfigSpec;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
+import java.util.List;
+
 public class Config {
 
     public static ForgeConfigSpec.LongValue FE_MIN;
@@ -26,6 +28,8 @@ public class Config {
     public static ForgeConfigSpec.LongValue BLOCK_MAX;
     public static ForgeConfigSpec.LongValue BLOCK_SECOND;
     public static ForgeConfigSpec.LongValue BLOCK_STEP;
+    /** 方块生成机可生成的产品列表：支持物品 ID（如 minecraft:dirt）或物品标签（以 # 开头，如 #minecraft:planks） */
+    public static ForgeConfigSpec.ConfigValue<List<? extends String>> BLOCK_GENERATOR_ITEMS;
 
     public static ForgeConfigSpec SERVER_CONFIG;
 
@@ -69,6 +73,30 @@ public class Config {
         BLOCK_MAX = SERVER_BUILDER.comment("Control the maximum rate of production.The actual data needs to be divided by 1000.").defineInRange("max", Long.MAX_VALUE, 1, Long.MAX_VALUE);
         BLOCK_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
         BLOCK_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
+        BLOCK_GENERATOR_ITEMS = SERVER_BUILDER.comment(
+                "List of items (registry names like minecraft:dirt) or item tags (prefixed with # like #minecraft:stone_bricks) that the block generator can produce. The marker slot accepts items matching any entry.")
+                .defineList("items",
+                        List.of(
+                                // 主世界 — 自然生成/基础方块（按常见程度排序）
+                                "minecraft:stone", "minecraft:deepslate", "minecraft:dirt", "minecraft:sand", "minecraft:gravel",
+                                "minecraft:cobblestone", "minecraft:andesite", "minecraft:granite", "minecraft:diorite", "minecraft:tuff",
+                                "minecraft:cobbled_deepslate", "minecraft:clay", "minecraft:red_sand", "minecraft:moss_block", "minecraft:rooted_dirt",
+                                "minecraft:mud", "minecraft:dripstone_block", "minecraft:calcite", "minecraft:amethyst_block", "minecraft:obsidian",
+                                "minecraft:prismarine",
+                                // 主世界 — 建筑加工方块（按常见程度排序）
+                                "minecraft:bricks", "minecraft:smooth_stone",
+                                // 标签优先：#minecraft:stone_bricks 覆盖石砖/苔石砖/裂纹石砖/錾制石砖
+                                "#minecraft:stone_bricks",
+                                "minecraft:mossy_cobblestone", "minecraft:sandstone", "minecraft:smooth_sandstone", "minecraft:red_sandstone",
+                                "minecraft:polished_andesite", "minecraft:polished_granite", "minecraft:polished_diorite",
+                                "minecraft:polished_deepslate", "minecraft:deepslate_bricks", "minecraft:mud_bricks",
+                                // 下界 — 按常见程度排序
+                                "minecraft:netherrack", "minecraft:basalt", "minecraft:smooth_basalt", "minecraft:soul_sand", "minecraft:soul_soil",
+                                "minecraft:blackstone", "minecraft:polished_blackstone_bricks", "minecraft:polished_blackstone",
+                                "minecraft:nether_bricks", "minecraft:magma_block",
+                                // 末地 — 按常见程度排序
+                                "minecraft:end_stone", "minecraft:end_stone_bricks"),
+                        obj -> obj instanceof String);
         SERVER_BUILDER.pop();
 
         SERVER_BUILDER.pop();

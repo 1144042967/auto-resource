@@ -61,6 +61,8 @@
   "item.autoresource.block_generator.tooltip.marked": "标记: %s",
   "item.autoresource.block_generator.tooltip.unmarked": "未标记",
   "item.autoresource.block_generator.tooltip.set_block": "在 GUI 开启\"下方生成方块\"后, 在下方空气方块放置方块",
+  "item.autoresource.block_generator.tooltip.blocks": "支持生成方块:",
+  "item.autoresource.block_generator.tooltip.blocks_more": "… 共 %s 种方块（仅展示前 %s 种）",
   "item.autoresource.block_generator.tooltip.tip": "在标记槽放入一个方块后, 自动向相邻的容器传输该方块",
   "screen.autoresource.block_generator.message": "方块: %s 个   产量: %s 个/tick   成长: %s%%",
   "screen.autoresource.block_generator.message_max": "方块: %s 个   产量: %s 个/tick   成长: 已达上限",

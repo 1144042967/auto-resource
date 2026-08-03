@@ -2,7 +2,7 @@
 
 ## 项目概述
 
-一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及 21 种不同类型的方块。机器产量会随时间逐渐增长，且可通过放入特殊物品加速（FE 发电机）。
+一个添加自动资源生成机器的 Minecraft Forge 模组。支持自动生成 FE（电力）、水、岩浆以及多种不同类型的方块（可配置，默认含 21 种基础方块与推荐的建筑/自然方块）。机器产量会随时间逐渐增长，且可通过放入特殊物品加速（FE 发电机）。
 
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
@@ -29,7 +29,7 @@
 
 ### 方块生成机
 
-方块生成机是**单个通用机器** `block_generator`，通过 GUI 标记槽放入任意合法产品（见 `DataConfig.BLOCK_GENERATOR_ITEMS`）决定输出方块种类，不再按方块分多个特化机器。
+方块生成机是**单个通用机器** `block_generator`，通过 GUI 标记槽放入任意合法产品（可生成产品由配置文件 `block_generator.items` 决定，支持物品 ID 与 `#` 标签）决定输出方块种类，不再按方块分多个特化机器。
 
 ## 项目架构
 
@@ -90,7 +90,7 @@ src/main/java/cn/sd/jrz/autoresource/
 - `liquid_generator_lava` — 岩浆生成器
 
 **方块机（1种通用）**:
-- `block_generator` — 通用可标记方块生成机（标记槽决定输出 21 种产品之一）
+- `block_generator` — 通用可标记方块生成机（标记槽决定输出配置的多种产品之一）
 
 ## 功能模块
 
@@ -158,7 +158,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 ### 3. 方块生成器 (`BlockGeneratorBlock` / `BlockGeneratorEntity`)
 
-单个通用可标记生成方块机 `block_generator`，通过标记槽支持 21 种方块的自动生成（输出种类由标记槽决定）。
+单个通用可标记生成方块机 `block_generator`，通过标记槽支持配置的多种方块的自动生成（输出种类由标记槽决定）。
 
 - **最大产量**: `Long.MAX_VALUE / 1000` Block/t
 - **初始产量**: 0.05 Block/t (即 1 Block/s)，每 10 秒增加 0.05 Block/t
@@ -167,7 +167,7 @@ src/main/java/cn/sd/jrz/autoresource/
 **GUI 交互**:
 - 右击打开 GUI（`BlockGeneratorMenu` / `BlockGeneratorScreen`，与流体机同款布局），展示存量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关和"下方生成方块"开关
 - 展示值与进度增长机制与发电机/流体机一致；大数值用 K/M/G/T/P/E 单位缩写
-- **标记槽**（槽位 0）：放入任意合法方块生成机产品（`DataConfig.BLOCK_GENERATOR_ITEMS`，即现有 21 种方块生成机的产品）后锁定（菜单槽 `mayPickup` 返回 false，不可取出/更换），决定机器输出的方块种类；自动生成一直计算，未标记时无法取出/传输/放置；破坏时标记槽内容随物品 NBT 保留（不掉落），物品 tooltip 显示标记内容（兼容为空）
+- **标记槽**（槽位 0）：放入任意合法方块生成机产品（合法性由配置文件 `block_generator.items` 决定，支持物品 ID 与 `#` 标签，默认含 21 种基础方块及推荐的建筑/自然方块）后锁定（菜单槽 `mayPickup` 返回 false，不可取出/更换），决定机器输出的方块种类；自动生成一直计算，未标记时无法取出/传输/放置；破坏时标记槽内容随物品 NBT 保留（不掉落），物品 tooltip 显示标记内容（兼容为空）
 - **侧面显示**：`BlockGeneratorRenderer`（BlockEntityRenderer，仿 StorageDrawers）在四个侧面（北/南/东/西，上下除外）用 `ItemRenderer` 把标记物品拍扁后各渲染一次，指示机器输出的方块种类
 - **输出展示槽**（槽位 1）：显示标记槽的物品（无实际库存），不支持插入；点击提取通过客户端拦截 + `clickMenuButton` 实现——单击提取 1 个、Shift+单击提取一组（标记物品堆叠上限）、空格+单击提取到背包满（提取逻辑在菜单 `extractBlocks`，背包放不下部分退回存量）
 - **下方生成方块**：输出槽下方有"下方生成方块"开关按钮（替代原红石激活判断，逐台保存到 NBT，默认关闭）；开启后每 5 ticks 尝试向机器下方空气方块放置标记的方块，每次消耗 1000 单位
@@ -211,6 +211,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 **方块机配置**:
 - `BLOCK_MIN/MAX/SECOND/STEP` — 通用方块生成机的产量参数（输出种类由标记槽决定）
+- `BLOCK_GENERATOR_ITEMS` — 方块生成机可生成的产品列表（`block_generator.items`），每项支持物品注册 ID（如 `minecraft:dirt`）或物品标签（以 `#` 开头，如 `#minecraft:stone_bricks`）；默认列表按主世界/下界/末地分类、各类内按常见程度排序；物品 tooltip 会展示该列表（最多前 100 种，超过在尾部提示总数量）
 
 配置类型: `ModConfig.Type.SERVER`（服务端配置，世界间不共享）
 
@@ -258,4 +259,4 @@ src/main/java/cn/sd/jrz/autoresource/
 - 使用 `findIndex` 轮询索引实现六面均匀输出
 - 产量使用 scaled long 存储（*1000 避免浮点运算）
 - GUI 使用 vanilla `MenuType` + `Menu` + `AbstractContainerScreen` 实现；数据同步用 `DataSlot`（long 拆高低 32 位）；按钮交互用 `clickMenuButton` + `ServerboundContainerButtonClickPacket`
-- 客户端类放在 `client/` 包，仅通过 `@Mod.EventBusSubscriber(Dist.CLIENT)` 注册，避免服务端加载
+- 客户端类放在 `client/` 包，通过 `@Mod.EventBusSubscriber(Dist.CLIENT)` 或手动注册到 Forge 事件总线（`MinecraftForge.EVENT_BUS.addListener`）注册，避免服务端加载
