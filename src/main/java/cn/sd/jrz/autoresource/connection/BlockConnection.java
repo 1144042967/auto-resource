@@ -9,11 +9,10 @@ import javax.annotation.Nonnull;
 
 public class BlockConnection implements IItemHandler {
     private final BlockGeneratorEntity owner;
-    private final ItemStack stack;
+    private ItemStack stack = ItemStack.EMPTY;
 
     public BlockConnection(BlockGeneratorEntity owner) {
         this.owner = owner;
-        this.stack = new ItemStack(owner.config.getBlock().asItem(), 0);
     }
 
     @Override
@@ -23,6 +22,13 @@ public class BlockConnection implements IItemHandler {
 
     @Override
     public @Nonnull ItemStack getStackInSlot(int slot) {
+        // 未标记时无法输出
+        if (owner.getMarkedItem().isEmpty()) {
+            return ItemStack.EMPTY;
+        }
+        if (stack.isEmpty() || !stack.is(owner.getMarkedItem().getItem())) {
+            stack = new ItemStack(owner.getMarkedItem().getItem(), 0);
+        }
         stack.setCount(Tool.suitInt(owner.block / 1000));
         return stack;
     }
@@ -34,6 +40,9 @@ public class BlockConnection implements IItemHandler {
 
     @Override
     public @Nonnull ItemStack extractItem(int slot, int amount, boolean simulate) {
+        if (owner.getMarkedItem().isEmpty()) {
+            return ItemStack.EMPTY;
+        }
         int maxOutput = Tool.suitInt(owner.block / 1000);
         if (maxOutput <= 0 || amount <= 0) {
             return ItemStack.EMPTY;
@@ -43,7 +52,7 @@ public class BlockConnection implements IItemHandler {
             owner.block -= ret * 1000L;
             owner.setChanged();
         }
-        return new ItemStack(owner.config.getBlock().asItem(), ret);
+        return new ItemStack(owner.getMarkedItem().getItem(), ret);
     }
 
     @Override

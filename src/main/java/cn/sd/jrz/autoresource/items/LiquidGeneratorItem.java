@@ -35,9 +35,9 @@ public class LiquidGeneratorItem extends BlockItem {
         String blockData = stack.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (!blockData.isEmpty()) {
             String[] dataArray = blockData.split(",");
-            output = Tool.suit(dataArray[0]) / 1000D;
-            liquid = Tool.suit(dataArray[1]) / 1000;
-            tickCount = Tool.suit(dataArray[2]);
+            output = Tool.parseLong(dataArray, 0) / 1000D;
+            liquid = Tool.parseLong(dataArray, 1) / 1000;
+            tickCount = Tool.parseLong(dataArray, 2);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000D) / 100.00D;
         tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid));

@@ -20,27 +20,7 @@ public class ItemManager {
                 output.accept(Registration.ENERGY_GENERATOR_FE_ITEM.get());
                 output.accept(Registration.LIQUID_GENERATOR_WATER_ITEM.get());
                 output.accept(Registration.LIQUID_GENERATOR_LAVA_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_DIRT_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_COBBLESTONE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_STONE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_SMOOTH_STONE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_CLAY_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_SAND_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_GRAVEL_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_GRANITE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_DIORITE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_ANDESITE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_CALCITE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_TUFF_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_COBBLED_DEEPSLATE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_PRISMARINE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_OBSIDIAN_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_NETHERRACK_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_SOUL_SAND_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_SOUL_SOIL_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_BLACKSTONE_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_BASALT_ITEM.get());
-                output.accept(Registration.BLOCK_GENERATOR_END_STONE_ITEM.get());
+                output.accept(Registration.BLOCK_GENERATOR_ITEM.get());
             })
             .build()
     );

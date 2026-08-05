@@ -2,10 +2,7 @@ package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
-import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.ItemInteractionResult;
@@ -13,25 +10,22 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.phys.AABB;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.energy.IEnergyStorage;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
 import java.util.List;
 
 public class EnergyGeneratorBlock extends Block implements EntityBlock {
     private final DataConfig config;
-    private final Direction[] directions = Direction.values();
-    private int findIndex = 0;
 
     public EnergyGeneratorBlock(Properties properties, DataConfig config) {
         super(properties);
@@ -50,84 +44,41 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     }
 
     private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide) {
+        if (level.isClientSide || !(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
-        if (!(tile instanceof EnergyGeneratorEntity generator)) {
-            return;
-        }
-        BlockPos blockPos = generator.getBlockPos();
-        generator.tickCount = Tool.suit(generator.tickCount + 1);
-        if (generator.tickCount / 20 >= generator.config.getSecond()) {
-            generator.tickCount = 0;
-            generator.beaconIncrease = generator.config.getStep();
-            if (level.hasNeighborSignal(blockPos)) {
-                BlockPos pos = blockPos.relative(Direction.DOWN);
-                if (level.getBlockState(pos).getBlock() == Blocks.BEACON) {
-                    generator.beaconIncrease = Tool.suit((long) (generator.output / 10000.0 * config.getBeaconStep()) + generator.config.getStep());
-                }
-            }
-            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.beaconIncrease));
-        }
-        generator.energy = Tool.suit(generator.energy + generator.output);
-        //给实体输电
-        List<Player> playerList = level.getEntitiesOfClass(Player.class, new AABB(blockPos.relative(Direction.UP)));
-        for (Player player : playerList) {
-            Iterable<ItemStack> slots = player.getAllSlots();
-            for (ItemStack stack : slots) {
-                IEnergyStorage storage = stack.getCapability(Capabilities.EnergyStorage.ITEM);
-                transportEnergy(generator, storage);
-                if (generator.energy <= 0) {
-                    generator.setChanged();
-                    return;
-                }
-            }
-        }
-        //给其他面输电
-        for (int i = 0; i < directions.length; i++) {
-            findIndex = (findIndex + 1) % directions.length;
-            Direction direction = directions[findIndex];
-            BlockPos pos = blockPos.relative(direction);
-            BlockEntity entity = level.getBlockEntity(pos);
-            if (entity == null) {
-                continue;
-            }
-            IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction.getOpposite());
-            transportEnergy(generator, storage);
-            if (generator.energy <= 0) {
-                generator.setChanged();
-                break;
-            }
-        }
-        generator.setChanged();
+        generator.serverTick();
     }
 
-    private void transportEnergy(EnergyGeneratorEntity generator, IEnergyStorage storage) {
-        if (storage == null || !storage.canReceive()) {
-            return;
+    /**
+     * 破坏时，充电槽中的物品掉落（加速槽内容随物品 DataComponent 保留，不在此掉落）
+     */
+    @Override
+    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+        List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
+        if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof EnergyGeneratorEntity entity) {
+            ItemStack charge = entity.chargeSlot.getStackInSlot(0);
+            if (!charge.isEmpty()) {
+                drops.add(charge);
+            }
         }
-        int maxOutput = Tool.suitInt(generator.energy);
-        int result = storage.receiveEnergy(maxOutput, false);
-        if (result < 0) {
-            result = 0;
-        }
-        if (result > maxOutput) {
-            result = maxOutput;
-        }
-        generator.energy -= result;
+        return drops;
     }
 
     @Override
     public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
+        return openGui(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
     @Override
-    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack p_330929_, @Nonnull BlockState p_335716_, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
+    protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult hit) {
+        return openGui(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
     }
 
-    private boolean use(Level level, BlockPos pos, Player player) {
+    /**
+     * 打开 FE 发电机 GUI
+     */
+    private boolean openGui(Level level, BlockPos pos, Player player) {
         if (level.isClientSide) {
             return true;
         }
@@ -135,15 +86,7 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
         if (generator == null) {
             return false;
         }
-        long energy = generator.energy;
-        long output = generator.output;
-        double percent = (int) (generator.tickCount / 20.00D / generator.config.getSecond() * 10000D) / 100.00D;
-        long increase = generator.beaconIncrease;
-        if (output < generator.config.getMax()) {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message", energy, output, percent, increase));
-        } else {
-            player.sendSystemMessage(Component.translatable("screen.autoresource.energy_generator.message_max", energy, output));
-        }
+        player.openMenu(generator, pos);
         return true;
     }
 }

@@ -30,24 +30,34 @@ public class EnergyGeneratorItem extends BlockItem {
         double output = config.getMin();
         long energy = 0;
         long tickCount = 0;
+        long nextIncrease = config.getStep();
+        boolean wirelessOn = false;
         long second = config.getSecond();
         long step = config.getStep();
         String blockData = stack.getOrDefault(Registration.BLOCK_DATA.get(), "");
         if (!blockData.isEmpty()) {
             String[] dataArray = blockData.split(",");
-            output = Tool.suit(dataArray[0]);
-            energy = Tool.suit(dataArray[1]);
-            tickCount = Tool.suit(dataArray[2]);
+            output = Tool.parseLong(dataArray, 0);
+            energy = Tool.parseLong(dataArray, 1);
+            tickCount = Tool.parseLong(dataArray, 2);
+            nextIncrease = Tool.parseLong(dataArray, 3);
+            wirelessOn = Tool.parseInt(dataArray, 4) == 1;
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
+        if (output >= config.getMax()) {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.next_max"));
+        } else {
+            tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease));
+        }
         if (output < config.getMax()) {
             tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
         } else {
             tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
         }
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
+        tooltip.add(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off"));
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster"));
         tooltip.add(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
     }
