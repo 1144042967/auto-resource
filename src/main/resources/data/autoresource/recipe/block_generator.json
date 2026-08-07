@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "block_generator",
+  "key": {
+    "#": {
+      "item": "minecraft:smooth_stone"
+    },
+    "W": {
+      "item": "minecraft:water_bucket"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
+    }
+  },
+  "pattern": [
+    "#L#",
+    "# #",
+    "#W#"
+  ],
+  "result": {
+    "id": "autoresource:block_generator",
+    "count": 1
+  }
+}

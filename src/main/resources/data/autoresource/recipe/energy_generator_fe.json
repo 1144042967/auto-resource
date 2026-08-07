@@ -1,0 +1,25 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "category": "misc",
+  "group": "energy_generator_fe",
+  "key": {
+    "#": {
+      "item": "minecraft:smooth_stone"
+    },
+    "R": {
+      "item": "minecraft:redstone"
+    },
+    "S": {
+      "item": "minecraft:redstone_block"
+    }
+  },
+  "pattern": [
+    "#R#",
+    "RSR",
+    "#R#"
+  ],
+  "result": {
+    "id": "autoresource:energy_generator_fe",
+    "count": 1
+  }
+}

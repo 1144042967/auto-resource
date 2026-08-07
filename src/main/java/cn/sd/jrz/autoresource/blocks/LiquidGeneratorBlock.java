@@ -4,8 +4,6 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
-import net.minecraft.core.Direction;
-import net.minecraft.network.chat.Component;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -14,32 +12,29 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.entity.BlockEntityTicker;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.loot.LootParams;
+import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.transfer.ResourceHandler;
-import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
-import net.neoforged.neoforge.transfer.fluid.FluidResource;
-import org.jetbrains.annotations.NotNull;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
+import java.util.ArrayList;
+import java.util.List;
 
-@SuppressWarnings("DuplicatedCode")
+/**
+ * 流体生成器方块（水源机/岩浆机）。
+ * <p>
+ * 26.x 适配：tick 转发到 {@link LiquidGeneratorEntity#serverTick()}；右键打开 GUI；
+ * 保留空桶右击直接提取一桶液体；破坏时掉落输入槽与输出槽中的物品。
+ */
 public class LiquidGeneratorBlock extends Block implements EntityBlock {
-    private static final Logger LOGGER = LoggerFactory.getLogger(LiquidGeneratorBlock.class);
-
     private final DataConfig config;
-    private final Direction[] directions = Direction.values();
-    private int findIndex = 0;
 
     public LiquidGeneratorBlock(Properties properties, DataConfig config) {
         super(properties);
@@ -55,97 +50,60 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
     @Override
     public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
         return (l, _, _, tile) -> {
-            try {
-                tick(l, tile);
-            } catch (Throwable e) {
-                LOGGER.error("LiquidGeneratorBlock.getTicker error", e);
+            if (l.isClientSide() || !(tile instanceof LiquidGeneratorEntity generator)) {
+                return;
             }
+            generator.serverTick();
         };
     }
 
-    private <T extends BlockEntity> void tick(Level level, T tile) {
-        if (level.isClientSide()) {
-            return;
-        }
-        if (!(tile instanceof LiquidGeneratorEntity generator)) {
-            return;
-        }
-        generator.tickCount = Tool.suit(generator.tickCount + 1);
-        if (generator.tickCount / 20 >= generator.config.getSecond()) {
-            generator.tickCount = 0;
-            generator.output = Math.min(generator.config.getMax(), Tool.suit(generator.output + generator.config.getStep()));
-        }
-        generator.liquid = Tool.suit(generator.liquid + generator.output);
-        if (generator.liquid <= 0) {
-            generator.setChanged();
-            return;
-        }
-        //传输
-        BlockPos blockPos = generator.getBlockPos();
-        for (int i = 0; i < directions.length; i++) {
-            findIndex = (findIndex + 1) % directions.length;
-            Direction direction = directions[findIndex];
-            BlockPos pos = blockPos.relative(direction);
-            BlockEntity entity = level.getBlockEntity(pos);
-            if (entity == null) {
-                continue;
+    /**
+     * 破坏时，掉落输入槽与输出槽中的物品
+     */
+    @Override
+    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+        List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
+        if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof LiquidGeneratorEntity entity) {
+            ItemStack input = entity.inputSlot.getStackInSlot(0);
+            if (!input.isEmpty()) {
+                drops.add(input);
             }
-            int maxOutput = Tool.suitInt(generator.liquid);
-            ResourceHandler<@NotNull FluidResource> handler = level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
-            if (handler == null) {
-                continue;
-            }
-            int count = ResourceHandlerUtil.insertStacking(handler, FluidResource.of(config.getFluid()), maxOutput, null);
-            if (count < 0) {
-                count = 0;
-            }
-            if (count > maxOutput) {
-                count = maxOutput;
-            }
-            generator.liquid -= count;
-            if (generator.liquid <= 0) {
-                break;
+            ItemStack output = entity.outputSlot.getStackInSlot(0);
+            if (!output.isEmpty()) {
+                drops.add(output);
             }
         }
-        if (level.hasNeighborSignal(blockPos) && generator.liquid >= 1000 && generator.tickCount % 5 == 0) {
-            BlockPos pos = blockPos.relative(Direction.DOWN);
-            if (level.getBlockState(pos).getBlock() == Blocks.AIR && level.setBlock(pos, config.getBlock().defaultBlockState(), 3)) {
-                generator.liquid -= 1000;
-            }
-        }
-        generator.setChanged();
+        return drops;
     }
 
     @Override
     public @Nonnull InteractionResult useWithoutItem(@Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player);
+        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
     @Override
-    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
-        return use(level, pos, player);
+    protected @Nonnull InteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult hit) {
+        return use(level, pos, player) ? InteractionResult.SUCCESS : InteractionResult.FAIL;
     }
 
-    private InteractionResult use(Level level, BlockPos pos, Player player) {
+    /**
+     * 手持空桶右击先尝试提取一桶液体，其余情况打开 GUI
+     */
+    private boolean use(Level level, BlockPos pos, Player player) {
         if (level.isClientSide()) {
-            return InteractionResult.SUCCESS;
+            return true;
         }
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);
         if (generator == null) {
-            return InteractionResult.FAIL;
+            return false;
         }
+        // 保留：手持空桶右击直接提取一桶液体
         if (generator.liquid >= 1000 && useBucket(player, generator)) {
-            return InteractionResult.SUCCESS;
+            return true;
         }
-        long liquid = generator.liquid / 1000;
-        double output = generator.output / 1000D;
-        double percent = (int) (generator.tickCount / 20.00 / generator.config.getSecond() * 10000) / 100.00;
-        if (output < generator.config.getMax()) {
-            player.sendOverlayMessage(Component.translatable("screen.autoresource.liquid_generator.message", liquid, output, percent));
-        } else {
-            player.sendOverlayMessage(Component.translatable("screen.autoresource.liquid_generator.message_max", liquid, output));
-        }
-        return InteractionResult.SUCCESS;
+        // 其他情况打开 GUI
+        player.openMenu(generator, pos);
+        return true;
     }
 
     private boolean useBucket(Player player, LiquidGeneratorEntity generator) {
@@ -165,6 +123,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             Tool.takeItem(player, getBucket());
         }
         generator.liquid -= 1000L;
+        generator.setChanged();
         return true;
     }
 
