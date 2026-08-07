@@ -1,11 +1,11 @@
 
-[View English translation](#AutoResource)
-
-![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
+[View English translation](#autoresource)
 
 # 自动资源
 
 添加了一些自动生成资源的机器，支持生成FE、水、岩浆、多种石头。
+
+![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
 
 ## 发电机
 
@@ -53,11 +53,11 @@
 
 [查看中文翻译](#自动资源)
 
-![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe2.webp)
-
 # AutoResource
 
 Added some machines that automatically generate resources, supporting the generation of FE, Water, Lava, and various types of stones.
+
+![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe2.webp)
 
 ## Generator
 
