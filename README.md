@@ -1,14 +1,11 @@
-## Language
 
-- [English](#english)
-- [中文](#中文)
-
+![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
 
 ---
 
-### 中文
+[View English translation](#AutoResource)
 
-# AutoResource
+# 自动资源
 
 添加了一些自动生成资源的机器，支持生成FE、水、岩浆、多种石头。
 
@@ -53,14 +50,10 @@
 - **输出槽**：显示标记的物品。单击取出一个，Shift+单击取出一组，空格+单击取出直到背包满。标记槽和输出槽均不支持管道输入输出
 - **管道支持**：标记后，方块机会主动向六个面均匀传输标记的方块（每个面可在 GUI 中独立开关），也可用其他 MOD 的管道抽取标记的方块
 - **下方生成方块**：开启输出槽下方"下方生成方块"按钮后，每秒将尝试 4 次，向机器下方的空气方块中放置标记的方块（替代原红石激活行为）
-- 合成表使用平滑石头、红石和漏斗：`#R# / RSR / #R#`（#=平滑石头，R=红石，S=漏斗）
 
-## 图片
+---
 
-![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
-
-
-### English
+[查看中文翻译](#自动资源)
 
 # AutoResource
 
@@ -107,8 +100,3 @@ Added some machines that automatically generate resources, supporting the genera
 - **Output slot**: displays the marked item. Click to take one, Shift+click to take a stack, Space+click to take until the inventory is full. The marker and output slots do not support pipe input/output
 - **Pipe support**: after marking, the machine actively transfers the marked block evenly to the six faces (each can be enabled / disabled independently in the GUI), and other MOD pipelines can extract the marked block
 - **Place block below**: when the "Place Below" button below the output slot is enabled, 4 attempts will be made per second to place the marked block into the air block below the machine (replaces the old redstone behavior)
-- The recipe uses smooth stone, redstone and a hopper: `#R# / RSR / #R#` with `#` = smooth stone, `R` = redstone, `S` = hopper
-
-## Image
-
-![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe2.webp)
