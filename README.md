@@ -1,9 +1,7 @@
 
-![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
-
----
-
 [View English translation](#AutoResource)
+
+![配方](https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/docs/recipe2.webp)
 
 # 自动资源
 
@@ -54,6 +52,8 @@
 ---
 
 [查看中文翻译](#自动资源)
+
+![recipe](https://github.com/1144042967/auto-resource/raw/master/docs/recipe2.webp)
 
 # AutoResource
 
