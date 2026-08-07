@@ -7,7 +7,8 @@ plugins {
 version = mod_version
 group = mod_group_id
 base {
-    archivesName = mod_id
+    archivesName = "autoresource-forge${minecraft_version}"
+    // version 仍取 mod_version(在文件顶部 version = mod_version 已设置)
 }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
