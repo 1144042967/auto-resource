@@ -10,7 +10,7 @@ import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
 /** 客户端初始化：注册 GUI 与方块实体渲染器 */
 @SuppressWarnings("removal")
-@EventBusSubscriber(value = Dist.CLIENT, modid = AutoResource.MODID, bus = EventBusSubscriber.Bus.MOD)
+@EventBusSubscriber(value = Dist.CLIENT, modid = AutoResource.MODID)
 public class ClientSetup {
 
     @SubscribeEvent

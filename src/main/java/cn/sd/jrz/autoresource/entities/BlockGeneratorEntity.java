@@ -6,12 +6,14 @@ import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +26,11 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
+import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -137,14 +143,13 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
                 continue;
             }
             BlockPos pos = blockPos.relative(direction);
-            net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.item.ItemResource> handler =
-                    level.getCapability(Capabilities.Item.BLOCK, pos, direction.getOpposite());
+            ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, pos, direction.getOpposite());
             if (handler == null) {
                 continue;
             }
             int maxOutput = Tool.suitInt(block / 1000);
-            int count = net.neoforged.neoforge.transfer.ResourceHandlerUtil.insertStacking(
-                    handler, net.neoforged.neoforge.transfer.item.ItemResource.of(marked.getItem()), maxOutput, null);
+            int count = ResourceHandlerUtil.insertStacking(
+                    handler, ItemResource.of(marked.getItem()), maxOutput, null);
             if (count < 0) {
                 count = 0;
             }
@@ -229,6 +234,24 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         return new BlockGeneratorMenu(id, inv, worldPosition);
     }
 
+    /**
+     * 初始同步到客户端的数据（包含标记槽），保证进游戏后方块机上即可显示标记物品
+     */
+    @Override
+    @Nonnull
+    public CompoundTag getUpdateTag(@Nonnull HolderLookup.Provider provider) {
+        return saveWithoutMetadata(provider);
+    }
+
+    /**
+     * 数据变化时发送给客户端的更新包（标记槽变化后强制刷新渲染）
+     */
+    @Override
+    @Nonnull
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
+    }
+
     @Override
     public void saveAdditional(@Nonnull ValueOutput valueOutput) {
         super.saveAdditional(valueOutput);
@@ -242,7 +265,7 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putBoolean("transferWest", transferWest);
         valueOutput.putBoolean("transferEast", transferEast);
         valueOutput.putBoolean("placeBlockBelow", placeBlockBelow);
-        valueOutput.store("markerSlot", CompoundTag.CODEC, markerSlot.serializeNBT(holderLookup()));
+        markerSlot.serialize(valueOutput.child("markerSlot"));
     }
 
     @Override
@@ -251,14 +274,14 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("block").ifPresent(it -> this.block = Tool.suit(it));
         valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        valueInput.getBoolean("transferDown").ifPresent(it -> this.transferDown = it);
-        valueInput.getBoolean("transferUp").ifPresent(it -> this.transferUp = it);
-        valueInput.getBoolean("transferNorth").ifPresent(it -> this.transferNorth = it);
-        valueInput.getBoolean("transferSouth").ifPresent(it -> this.transferSouth = it);
-        valueInput.getBoolean("transferWest").ifPresent(it -> this.transferWest = it);
-        valueInput.getBoolean("transferEast").ifPresent(it -> this.transferEast = it);
-        valueInput.getBoolean("placeBlockBelow").ifPresent(it -> this.placeBlockBelow = it);
-        valueInput.read("markerSlot", CompoundTag.CODEC).ifPresent(nbt -> markerSlot.deserializeNBT(holderLookup(), nbt));
+        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
+        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
+        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
+        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
+        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
+        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        this.placeBlockBelow = valueInput.getBooleanOr("placeBlockBelow", this.placeBlockBelow);
+        markerSlot.deserialize(valueInput.childOrEmpty("markerSlot"));
     }
 
     /**
@@ -297,7 +320,7 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         placeBlockBelow = Tool.parseInt(dataArray, 9) == 1;
         String markerItemId = Tool.parseString(dataArray, 10);
         if (!markerItemId.isEmpty()) {
-            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(markerItemId)), 1);
+            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.tryParse(markerItemId)), 1);
             if (!stack.isEmpty()) {
                 markerSlot.setStackInSlot(0, stack);
             }

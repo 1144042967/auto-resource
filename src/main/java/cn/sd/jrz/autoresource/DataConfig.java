@@ -4,7 +4,7 @@ import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -29,8 +29,8 @@ public abstract class DataConfig {
         @Override
         public Item getStarItem() {
             String id = Config.FE_STAR_ITEM.get();
-            ResourceLocation loc = ResourceLocation.tryParse(id);
-            Item item = loc != null ? BuiltInRegistries.ITEM.get(loc) : Items.AIR;
+            Identifier loc = Identifier.tryParse(id);
+            Item item = loc != null ? BuiltInRegistries.ITEM.getValue(loc) : Items.AIR;
             return item != Items.AIR ? item : Items.NETHER_STAR;
         }
     };
@@ -134,15 +134,15 @@ public abstract class DataConfig {
             }
             if (id.startsWith("#")) {
                 // 标签形式：#minecraft:planks
-                ResourceLocation loc = ResourceLocation.tryParse(id.substring(1));
-                if (loc != null && stack.is(TagKey.create(Registries.ITEM, loc))) {
+                Identifier loc = Identifier.tryParse(id.substring(1));
+                if (loc != null && stack.is(TagKey.<Item>create(Registries.ITEM, loc))) {
                     return true;
                 }
             } else {
                 // 物品 ID 形式：minecraft:dirt
-                ResourceLocation loc = ResourceLocation.tryParse(id);
+                Identifier loc = Identifier.tryParse(id);
                 if (loc != null) {
-                    Item item = BuiltInRegistries.ITEM.get(loc);
+                    Item item = BuiltInRegistries.ITEM.getValue(loc);
                     if (item != Items.AIR && stack.getItem() == item) {
                         return true;
                     }

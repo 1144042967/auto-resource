@@ -3,12 +3,8 @@
   "category": "misc",
   "group": "liquid_generator_water",
   "key": {
-    "#": {
-      "item": "minecraft:smooth_stone"
-    },
-    "W": {
-      "item": "minecraft:water_bucket"
-    }
+    "#": "minecraft:smooth_stone",
+    "W": "minecraft:water_bucket"
   },
   "pattern": [
     "#W#",

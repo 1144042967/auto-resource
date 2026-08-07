@@ -2,27 +2,30 @@ package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.resources.Identifier;
-import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import net.neoforged.api.distmarker.Dist;
-import net.neoforged.api.distmarker.OnlyIn;
 import org.lwjgl.glfw.GLFW;
 
 /**
- * 方块生成器 GUI。
+ * 方块生成器 GUI（26.x 适配）。
+ * <p>
+ * 展示当前存量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关、
+ * 标记槽（放入合法物品后锁定）、输出展示槽（单击提取一个、Shift+单击提取一组、空格+单击提取到背包满）
+ * 以及"下方生成方块"开关。
  */
-@OnlyIn(Dist.CLIENT)
 public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
-    private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
+    private static final int TEXT_COLOR = 0xFF404040; // 0x404040 深灰（26.x 需带 alpha，否则透明）
     private static final int OUTPUT_SLOT_INDEX = 1;
 
     private StateButton faceDown;
@@ -35,9 +38,7 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
     private boolean spaceDown = false;
 
     public BlockGeneratorScreen(BlockGeneratorMenu menu, Inventory playerInventory, Component title) {
-        super(menu, playerInventory, title);
-        this.imageWidth = 176;
-        this.imageHeight = 233;
+        super(menu, playerInventory, title, 176, 233);
         this.inventoryLabelY = 137;
     }
 
@@ -61,28 +62,31 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_SPACE) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_SPACE) {
             this.spaceDown = true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_SPACE) {
+    public boolean keyReleased(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_SPACE) {
             this.spaceDown = false;
         }
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(event);
     }
 
+    /**
+     * 拦截输出展示槽的点击：单击提取一个、Shift+单击提取一组、空格+单击提取到背包满
+     */
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean p) {
+        if (event.button() == 0) {
             Slot outputSlot = this.menu.slots.get(OUTPUT_SLOT_INDEX);
-            if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, mouseX, mouseY)) {
+            if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, event.x(), event.y())) {
                 int id;
-                if (hasShiftDown()) {
+                if ((event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_STACK;
                 } else if (this.spaceDown) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_ALL;
@@ -93,9 +97,12 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, p);
     }
 
+    /**
+     * 发送容器按钮点击到服务端
+     */
     private void sendButton(int id) {
         if (this.minecraft != null && this.minecraft.player != null) {
             this.minecraft.player.connection.send(new ServerboundContainerButtonClickPacket(this.menu.containerId, id));
@@ -103,8 +110,10 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+    public void extractBackground(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        // 增长进度条
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -117,24 +126,24 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
     }
 
     @Override
-    protected void renderLabels(GuiGraphics guiGraphics, int mouseX, int mouseY) {
-        super.renderLabels(guiGraphics, mouseX, mouseY);
+    protected void extractLabels(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractLabels(guiGraphics, mouseX, mouseY);
         BlockGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 37, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 47, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 37, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 47, TEXT_COLOR, false);
         Component markerLabel = Component.translatable("screen.autoresource.block_generator.marker");
-        guiGraphics.drawString(this.font, markerLabel, 28, 116, TEXT_COLOR, false);
+        guiGraphics.text(this.font, markerLabel, 28, 116, TEXT_COLOR, false);
         Component outputLabel = Component.translatable("screen.autoresource.block_generator.output_slot");
-        guiGraphics.drawString(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR, false);
+        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR, false);
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        super.renderTooltip(guiGraphics, mouseX, mouseY);
+    public void extractRenderState(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractRenderState(guiGraphics, mouseX, mouseY, partialTick);
+        // 刷新各开关状态
         this.faceDown.setState(this.menu.isFaceEnabled(Direction.DOWN));
         this.faceUp.setState(this.menu.isFaceEnabled(Direction.UP));
         this.faceNorth.setState(this.menu.isFaceEnabled(Direction.NORTH));
@@ -173,7 +182,7 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
         }
 
         @Override
-        protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void extractContents(GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
         }
     }
@@ -183,14 +192,14 @@ public class BlockGeneratorScreen extends AbstractContainerScreen<BlockGenerator
             super(x, y, width, height, label, onPress, DEFAULT_NARRATION);
         }
 
-        protected void renderButton(GuiGraphics guiGraphics, int color) {
+        protected void renderButton(GuiGraphicsExtractor guiGraphics, int color) {
             guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
             int borderColor = this.isHovered() ? 0xFFFFFF00 : 0xFF000000;
             guiGraphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.getWidth() + 1, this.getY(), borderColor);
             guiGraphics.fill(this.getX() - 1, this.getY() + this.getHeight(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1, borderColor);
             guiGraphics.fill(this.getX() - 1, this.getY(), this.getX(), this.getY() + this.getHeight(), borderColor);
             guiGraphics.fill(this.getX() + this.getWidth(), this.getY(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(), borderColor);
-            guiGraphics.drawCenteredString(BlockGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
+            guiGraphics.centeredText(BlockGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
         }
     }
 }

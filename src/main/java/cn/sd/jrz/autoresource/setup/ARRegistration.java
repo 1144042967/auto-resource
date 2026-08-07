@@ -101,12 +101,16 @@ public class ARRegistration {
 
     @NotNull
     private static <T extends Block & EntityBlock> DeferredHolder<Block, @NotNull T> registerBlock(String name, DataConfig config, BiFunction<BlockBehaviour.Properties, DataConfig, T> creator) {
-        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().mapColor(DyeColor.BLUE).pushReaction(PushReaction.DESTROY).strength(2.5f, 15.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)));
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().mapColor(DyeColor.BLUE).pushReaction(PushReaction.DESTROY).strength(0.5f, 3.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)));
         return BLOCKS.register(name, () -> creator.apply(properties, config));
     }
 
     private static <T extends BlockItem, B extends Block> DeferredHolder<Item, T> registerItem(String name, DataConfig config, DeferredHolder<Block, B> blockRegistry, ItemCreator<T> creator) {
-        Item.Properties properties = new Item.Properties().stacksTo(1).fireResistant().setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)));
+        // 物品模型在 assets/autoresource/items/<name>.json 中定义（26.x 物品模型定义，指向方块模型）
+        // useBlockDescriptionPrefix：26.x 中 BlockItem 默认使用 item.<mod>.<id> 语言键，需显式改用 block.<mod>.<id>
+        Item.Properties properties = new Item.Properties().stacksTo(1).fireResistant()
+                .setId(ResourceKey.create(Registries.ITEM, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)))
+                .useBlockDescriptionPrefix();
         return ITEMS.register(name, () -> creator.create(blockRegistry.get(), properties, config));
     }
 

@@ -8,7 +8,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
@@ -23,10 +22,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.fluids.FluidStack;
-import net.neoforged.neoforge.fluids.capability.IFluidHandler;
-import net.neoforged.neoforge.fluids.capability.IFluidHandlerItem;
 import net.neoforged.neoforge.items.ItemStackHandler;
+import net.neoforged.neoforge.transfer.ResourceHandler;
+import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
+import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.fluid.FluidResource;
+import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -67,18 +69,18 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
     public final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            // 空桶：vanilla 桶无 IFluidHandlerItem 能力，需特判
+            // 空桶：vanilla 桶无流体能力，需特判
             if (stack.is(Items.BUCKET)) {
                 return true;
             }
-            // 其他物品：通过 IFluidHandlerItem 能力判断是否还能容纳本机流体
-            IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+            // 其他物品：通过流体能力判断是否还能容纳本机流体
+            ResourceHandler<FluidResource> handler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
             if (handler == null) {
                 return false;
             }
-            for (int tank = 0; tank < handler.getTanks(); tank++) {
-                FluidStack fluid = handler.getFluidInTank(tank);
-                if ((fluid.isEmpty() || fluid.getFluid() == config.getFluid()) && handler.getTankCapacity(tank) > fluid.getAmount()) {
+            FluidResource resource = FluidResource.of(config.getFluid());
+            for (int tank = 0; tank < handler.size(); tank++) {
+                if (handler.isValid(tank, resource) && handler.getAmountAsLong(tank) < handler.getCapacityAsLong(tank, resource)) {
                     return true;
                 }
             }
@@ -180,7 +182,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         if (copy.getCount() > 1) {
             copy.setCount(1);
         }
-        IFluidHandlerItem fluidHandler = copy.getCapability(Capabilities.FluidHandler.ITEM);
+        ResourceHandler<FluidResource> fluidHandler = ItemAccess.forStack(copy).getCapability(Capabilities.Fluid.ITEM);
         if (fluidHandler == null) {
             return;
         }
@@ -188,15 +190,17 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         if (maxFill <= 0) {
             return;
         }
-        int filled = fluidHandler.fill(new FluidStack(config.getFluid(), maxFill), IFluidHandler.FluidAction.EXECUTE);
-        if (filled <= 0) {
-            return;
+        int filled;
+        try (Transaction tx = Transaction.open(null)) {
+            filled = fluidHandler.insert(0, FluidResource.of(config.getFluid()), maxFill, tx);
+            if (filled <= 0) {
+                return;
+            }
+            tx.commit();
         }
         liquid -= filled;
-        ItemStack result = fluidHandler.getContainer();
-        if (result.isEmpty()) {
-            result = copy;
-        }
+        // 填充后 copy 的组件已更新（forStack 直接修改栈），结果物品就是 copy
+        ItemStack result = copy;
         if (isFull(result)) {
             if (canInsertOutput(result)) {
                 insertOutput(result);
@@ -223,7 +227,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         if (blockEntity == null) {
             return;
         }
-        var handler = level.getCapability(Capabilities.Item.BLOCK, blockEntity.getBlockPos(), Direction.DOWN);
+        ResourceHandler<ItemResource> handler = level.getCapability(Capabilities.Item.BLOCK, blockEntity.getBlockPos(), Direction.DOWN);
         if (handler == null) {
             return;
         }
@@ -231,25 +235,34 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
             if (liquid <= 0) {
                 return;
             }
-            ItemStack stack = handler.getStackInSlot(i);
-            if (stack.isEmpty()) {
+            ItemResource resource = handler.getResource(i);
+            if (resource == null || resource.isEmpty()) {
                 continue;
             }
+            int amount = Tool.suitInt(handler.getAmountAsLong(i));
+            if (amount <= 0) {
+                continue;
+            }
+            ItemStack stack = resource.toStack(amount);
             if (stack.is(Items.BUCKET)) {
                 if (liquid >= 1000) {
-                    ItemStack full = new ItemStack(getFilledBucketItem());
-                    // 26.x 不再使用 ItemHandlerHelper.insertItemStacked，回退为直接抽取+插入
-                    int canInsert = handler.insertItem(i, full, true).getCount();
-                    if (canInsert == 0) {
-                        handler.extractItem(i, 1, false);
-                        handler.insertItem(i, full, false);
-                        liquid -= 1000;
-                        blockEntity.setChanged();
+                    // 通过 ItemAccess 直接操作容器槽位的流体能力：空桶填充后自动替换为对应流体桶
+                    ItemAccess access = ItemAccess.forHandlerIndex(handler, i);
+                    ResourceHandler<FluidResource> fluidCap = access.getCapability(Capabilities.Fluid.ITEM);
+                    if (fluidCap != null) {
+                        try (Transaction tx = Transaction.open(null)) {
+                            int filled = fluidCap.insert(0, FluidResource.of(config.getFluid()), 1000, tx);
+                            if (filled >= 1000) {
+                                tx.commit();
+                                liquid -= 1000;
+                                blockEntity.setChanged();
+                            }
+                        }
                     }
                 }
                 continue;
             }
-            IFluidHandlerItem fluidHandler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+            ResourceHandler<FluidResource> fluidHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
             if (fluidHandler == null) {
                 continue;
             }
@@ -257,10 +270,13 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
             if (maxFill <= 0) {
                 return;
             }
-            int filled = fluidHandler.fill(new FluidStack(config.getFluid(), maxFill), IFluidHandler.FluidAction.EXECUTE);
-            if (filled > 0) {
-                liquid -= filled;
-                blockEntity.setChanged();
+            try (Transaction tx = Transaction.open(null)) {
+                int filled = fluidHandler.insert(0, FluidResource.of(config.getFluid()), maxFill, tx);
+                if (filled > 0) {
+                    tx.commit();
+                    liquid -= filled;
+                    blockEntity.setChanged();
+                }
             }
         }
     }
@@ -286,13 +302,12 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
             }
             BlockPos pos = blockPos.relative(direction);
             int maxOutput = Tool.suitInt(liquid);
-            net.neoforged.neoforge.transfer.ResourceHandler<net.neoforged.neoforge.transfer.fluid.FluidResource> storage =
-                    level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
+            ResourceHandler<FluidResource> storage = level.getCapability(Capabilities.Fluid.BLOCK, pos, direction.getOpposite());
             if (storage == null) {
                 continue;
             }
-            int count = net.neoforged.neoforge.transfer.ResourceHandlerUtil.insertStacking(
-                    storage, net.neoforged.neoforge.transfer.fluid.FluidResource.of(config.getFluid()), maxOutput, null);
+            int count = ResourceHandlerUtil.insertStacking(
+                    storage, FluidResource.of(config.getFluid()), maxOutput, null);
             if (count < 0) {
                 count = 0;
             }
@@ -368,13 +383,13 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
      * 判断物品是否已无法再容纳本机流体
      */
     private boolean isFull(ItemStack stack) {
-        IFluidHandlerItem handler = stack.getCapability(Capabilities.FluidHandler.ITEM);
+        ResourceHandler<FluidResource> handler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
         if (handler == null) {
             return true;
         }
-        for (int tank = 0; tank < handler.getTanks(); tank++) {
-            FluidStack fluid = handler.getFluidInTank(tank);
-            if ((fluid.isEmpty() || fluid.getFluid() == config.getFluid()) && handler.getTankCapacity(tank) > fluid.getAmount()) {
+        FluidResource resource = FluidResource.of(config.getFluid());
+        for (int tank = 0; tank < handler.size(); tank++) {
+            if (handler.getAmountAsLong(tank) < handler.getCapacityAsLong(tank, resource)) {
                 return false;
             }
         }
@@ -432,8 +447,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putBoolean("transferWest", transferWest);
         valueOutput.putBoolean("transferEast", transferEast);
         valueOutput.putBoolean("placeFluidBelow", placeFluidBelow);
-        valueOutput.store("inputSlot", CompoundTag.CODEC, inputSlot.serializeNBT(holderLookup()));
-        valueOutput.store("outputSlot", CompoundTag.CODEC, outputSlot.serializeNBT(holderLookup()));
+        inputSlot.serialize(valueOutput.child("inputSlot"));
+        outputSlot.serialize(valueOutput.child("outputSlot"));
     }
 
     @Override
@@ -442,15 +457,15 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("liquid").ifPresent(it -> this.liquid = Tool.suit(it));
         valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        valueInput.getBoolean("transferDown").ifPresent(it -> this.transferDown = it);
-        valueInput.getBoolean("transferUp").ifPresent(it -> this.transferUp = it);
-        valueInput.getBoolean("transferNorth").ifPresent(it -> this.transferNorth = it);
-        valueInput.getBoolean("transferSouth").ifPresent(it -> this.transferSouth = it);
-        valueInput.getBoolean("transferWest").ifPresent(it -> this.transferWest = it);
-        valueInput.getBoolean("transferEast").ifPresent(it -> this.transferEast = it);
-        valueInput.getBoolean("placeFluidBelow").ifPresent(it -> this.placeFluidBelow = it);
-        valueInput.read("inputSlot", CompoundTag.CODEC).ifPresent(nbt -> inputSlot.deserializeNBT(holderLookup(), nbt));
-        valueInput.read("outputSlot", CompoundTag.CODEC).ifPresent(nbt -> outputSlot.deserializeNBT(holderLookup(), nbt));
+        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
+        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
+        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
+        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
+        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
+        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        this.placeFluidBelow = valueInput.getBooleanOr("placeFluidBelow", this.placeFluidBelow);
+        inputSlot.deserialize(valueInput.childOrEmpty("inputSlot"));
+        outputSlot.deserialize(valueInput.childOrEmpty("outputSlot"));
     }
 
     /**

@@ -10,15 +10,15 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.MenuProvider;
+import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -31,6 +31,7 @@ import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -202,14 +203,35 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         }
         java.util.List<LivingEntity> entityList = level.getEntitiesOfClass(LivingEntity.class, new AABB(getBlockPos().relative(Direction.UP)));
         for (LivingEntity livingEntity : entityList) {
-            Iterable<ItemStack> slots = livingEntity.getAllSlots();
-            for (ItemStack stack : slots) {
+            // 装备槽（含主手/副手/盔甲，覆盖 26.x 的 EquipmentSlot 系统）
+            for (EquipmentSlot slot : EquipmentSlot.values()) {
                 if (energy <= 0) {
                     return;
+                }
+                ItemStack stack = livingEntity.getItemBySlot(slot);
+                if (stack.isEmpty()) {
+                    continue;
                 }
                 EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
                 if (handler != null) {
                     chargeStack(stack, handler);
+                }
+            }
+            // 玩家物品栏（物品栏/存储栏，与原 getAllSlots 覆盖范围一致）
+            if (livingEntity instanceof Player player) {
+                Inventory inv = player.getInventory();
+                for (int i = 0; i < inv.getContainerSize(); i++) {
+                    if (energy <= 0) {
+                        return;
+                    }
+                    ItemStack stack = inv.getItem(i);
+                    if (stack.isEmpty()) {
+                        continue;
+                    }
+                    EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+                    if (handler != null) {
+                        chargeStack(stack, handler);
+                    }
                 }
             }
         }
@@ -227,8 +249,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         if (blockEntity == null) {
             return;
         }
-        net.neoforged.neoforge.transfer.item.ItemResource resource = null;
-        var handler = level.getCapability(Capabilities.Item.BLOCK, blockEntity.getBlockPos(), Direction.DOWN);
+        net.neoforged.neoforge.transfer.ResourceHandler<ItemResource> handler =
+                level.getCapability(Capabilities.Item.BLOCK, blockEntity.getBlockPos(), Direction.DOWN);
         if (handler == null) {
             return;
         }
@@ -236,7 +258,15 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
             if (energy <= 0) {
                 return;
             }
-            ItemStack stack = handler.getStackInSlot(i);
+            ItemResource resource = handler.getResource(i);
+            if (resource == null || resource.isEmpty()) {
+                continue;
+            }
+            int amount = Tool.suitInt(handler.getAmountAsLong(i));
+            if (amount <= 0) {
+                continue;
+            }
+            ItemStack stack = resource.toStack(amount);
             if (stack.isEmpty()) {
                 continue;
             }
@@ -328,7 +358,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         int minX = originX - half * 16;
         int minZ = originZ - half * 16;
         int width = range * 16;
-        int minY = level.getMinBuildHeight();
+        int minY = level.dimensionType().minY();
         long layerSize = (long) width * width;
         long volume = layerSize * level.getHeight();
 
@@ -473,11 +503,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putBoolean("transferSouth", transferSouth);
         valueOutput.putBoolean("transferWest", transferWest);
         valueOutput.putBoolean("transferEast", transferEast);
-        // ItemStackHandler 通过 NBT 形式保存到 ValueOutput
-        CompoundTag starNbt = starSlot.serializeNBT(holderLookup());
-        valueOutput.store("starSlot", CompoundTag.CODEC, starNbt);
-        CompoundTag chargeNbt = chargeSlot.serializeNBT(holderLookup());
-        valueOutput.store("chargeSlot", CompoundTag.CODEC, chargeNbt);
+        starSlot.serialize(valueOutput.child("starSlot"));
+        chargeSlot.serialize(valueOutput.child("chargeSlot"));
     }
 
     @Override
@@ -486,19 +513,20 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("energy").ifPresent(it -> this.energy = Tool.suit(it));
         valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        valueInput.getLong("nextIncrease").ifPresent(it -> this.nextIncrease = Tool.suit(it));
-        valueInput.getBoolean("wirelessOn").ifPresent(it -> this.wirelessOn = it);
-        valueInput.getInt("wirelessInterval").ifPresent(it -> this.wirelessInterval = Math.max(1, it));
-        valueInput.getInt("wirelessRange").ifPresent(it -> this.wirelessRange = Math.max(1, it));
-        valueInput.getInt("transferRepeat").ifPresent(it -> this.transferRepeat = Math.max(1, it));
-        valueInput.getBoolean("transferDown").ifPresent(it -> this.transferDown = it);
-        valueInput.getBoolean("transferUp").ifPresent(it -> this.transferUp = it);
-        valueInput.getBoolean("transferNorth").ifPresent(it -> this.transferNorth = it);
-        valueInput.getBoolean("transferSouth").ifPresent(it -> this.transferSouth = it);
-        valueInput.getBoolean("transferWest").ifPresent(it -> this.transferWest = it);
-        valueInput.getBoolean("transferEast").ifPresent(it -> this.transferEast = it);
-        valueInput.read("starSlot", CompoundTag.CODEC).ifPresent(nbt -> starSlot.deserializeNBT(holderLookup(), nbt));
-        valueInput.read("chargeSlot", CompoundTag.CODEC).ifPresent(nbt -> chargeSlot.deserializeNBT(holderLookup(), nbt));
+        // 兼容旧存档字段名 beaconIncrease（1.21.1 时期迁移前的字段）
+        this.nextIncrease = valueInput.getLongOr("nextIncrease", valueInput.getLongOr("beaconIncrease", this.nextIncrease));
+        this.wirelessOn = valueInput.getBooleanOr("wirelessOn", this.wirelessOn);
+        this.wirelessInterval = Math.max(1, valueInput.getIntOr("wirelessInterval", this.wirelessInterval));
+        this.wirelessRange = Math.max(1, valueInput.getIntOr("wirelessRange", this.wirelessRange));
+        this.transferRepeat = Math.max(1, valueInput.getIntOr("transferRepeat", this.transferRepeat));
+        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
+        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
+        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
+        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
+        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
+        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        starSlot.deserialize(valueInput.childOrEmpty("starSlot"));
+        chargeSlot.deserialize(valueInput.childOrEmpty("chargeSlot"));
     }
 
     /**
@@ -541,7 +569,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         transferEast = Tool.parseInt(dataArray, 13) == 1;
         String starItemId = Tool.parseString(dataArray, 14);
         if (!starItemId.isEmpty()) {
-            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(starItemId)), 1);
+            ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.tryParse(starItemId)), 1);
             if (!stack.isEmpty()) {
                 starSlot.setStackInSlot(0, stack);
             }

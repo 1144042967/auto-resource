@@ -8,7 +8,7 @@ import net.minecraft.core.Holder;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -72,7 +72,7 @@ public class BlockGeneratorItem extends BlockItem {
         tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
         // 标记槽内容物描述（兼容未标记/为空的情况）
         if (!markerItemId.isEmpty()) {
-            Item markedItem = BuiltInRegistries.ITEM.get(ResourceLocation.tryParse(markerItemId));
+            Item markedItem = BuiltInRegistries.ITEM.getValue(Identifier.tryParse(markerItemId));
             if (markedItem != Items.AIR) {
                 tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.marked", new ItemStack(markedItem).getHoverName()));
             } else {
@@ -92,7 +92,8 @@ public class BlockGeneratorItem extends BlockItem {
                 if (count > 0) {
                     sb.append(", ");
                 }
-                sb.append(items.get(i).getDescription().getString());
+                // 26.x：Item.getName(stack) 只读 ITEM_NAME 组件，需用 getHoverName 获取物品显示名
+                sb.append(new ItemStack(items.get(i)).getHoverName().getString());
                 if (++count == PER_ROW) {
                     tooltip.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
                     sb = new StringBuilder();
@@ -123,20 +124,18 @@ public class BlockGeneratorItem extends BlockItem {
             }
             if (id.startsWith("#")) {
                 // 标签条目 → 展开为标签下的所有物品
-                ResourceLocation loc = ResourceLocation.tryParse(id.substring(1));
+                Identifier loc = Identifier.tryParse(id.substring(1));
                 if (loc != null) {
                     TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
-                    BuiltInRegistries.ITEM.getTag(tagKey).ifPresent(holders -> {
-                        for (Holder<Item> holder : holders) {
-                            supported.add(holder.value());
-                        }
-                    });
+                    for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tagKey)) {
+                        supported.add(holder.value());
+                    }
                 }
             } else {
                 // 物品 ID 条目 → 直接加入
-                ResourceLocation loc = ResourceLocation.tryParse(id);
+                Identifier loc = Identifier.tryParse(id);
                 if (loc != null) {
-                    Item item = BuiltInRegistries.ITEM.get(loc);
+                    Item item = BuiltInRegistries.ITEM.getValue(loc);
                     if (item != Items.AIR) {
                         supported.add(item);
                     }
