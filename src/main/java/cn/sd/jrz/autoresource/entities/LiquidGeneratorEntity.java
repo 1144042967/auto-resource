@@ -246,23 +246,24 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
             ItemStack stack = resource.toStack(amount);
             if (stack.is(Items.BUCKET)) {
                 if (liquid >= 1000) {
-                    // 通过 ItemAccess 直接操作容器槽位的流体能力：空桶填充后自动替换为对应流体桶
+                    // 空桶（Items.BUCKET）不是 BucketItem，NeoForge 未为其注册 Capabilities.Fluid.ITEM 能力
+                    // （只有已填充的 BucketItem 才注册），因此不能走流体能力 insert。
+                    // 这里直接在物品处理器上做"空桶 → 流体桶"的原子交换：取出一个空桶，放入一个流体桶。
                     ItemAccess access = ItemAccess.forHandlerIndex(handler, i);
-                    ResourceHandler<FluidResource> fluidCap = access.getCapability(Capabilities.Fluid.ITEM);
-                    if (fluidCap != null) {
-                        try (Transaction tx = Transaction.open(null)) {
-                            int filled = fluidCap.insert(0, FluidResource.of(config.getFluid()), 1000, tx);
-                            if (filled >= 1000) {
-                                tx.commit();
-                                liquid -= 1000;
-                                blockEntity.setChanged();
-                            }
+                    try (Transaction tx = Transaction.open(null)) {
+                        int exchanged = access.exchange(ItemResource.of(getFilledBucketItem()), 1, tx);
+                        if (exchanged == 1) {
+                            tx.commit();
+                            liquid -= 1000;
+                            blockEntity.setChanged();
                         }
                     }
                 }
                 continue;
             }
-            ResourceHandler<FluidResource> fluidHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
+            // 必须通过 forHandlerIndex 绑定到容器实际槽位：insert 才会把流体写回容器内的物品。
+            // 若用 ItemAccess.forStack(stack) 则只会修改 toStack 得到的副本，容器内物品不会变化。
+            ResourceHandler<FluidResource> fluidHandler = ItemAccess.forHandlerIndex(handler, i).getCapability(Capabilities.Fluid.ITEM);
             if (fluidHandler == null) {
                 continue;
             }

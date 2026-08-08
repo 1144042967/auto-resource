@@ -270,7 +270,9 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
             if (stack.isEmpty()) {
                 continue;
             }
-            EnergyHandler energyHandler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+            // 必须通过 forHandlerIndex 绑定到容器实际槽位：充电才会写回容器内的物品。
+            // 若用 ItemAccess.forStack(stack) 则只会修改 toStack 得到的副本，容器内物品不会变化。
+            EnergyHandler energyHandler = ItemAccess.forHandlerIndex(handler, i).getCapability(Capabilities.Energy.ITEM);
             if (energyHandler != null) {
                 chargeStack(stack, energyHandler);
                 // 修改了容器内物品的能量数据，标记容器已改变以便落盘/同步
