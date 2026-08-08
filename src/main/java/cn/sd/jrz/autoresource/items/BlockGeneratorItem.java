@@ -44,6 +44,12 @@ public class BlockGeneratorItem extends BlockItem {
         this.config = config;
     }
 
+    /** 物品名称使用机器主题色 */
+    @Override
+    public Component getName(ItemStack stack) {
+        return super.getName(stack).copy().withStyle(config.getThemeColor());
+    }
+
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay tooltipDisplay, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag flagIn) {
         super.appendHoverText(stack, context, tooltipDisplay, tooltip, flagIn);
@@ -62,29 +68,30 @@ public class BlockGeneratorItem extends BlockItem {
             markerItemId = Tool.parseString(dataArray, 10);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.block", block));
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.output", output));
+        // 数值行使用机器主题色
+        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.block", block).withStyle(config.getThemeColor()));
+        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output < config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent));
+            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth_max"));
+            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D));
+        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
         // 标记槽内容物描述（兼容未标记/为空的情况）
         if (!markerItemId.isEmpty()) {
             Item markedItem = BuiltInRegistries.ITEM.getValue(Identifier.tryParse(markerItemId));
             if (markedItem != Items.AIR) {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.marked", new ItemStack(markedItem).getHoverName()));
+                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.marked", new ItemStack(markedItem).getHoverName()).withStyle(ChatFormatting.GOLD));
             } else {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked"));
+                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
             }
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked"));
+            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
         }
         // 可生成方块列表：配置中的 # 标签展开为实际物品；最多展示前 MAX_ITEMS 种，超过则在尾部提示总数量
         List<Item> items = new ArrayList<>(getSupportedItems());
         if (!items.isEmpty()) {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks"));
+            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks").withStyle(ChatFormatting.GRAY));
             int visible = Math.min(items.size(), MAX_ITEMS);
             StringBuilder sb = new StringBuilder();
             int count = 0;
@@ -104,11 +111,11 @@ public class BlockGeneratorItem extends BlockItem {
                 tooltip.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
             }
             if (items.size() > MAX_ITEMS) {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks_more", items.size(), MAX_ITEMS));
+                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks_more", items.size(), MAX_ITEMS).withStyle(ChatFormatting.GRAY));
             }
         }
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.set_block"));
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.tip"));
+        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.set_block").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     /** 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序） */

@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource;
 
 import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.Identifier;
@@ -33,6 +34,12 @@ public abstract class DataConfig {
             Item item = loc != null ? BuiltInRegistries.ITEM.getValue(loc) : Items.AIR;
             return item != Items.AIR ? item : Items.NETHER_STAR;
         }
+
+        @Override
+        public ChatFormatting getThemeColor() {
+            // 能源/电力 → 红色
+            return ChatFormatting.RED;
+        }
     };
     public static final DataConfig LIQUID_GENERATOR_WATER = new DataConfig(Config.WATER_MIN, Config.WATER_MAX, Config.WATER_SECOND, Config.WATER_STEP) {
         @Override
@@ -48,6 +55,12 @@ public abstract class DataConfig {
         @Override
         public Block getBlock() {
             return Blocks.WATER;
+        }
+
+        @Override
+        public ChatFormatting getThemeColor() {
+            // 水 → 青色
+            return ChatFormatting.AQUA;
         }
     };
     public static final DataConfig LIQUID_GENERATOR_LAVA = new DataConfig(Config.LAVA_MIN, Config.LAVA_MAX, Config.LAVA_SECOND, Config.LAVA_STEP) {
@@ -65,6 +78,12 @@ public abstract class DataConfig {
         public Block getBlock() {
             return Blocks.LAVA;
         }
+
+        @Override
+        public ChatFormatting getThemeColor() {
+            // 岩浆 → 金色
+            return ChatFormatting.GOLD;
+        }
     };
 
     /** 通用可标记方块生成机（输出种类由标记槽决定） */
@@ -72,6 +91,12 @@ public abstract class DataConfig {
         @Override
         public BlockEntityType<?> getEntityType() {
             return ARRegistration.BLOCK_GENERATOR_ENTITY.get();
+        }
+
+        @Override
+        public ChatFormatting getThemeColor() {
+            // 方块/自然 → 绿色
+            return ChatFormatting.GREEN;
         }
     };
 
@@ -117,6 +142,11 @@ public abstract class DataConfig {
     @Nullable
     public Item getStarItem() {
         return null;
+    }
+
+    /** 机器主题色：用于物品名称与 tooltip 数值行的着色，子类按机器类型各自定义 */
+    public ChatFormatting getThemeColor() {
+        return ChatFormatting.WHITE;
     }
 
     /** 判断物品是否为合法的方块生成机产品（可放入标记槽）：支持配置的物品 ID（如 minecraft:dirt）或 # 标签（如 #minecraft:planks） */
