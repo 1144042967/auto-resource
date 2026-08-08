@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource.items;
 
 import cn.sd.jrz.autoresource.DataConfig;
+import net.minecraft.ChatFormatting;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -22,6 +23,12 @@ public class LiquidGeneratorItem extends BlockItem {
     public LiquidGeneratorItem(Block block, DataConfig config) {
         super(block, new Properties().stacksTo(1).fireResistant());
         this.config = config;
+    }
+
+    /** 物品名称使用机器主题色 */
+    @Override
+    public Component getName(ItemStack stack) {
+        return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 
     @Override
@@ -48,15 +55,16 @@ public class LiquidGeneratorItem extends BlockItem {
             }
         }
         double percent = (int) (tickCount / 20.00D / second * 10000D) / 100.00D;
-        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid));
-        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output));
+        // 数值行使用机器主题色
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid).withStyle(config.getThemeColor()));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output < config.getMax()) {
-            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth", percent));
+            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth_max"));
+            tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D));
-        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block"));
-        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.tip"));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.add(Component.translatable("item.autoresource.liquid_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 }
