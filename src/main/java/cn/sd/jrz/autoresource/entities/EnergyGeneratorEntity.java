@@ -1,8 +1,10 @@
 package cn.sd.jrz.autoresource.entities;
 
+import cn.sd.jrz.autoresource.Config;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.connection.EnergyConnection;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
+import cn.sd.jrz.autoresource.util.EnergyBypass;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -294,19 +296,49 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
                 if (entity == null) {
                     continue;
                 }
-                entity.getCapability(ForgeCapabilities.ENERGY, direction.getOpposite()).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
-                    int maxOutput = Tool.suitInt(energy);
-                    int result = storage.receiveEnergy(maxOutput, false);
-                    if (result < 0) {
-                        result = 0;
-                    }
-                    if (result > maxOutput) {
-                        result = maxOutput;
-                    }
-                    if (result > 0) {
-                        energy -= result;
-                    }
-                });
+                // 正常输电 + 受限时反射补满第三方 MOD 机器能量
+                outputTo(entity, direction.getOpposite());
+            }
+        }
+    }
+
+    /**
+     * 向相邻/无线目标方块输出能量：
+     * 1. 先走标准 ENERGY 能力注入（保留原有行为）；
+     * 2. 若目标因容量/接收速率限制无法接收（如第三方 MOD 机器已满或拒收），
+     *    且配置开启了反射绕过（{@link Config#FE_BYPASS_ENABLED}），则通过反射把目标内部能量直接补满到容量，
+     *    使机器始终满电运行（不依赖目标是否暴露标准 ENERGY 能力，覆盖龙之研究等自定义能量系统）。
+     *
+     * @param entity       目标方块实体
+     * @param fromDirection 目标接收能量的面（即本机对应面的对面）
+     */
+    private void outputTo(BlockEntity entity, Direction fromDirection) {
+        if (entity == null || energy <= 0) {
+            return;
+        }
+        final IEnergyStorage[] capRef = new IEnergyStorage[1];
+        entity.getCapability(ForgeCapabilities.ENERGY, fromDirection).resolve().ifPresent(storage -> {
+            capRef[0] = storage;
+            int maxOutput = Tool.suitInt(energy);
+            int result = 0;
+            if (storage.canReceive()) {
+                result = storage.receiveEnergy(maxOutput, false);
+                if (result < 0) {
+                    result = 0;
+                }
+                if (result > maxOutput) {
+                    result = maxOutput;
+                }
+                if (result > 0) {
+                    energy -= result;
+                }
+            }
+        });
+        // 反射绕过：仅在仍有剩余能量且配置开启时尝试，失败静默返回 0
+        if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
+            long consumed = EnergyBypass.tryRefill(entity, fromDirection, capRef[0], energy);
+            if (consumed > 0) {
+                energy -= consumed;
             }
         }
     }
@@ -438,19 +470,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
                 if (target == null || target == this) {
                     continue;
                 }
-                target.getCapability(ForgeCapabilities.ENERGY, entry.getValue()).resolve().filter(IEnergyStorage::canReceive).ifPresent(storage -> {
-                    int maxOutput = Tool.suitInt(energy);
-                    int result = storage.receiveEnergy(maxOutput, false);
-                    if (result < 0) {
-                        result = 0;
-                    }
-                    if (result > maxOutput) {
-                        result = maxOutput;
-                    }
-                    if (result > 0) {
-                        energy -= result;
-                    }
-                });
+                // 正常输电 + 受限时反射补满第三方 MOD 机器能量
+                outputTo(target, entry.getValue());
             }
         }
     }

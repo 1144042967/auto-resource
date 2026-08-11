@@ -13,6 +13,13 @@ public class Config {
     public static ForgeConfigSpec.LongValue FE_SECOND;
     public static ForgeConfigSpec.LongValue FE_STEP;
     public static ForgeConfigSpec.ConfigValue<String> FE_STAR_ITEM;
+    /**
+     * 反射绕过第三方MOD机器能量限制（补满到容量）总开关，默认开启。
+     * 开启后，当目标机器因容量/速率限制无法接收能量时，通过反射直接把其内部能量补满到容量，
+     * 支持：Mekanism（通用机械）、Thermal Expansion（热力膨胀）、Industrial Foregoing（工业先锋）、
+     * Draconic Evolution（龙之研究）、Flux Networks（能量网络）。不依赖这些 MOD 的编译期代码。
+     */
+    public static ForgeConfigSpec.BooleanValue FE_BYPASS_ENABLED;
 
     public static ForgeConfigSpec.LongValue WATER_MIN;
     public static ForgeConfigSpec.LongValue WATER_MAX;
@@ -44,6 +51,7 @@ public class Config {
         FE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 1, 1, Long.MAX_VALUE);
         FE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.").defineInRange("step", 1, 0, Long.MAX_VALUE);
         FE_STAR_ITEM = SERVER_BUILDER.comment("The item that boosts the growth rate. When placed in the boost slot, each increase becomes 1% of the current output. Use item registry name, e.g. minecraft:nether_star.").define("star_item", "minecraft:nether_star");
+        FE_BYPASS_ENABLED = SERVER_BUILDER.comment("Bypass the energy capacity/receive limits of third-party machines (Mekanism, Thermal Expansion, Industrial Foregoing, Draconic Evolution, Flux Networks) by directly refilling their internal energy to capacity via reflection when they refuse to accept energy. Default: true.").define("bypass_enabled", true);
         SERVER_BUILDER.pop();
 
         SERVER_BUILDER.pop();

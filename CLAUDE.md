@@ -68,7 +68,8 @@ src/main/java/cn/sd/jrz/autoresource/
 ├── setup/                          # 注册
 │   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
-    └── Tool.java                   # 数值裁剪等工具方法
+    ├── Tool.java                   # 数值裁剪等工具方法
+    └── EnergyBypass.java           # 反射式能量绕过（补满第三方MOD机器能量到容量，零编译期依赖）
 ```
 
 ## 注册体系
@@ -114,6 +115,12 @@ src/main/java/cn/sd/jrz/autoresource/
 - 若机器正上方是容器，容器内可充电物品也会被充电（轮询 `ForgeCapabilities.ITEM_HANDLER`）
 - 剩余能量通过六个面均匀输出到相邻方块（轮询索引 `findIndex` 负载均衡）
 - **输电面开关**：六个面可分别启用/禁用（GUI 中可逐台修改，默认全启用）
+
+**反射能量绕过**（`bypass_enabled` 配置，默认开启）:
+- 相邻输电与无线输电统一走 `outputTo()`：先走标准 `ForgeCapabilities.ENERGY` 注入；若目标机器因**容量/接收速率限制**拒收（如第三方 MOD 机器已满），且配置开启，则通过反射把目标内部能量**直接补满到容量**，使其满电运行（不超额）。
+- 纯反射实现（`util/EnergyBypass.java`），字符串类名定位，**编译期零依赖**；未安装的 MOD 记录 `initFailed` 永久跳过，避免每 tick 抛异常。
+- 支持：Mekanism（`TileEntityMekanism` 接口 `getMaxEnergy/setEnergy`，FloatingLong 可超 int）、Thermal Expansion（`EnergyStorageCoFH.energy/capacity` int）、Industrial Foregoing（Titanium `EnergyStorageComponent.energy` int）、Draconic Evolution（public `OPStorage`/`OPStorageOP` 字段）、Flux Networks（`TransferHandler.mBuffer` + 解除速率限制）。
+- Modern Industrialization 1.20.1 仅 Fabric，与 Forge 不共存，未支持。
 
 **无线充电**（默认关闭）:
 - 通过 GUI 按钮开关（状态持久化到 NBT）
