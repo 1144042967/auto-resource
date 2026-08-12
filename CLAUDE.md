@@ -37,30 +37,34 @@
 src/main/java/cn/sd/jrz/autoresource/
 ├── AutoResource.java              # 主 mod 类 (@Mod, Forge)
 ├── Config.java                    # 配置文件 (ForgeConfigSpec)
-├── DataConfig.java                # 生成器数据配置
+├── DataConfig.java                # 生成器数据配置（含 getStarItem 配置缓存）
 ├── blocks/                         # 方块类
+│   ├── AbstractGeneratorBlock.java # 机器方块基类（config 持有、tick 分发）
 │   ├── EnergyGeneratorBlock.java   # 发电机方块
 │   ├── LiquidGeneratorBlock.java   # 流体生成器方块
 │   └── BlockGeneratorBlock.java    # 方块生成器方块
 ├── entities/                       # BlockEntity 类
+│   ├── AbstractGeneratorEntity.java# 机器实体基类（output/tickCount/六面开关/面NBT/markDirtyTick 节流）
 │   ├── EnergyGeneratorEntity.java  # 发电机实体
 │   ├── LiquidGeneratorEntity.java  # 流体生成器实体
 │   └── BlockGeneratorEntity.java   # 方块生成器实体
 ├── items/                          # 物品类
-│   ├── ItemManager.java            # 物品事件管理
+│   ├── ItemManager.java            # 创造标签注册（items/ 包，见"注册体系"）
 │   ├── EnergyGeneratorItem.java    # 发电机物品
 │   ├── LiquidGeneratorItem.java    # 流体生成器物品
-│   └── BlockGeneratorItem.java     # 方块生成器物品
+│   └── BlockGeneratorItem.java     # 方块生成器物品（tooltip 支持物品集合缓存）
 ├── connection/                     # Forge Capability 实现
 │   ├── EnergyConnection.java       # 能量 IEnergyStorage
 │   ├── LiquidConnection.java       # 流体 IFluidHandler
 │   └── BlockConnection.java        # 物品 IItemHandler
 ├── menu/                           # 容器
+│   ├── AbstractGeneratorMenu.java  # 机器容器基类（实体泛型、DataSlot 工具、玩家背包布局、stillValid）
 │   ├── EnergyGeneratorMenu.java    # FE发电机容器（数据槽同步 + 按钮交互）
 │   ├── LiquidGeneratorMenu.java    # 流体生成器容器（输入/输出槽 + 六面开关按钮）
 │   └── BlockGeneratorMenu.java     # 方块生成器容器（标记槽 + 输出展示槽 + 提取按钮）
 ├── client/                         # 客户端
 │   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
+│   ├── AbstractGeneratorScreen.java# 机器 GUI 基类（sendButton/growthPercent/开关按钮/渲染循环）
 │   ├── EnergyGeneratorScreen.java  # FE发电机 GUI
 │   ├── LiquidGeneratorScreen.java  # 流体生成器 GUI
 │   ├── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
@@ -69,7 +73,7 @@ src/main/java/cn/sd/jrz/autoresource/
 │   └── Registration.java           # 所有方块/物品/实体/菜单的注册
 └── util/                           # 工具类
     ├── Tool.java                   # 数值裁剪等工具方法
-    └── EnergyBypass.java           # 反射式能量绕过（补满第三方MOD机器能量到容量，零编译期依赖）
+    └── EnergyBypass.java           # 反射式能量绕过（补满第三方MOD机器能量到容量，零编译期依赖；龙之研究反射按类缓存）
 ```
 
 ## 注册体系
@@ -262,6 +266,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 - 所有文件使用 UTF-8 编码
 - 使用 `@Nonnull`/`@Nullable` 注解标记参数
+- 三类机器共享逻辑抽取到基类（`AbstractGeneratorBlock`/`AbstractGeneratorEntity`/`AbstractGeneratorMenu`/`AbstractGeneratorScreen`），机器特有逻辑留在子类；实体每 tick 用 `markDirtyTick()` 节流存档标记
 - tick 逻辑内嵌在 Block 类中，通过匿名 lambda 直接实现（FE 发电机的具体逻辑在 `EnergyGeneratorEntity.serverTick()` 中）
 - 使用 `findIndex` 轮询索引实现六面均匀输出
 - 产量使用 scaled long 存储（*1000 避免浮点运算）

@@ -6,18 +6,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
 
 /**
  * 流体生成器容器（水源机/岩浆机）。
@@ -26,7 +21,7 @@ import java.util.function.IntSupplier;
  * 通过数据槽把流体量、产量、下次增长量、增长进度、六面开关等同步到客户端用于 GUI 展示，
  * 并在 GUI 中通过按钮（clickMenuButton）修改每台机器的六面传输开关。
  */
-public class LiquidGeneratorMenu extends AbstractContainerMenu {
+public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEntity> {
     // 按钮 ID
     public static final int BUTTON_TRANSFER_DOWN = 0;
     public static final int BUTTON_TRANSFER_UP = 1;
@@ -35,8 +30,6 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
     public static final int BUTTON_TRANSFER_WEST = 4;
     public static final int BUTTON_TRANSFER_EAST = 5;
     public static final int BUTTON_PLACE_FLUID = 6;
-
-    public final LiquidGeneratorEntity entity;
 
     // 客户端展示数据（服务端通过数据槽同步而来）
     private long clientLiquid;
@@ -53,15 +46,13 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
     private boolean clientPlaceFluidBelow;
 
     public LiquidGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
-        super(Registration.LIQUID_GENERATOR_MENU.get(), id);
-        BlockEntity blockEntity = playerInventory.player.level().getBlockEntity(pos);
-        this.entity = (LiquidGeneratorEntity) blockEntity;
+        super(Registration.LIQUID_GENERATOR_MENU.get(), id, playerInventory, pos);
 
         // 机器槽位：0=输入，1=输出
         addSlot(new SlotItemHandler(entity.inputSlot, 0, 8, 113));
         addSlot(new SlotItemHandler(entity.outputSlot, 0, 152, 113));
         // 玩家背包：2-37
-        addPlayerInventory(playerInventory);
+        addPlayerInventory(playerInventory, 153);
 
         // 数据同步（long 拆成高低 32 位两个数据槽）
         addDataSlot(makeDataSlot(() -> hiWord(entity.liquid), v -> clientLiquid = mergeLong(v, loWord(clientLiquid))));
@@ -88,6 +79,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.liquid : clientLiquid;
     }
 
+    @Override
     public long getOutput() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.output : clientOutput;
     }
@@ -96,19 +88,24 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.config.getStep() : clientStep;
     }
 
+    @Override
     public long getMax() {
         return entity != null ? entity.config.getMax() : Long.MAX_VALUE;
     }
 
-    /** 本机对应的流体（水源机为水，岩浆机为岩浆），用于 GUI 进度条配色 */
+    /**
+     * 本机对应的流体（水源机为水，岩浆机为岩浆），用于 GUI 进度条配色
+     */
     public Fluid getFluid() {
         return entity != null ? entity.config.getFluid() : Fluids.WATER;
     }
 
+    @Override
     public int getTickCount() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.tickCount) : clientTickCount;
     }
 
+    @Override
     public int getSecond() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()) : clientSecond;
     }
@@ -127,7 +124,9 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         };
     }
 
-    /** 是否开启"下方生成流体"（客户端读同步值，服务端读实体） */
+    /**
+     * 是否开启"下方生成流体"（客户端读同步值，服务端读实体）
+     */
     public boolean isPlaceFluidBelow() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.placeFluidBelow : clientPlaceFluidBelow;
     }
@@ -137,6 +136,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
      */
     @Override
     public boolean clickMenuButton(@Nonnull Player player, int id) {
+        //noinspection resource
         if (entity == null || player.level().isClientSide) {
             return false;
         }
@@ -156,14 +156,6 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
         return true;
     }
 
-    @Override
-    public boolean stillValid(@Nonnull Player player) {
-        if (entity == null) {
-            return false;
-        }
-        return entity.getLevel() != null && entity.getLevel().getBlockEntity(entity.getBlockPos()) == entity;
-    }
-
     /**
      * 快速转移物品
      */
@@ -172,7 +164,7 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
     public ItemStack quickMoveStack(@Nonnull Player player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
-        if (slot != null && slot.hasItem()) {
+        if (slot.hasItem()) {
             ItemStack stack = slot.getItem();
             itemStack = stack.copy();
             if (index < 2) {
@@ -199,42 +191,5 @@ public class LiquidGeneratorMenu extends AbstractContainerMenu {
             slot.onTake(player, stack);
         }
         return itemStack;
-    }
-
-    private void addPlayerInventory(Inventory playerInventory) {
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 153 + i * 18));
-            }
-        }
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 207));
-        }
-    }
-
-    private static DataSlot makeDataSlot(IntSupplier getter, IntConsumer setter) {
-        return new DataSlot() {
-            @Override
-            public int get() {
-                return getter.getAsInt();
-            }
-
-            @Override
-            public void set(int value) {
-                setter.accept(value);
-            }
-        };
-    }
-
-    private static int hiWord(long value) {
-        return (int) (value >> 32);
-    }
-
-    private static int loWord(long value) {
-        return (int) (value & 0xFFFFFFFFL);
-    }
-
-    private static long mergeLong(int hi, int lo) {
-        return ((long) hi << 32) | (lo & 0xFFFFFFFFL);
     }
 }

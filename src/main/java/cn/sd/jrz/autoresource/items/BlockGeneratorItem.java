@@ -18,6 +18,7 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 import net.minecraftforge.items.ItemStackHandler;
 import net.minecraftforge.registries.ForgeRegistries;
+import net.minecraftforge.registries.tags.ITagManager;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -27,9 +28,13 @@ import java.util.List;
 import java.util.Set;
 
 public class BlockGeneratorItem extends BlockItem {
-    /** tooltip 每行展示的方块数量 */
+    /**
+     * tooltip 每行展示的方块数量
+     */
     private static final int PER_ROW = 5;
-    /** tooltip 最多展示的方块数量，超过则在尾部提示总数量 */
+    /**
+     * tooltip 最多展示的方块数量，超过则在尾部提示总数量
+     */
     private static final int MAX_ITEMS = 100;
 
     private final DataConfig config;
@@ -39,9 +44,11 @@ public class BlockGeneratorItem extends BlockItem {
         this.config = config;
     }
 
-    /** 物品名称使用机器主题色 */
+    /**
+     * 物品名称使用机器主题色
+     */
     @Override
-    public Component getName(ItemStack stack) {
+    public @Nonnull Component getName(@Nonnull ItemStack stack) {
         return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 
@@ -118,10 +125,30 @@ public class BlockGeneratorItem extends BlockItem {
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    /** 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序） */
+    /**
+     * 配置列表缓存快照（用于判断配置变化而失效缓存）
+     */
+    private static List<? extends String> cachedConfigItems;
+    /**
+     * 展开后的实际物品集合缓存（避免 tooltip 每帧重建时重复展开标签）
+     */
+    private static Set<Item> cachedSupportedItems;
+
+    /**
+     * 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序），结果按配置内容缓存
+     */
     private static Set<Item> getSupportedItems() {
+        List<? extends String> current = DataConfig.getBlockGeneratorItems();
+        if (cachedSupportedItems == null || !current.equals(cachedConfigItems)) {
+            cachedConfigItems = List.copyOf(current);
+            cachedSupportedItems = expandSupportedItems(cachedConfigItems);
+        }
+        return cachedSupportedItems;
+    }
+
+    private static Set<Item> expandSupportedItems(List<? extends String> entries) {
         Set<Item> supported = new LinkedHashSet<>();
-        for (String entry : DataConfig.getBlockGeneratorItems()) {
+        for (String entry : entries) {
             if (entry == null) {
                 continue;
             }
@@ -134,8 +161,11 @@ public class BlockGeneratorItem extends BlockItem {
                 ResourceLocation loc = ResourceLocation.tryParse(id.substring(1));
                 if (loc != null) {
                     TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
-                    for (Item item : ForgeRegistries.ITEMS.tags().getTag(tagKey)) {
-                        supported.add(item);
+                    ITagManager<Item> tags = ForgeRegistries.ITEMS.tags();
+                    if (tags != null) {
+                        for (Item item : tags.getTag(tagKey)) {
+                            supported.add(item);
+                        }
                     }
                 }
             } else {

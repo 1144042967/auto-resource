@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -23,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -41,7 +39,7 @@ import javax.annotation.Nullable;
  * 上方容器内可容纳流体物品的填充、六面流体传输（可逐面禁用）以及"下方生成流体"。
  * 六面开关与"下方生成流体"为每台机器独立保存，可在 GUI 中修改。
  */
-public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityProvider, MenuProvider {
+public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     private final LazyOptional<LiquidConnection> fluidOptional = LazyOptional.of(() -> new LiquidConnection(this));
     /**
      * 物品管道能力：输入走输入槽（可插入），输出走输出槽（可抽取）；
@@ -81,20 +79,9 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
             return slot == 0 && inputSlot.isItemValid(0, stack);
         }
     });
-    public final DataConfig config;
 
     // 核心数据（流体数量单位为 mB/1000，即 B；output 单位同样为 mB/1000）
-    public long output;
     public long liquid = 0;
-    public long tickCount = 0;
-
-    // 六面流体传输开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 是否在下方空气方块放置对应流体（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
     public boolean placeFluidBelow = false;
@@ -160,13 +147,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     };
 
-    // 六面流体传输轮询索引
-    private int findIndex = 0;
-
     public LiquidGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -195,7 +177,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
         // 开启"下方生成流体"时，向下方空气方块放置流体
         placeFluidBelow();
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -442,20 +424,6 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         inputSlot.setStackInSlot(0, input.isEmpty() ? ItemStack.EMPTY : input);
     }
 
-    /**
-     * 指定面是否允许流体传输
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
-    }
-
     @Override
     @Nonnull
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction direction) {
@@ -490,12 +458,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         nbt.putLong("output", output);
         nbt.putLong("liquid", liquid);
         nbt.putLong("tickCount", tickCount);
-        nbt.putBoolean("transferDown", transferDown);
-        nbt.putBoolean("transferUp", transferUp);
-        nbt.putBoolean("transferNorth", transferNorth);
-        nbt.putBoolean("transferSouth", transferSouth);
-        nbt.putBoolean("transferWest", transferWest);
-        nbt.putBoolean("transferEast", transferEast);
+        saveTransferFaces(nbt);
         nbt.putBoolean("placeFluidBelow", placeFluidBelow);
         nbt.put("inputSlot", inputSlot.serializeNBT());
         nbt.put("outputSlot", outputSlot.serializeNBT());
@@ -513,24 +476,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements ICapabilityPro
         if (nbt.contains("tickCount", Tag.TAG_LONG)) {
             tickCount = Tool.suit(nbt.getLong("tickCount"));
         }
-        if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
-            transferDown = nbt.getBoolean("transferDown");
-        }
-        if (nbt.contains("transferUp", Tag.TAG_BYTE)) {
-            transferUp = nbt.getBoolean("transferUp");
-        }
-        if (nbt.contains("transferNorth", Tag.TAG_BYTE)) {
-            transferNorth = nbt.getBoolean("transferNorth");
-        }
-        if (nbt.contains("transferSouth", Tag.TAG_BYTE)) {
-            transferSouth = nbt.getBoolean("transferSouth");
-        }
-        if (nbt.contains("transferWest", Tag.TAG_BYTE)) {
-            transferWest = nbt.getBoolean("transferWest");
-        }
-        if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
-            transferEast = nbt.getBoolean("transferEast");
-        }
+        loadTransferFaces(nbt);
         if (nbt.contains("placeFluidBelow", Tag.TAG_BYTE)) {
             placeFluidBelow = nbt.getBoolean("placeFluidBelow");
         }

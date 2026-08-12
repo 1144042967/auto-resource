@@ -9,11 +9,9 @@ import javax.annotation.Nonnull;
 
 public class LiquidConnection implements IFluidHandler {
     private final LiquidGeneratorEntity owner;
-    private final FluidStack stack;
 
     public LiquidConnection(LiquidGeneratorEntity owner) {
         this.owner = owner;
-        this.stack = new FluidStack(owner.config.getFluid(), 0);
     }
 
     @Override
@@ -23,8 +21,8 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @Nonnull FluidStack getFluidInTank(int tank) {
-        stack.setAmount(Tool.suitInt(owner.liquid));
-        return stack;
+        // 每次返回新实例，避免返回共享可变 FluidStack 被调用方持有引用后误改
+        return new FluidStack(owner.config.getFluid(), Tool.suitInt(owner.liquid));
     }
 
     @Override

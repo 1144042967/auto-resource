@@ -11,7 +11,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -24,7 +23,6 @@ import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 import net.minecraftforge.common.capabilities.Capability;
 import net.minecraftforge.common.capabilities.ForgeCapabilities;
-import net.minecraftforge.common.capabilities.ICapabilityProvider;
 import net.minecraftforge.common.util.LazyOptional;
 import net.minecraftforge.energy.IEnergyStorage;
 import net.minecraftforge.items.ItemStackHandler;
@@ -43,14 +41,11 @@ import java.util.Map;
  * 指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
  * 无线充电与输电面等参数均为每台发电机独立保存，可在 GUI 中修改。
  */
-public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityProvider, MenuProvider {
+public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     private final LazyOptional<EnergyConnection> fecOptional = LazyOptional.of(() -> new EnergyConnection(this));
-    public final DataConfig config;
 
     // 核心数据
-    public long output;
     public long energy = 0;
-    public long tickCount = 0;
     /**
      * 下次增长的发电量（同时用于增长时实际增量）
      */
@@ -74,14 +69,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
      * 重复传电次数，对相邻输电和无线输电都生效
      */
     public int transferRepeat = 1;
-
-    // 六面输电开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 加速增长槽位（放入配置指定物品后增长量变为当前发电量的 1%），只能放 1 个
     public final ItemStackHandler starSlot = new ItemStackHandler(1) {
@@ -119,13 +106,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     };
 
-    // 六面输电轮询索引
-    private int findIndex = 0;
-
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -158,7 +140,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         if (wirelessOn) {
             wirelessTick();
         }
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -306,10 +288,10 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
      * 向相邻/无线目标方块输出能量：
      * 1. 先走标准 ENERGY 能力注入（保留原有行为）；
      * 2. 若目标因容量/接收速率限制无法接收（如第三方 MOD 机器已满或拒收），
-     *    且配置开启了反射绕过（{@link Config#FE_BYPASS_ENABLED}），则通过反射把目标内部能量直接补满到容量，
-     *    使机器始终满电运行（不依赖目标是否暴露标准 ENERGY 能力，覆盖龙之研究等自定义能量系统）。
+     * 且配置开启了反射绕过（{@link Config#FE_BYPASS_ENABLED}），则通过反射把目标内部能量直接补满到容量，
+     * 使机器始终满电运行（不依赖目标是否暴露标准 ENERGY 能力，覆盖龙之研究等自定义能量系统）。
      *
-     * @param entity       目标方块实体
+     * @param entity        目标方块实体
      * @param fromDirection 目标接收能量的面（即本机对应面的对面）
      */
     private void outputTo(BlockEntity entity, Direction fromDirection) {
@@ -320,7 +302,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         entity.getCapability(ForgeCapabilities.ENERGY, fromDirection).resolve().ifPresent(storage -> {
             capRef[0] = storage;
             int maxOutput = Tool.suitInt(energy);
-            int result = 0;
+            int result;
             if (storage.canReceive()) {
                 result = storage.receiveEnergy(maxOutput, false);
                 if (result < 0) {
@@ -415,9 +397,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
                     continue;
                 }
                 LevelChunk chunk = level.getChunk(cx, cz);
-                if (chunk == null) {
-                    continue;
-                }
                 for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
                     BlockPos bp = entry.getKey();
                     if (bp.equals(worldPosition)) {
@@ -476,20 +455,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         }
     }
 
-    /**
-     * 指定面是否允许输电
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
-    }
-
     @Override
     @Nonnull
     public <T> LazyOptional<T> getCapability(@Nonnull Capability<T> capability, @Nullable Direction direction) {
@@ -519,12 +484,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         nbt.putInt("wirelessInterval", wirelessInterval);
         nbt.putInt("wirelessRange", wirelessRange);
         nbt.putInt("transferRepeat", transferRepeat);
-        nbt.putBoolean("transferDown", transferDown);
-        nbt.putBoolean("transferUp", transferUp);
-        nbt.putBoolean("transferNorth", transferNorth);
-        nbt.putBoolean("transferSouth", transferSouth);
-        nbt.putBoolean("transferWest", transferWest);
-        nbt.putBoolean("transferEast", transferEast);
+        saveTransferFaces(nbt);
         nbt.put("starSlot", starSlot.serializeNBT());
         nbt.put("chargeSlot", chargeSlot.serializeNBT());
     }
@@ -559,24 +519,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements ICapabilityPro
         if (nbt.contains("transferRepeat", Tag.TAG_INT)) {
             transferRepeat = Math.max(1, nbt.getInt("transferRepeat"));
         }
-        if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
-            transferDown = nbt.getBoolean("transferDown");
-        }
-        if (nbt.contains("transferUp", Tag.TAG_BYTE)) {
-            transferUp = nbt.getBoolean("transferUp");
-        }
-        if (nbt.contains("transferNorth", Tag.TAG_BYTE)) {
-            transferNorth = nbt.getBoolean("transferNorth");
-        }
-        if (nbt.contains("transferSouth", Tag.TAG_BYTE)) {
-            transferSouth = nbt.getBoolean("transferSouth");
-        }
-        if (nbt.contains("transferWest", Tag.TAG_BYTE)) {
-            transferWest = nbt.getBoolean("transferWest");
-        }
-        if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
-            transferEast = nbt.getBoolean("transferEast");
-        }
+        loadTransferFaces(nbt);
         if (nbt.contains("starSlot", Tag.TAG_COMPOUND)) {
             starSlot.deserializeNBT(nbt.getCompound("starSlot"));
         }

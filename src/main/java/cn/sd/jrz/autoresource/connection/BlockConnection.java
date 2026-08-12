@@ -26,11 +26,12 @@ public class BlockConnection implements IItemHandler {
         if (owner.getMarkedItem().isEmpty()) {
             return ItemStack.EMPTY;
         }
+        // 复用内部缓存实例避免每 tick 分配，但对外返回副本，防止调用方持有引用后改动内部状态
         if (stack.isEmpty() || !stack.is(owner.getMarkedItem().getItem())) {
             stack = new ItemStack(owner.getMarkedItem().getItem(), 0);
         }
         stack.setCount(Tool.suitInt(owner.block / 1000));
-        return stack;
+        return stack.copy();
     }
 
     @Override

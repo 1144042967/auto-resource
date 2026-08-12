@@ -25,9 +25,11 @@ public class EnergyGeneratorItem extends BlockItem {
         this.config = config;
     }
 
-    /** 物品名称使用机器主题色 */
+    /**
+     * 物品名称使用机器主题色
+     */
     @Override
-    public Component getName(ItemStack stack) {
+    public @Nonnull Component getName(@Nonnull ItemStack stack) {
         return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 

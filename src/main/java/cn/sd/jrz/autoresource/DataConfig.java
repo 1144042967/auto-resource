@@ -22,6 +22,10 @@ import java.util.List;
 
 public abstract class DataConfig {
     public static final DataConfig ENERGY_GENERATOR_FE = new DataConfig(Config.FE_MIN, Config.FE_MAX, Config.FE_SECOND, Config.FE_STEP) {
+        // 加速物品缓存：仅当配置值变化时重新解析（配置可被 /reload 修改），避免 GUI 每帧做注册表查找
+        private String cachedStarId;
+        private Item cachedStarItem;
+
         @Override
         public BlockEntityType<?> getEntityType() {
             return Registration.ENERGY_GENERATOR_FE_ENTITY.get();
@@ -30,9 +34,15 @@ public abstract class DataConfig {
         @Override
         public Item getStarItem() {
             String id = Config.FE_STAR_ITEM.get();
-            ResourceLocation loc = ResourceLocation.tryParse(id);
-            Item item = loc != null ? ForgeRegistries.ITEMS.getValue(loc) : null;
-            return item != null ? item : Items.NETHER_STAR;
+            if (cachedStarItem == null || !id.equals(cachedStarId)) {
+                cachedStarId = id;
+                ResourceLocation loc = ResourceLocation.tryParse(id);
+                cachedStarItem = loc != null ? ForgeRegistries.ITEMS.getValue(loc) : null;
+                if (cachedStarItem == null) {
+                    cachedStarItem = Items.NETHER_STAR;
+                }
+            }
+            return cachedStarItem;
         }
 
         @Override

@@ -7,6 +7,8 @@ import net.minecraftforge.energy.IEnergyStorage;
 import javax.annotation.Nullable;
 import java.lang.reflect.Field;
 import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * 反射式能量绕过工具类。
@@ -35,7 +37,6 @@ public final class EnergyBypass {
     // ---- Mekanism 反射缓存 ----
     private static boolean mekInitFailed;
     private static Class<?> mekTile;
-    private static Class<?> mekFloatingLong;
     private static Method mekGetEnergy;
     private static Method mekGetMaxEnergy;
     private static Method mekSetEnergy;
@@ -60,6 +61,16 @@ public final class EnergyBypass {
 
     // ---- Titanium(Industrial Foregoing) 反射缓存 ----
     private static Field titaniumEnergy;
+
+    // ---- Draconic Evolution 反射缓存（按目标类缓存字段/方法，避免每 tick 重复解析）----
+    private static final Map<Class<?>, DraconicInfo> DRACONIC_CACHE = new ConcurrentHashMap<>();
+
+    /**
+     * 龙之研究 OP 存储的反射句柄缓存；字段为 null 表示该类型不可解析
+     */
+    private record DraconicInfo(Field field, Method getStored, Method getMax, Method modify) {
+        static final DraconicInfo NONE = new DraconicInfo(null, null, null, null);
+    }
 
     private EnergyBypass() {
     }
@@ -112,7 +123,7 @@ public final class EnergyBypass {
         }
         try {
             mekTile = Class.forName("mekanism.common.tile.base.TileEntityMekanism");
-            mekFloatingLong = Class.forName("mekanism.api.math.FloatingLong");
+            Class<?> mekFloatingLong = Class.forName("mekanism.api.math.FloatingLong");
             mekGetEnergy = mekTile.getMethod("getEnergy", int.class, Direction.class);
             mekGetMaxEnergy = mekTile.getMethod("getMaxEnergy", int.class, Direction.class);
             mekSetEnergy = mekTile.getMethod("setEnergy", int.class, mekFloatingLong, Direction.class);
@@ -174,6 +185,7 @@ public final class EnergyBypass {
      * 能量核心 TileEnergyCore 持有 {@code public OPStorageOP energy} 字段。反射调用
      * {@code getOPStored()}/{@code getMaxOPStored()}/{@code modifyEnergyStored(long)} 补满。
      * OP 与 RF/FE 1:1 换算；容量为 -1（T8 无限核心）或已满时跳过。
+     * 字段与方法的解析按目标类缓存（{@link #DRACONIC_CACHE}），避免每 tick 重复反射解析。
      */
     private static long tryRefillDraconic(BlockEntity target, long available) {
         try {
@@ -181,29 +193,16 @@ public final class EnergyBypass {
             if (!target.getClass().getName().contains("draconicevolution")) {
                 return 0;
             }
-            Field field;
-            try {
-                field = target.getClass().getField("opStorage");
-            } catch (NoSuchFieldException ignored) {
-                try {
-                    field = target.getClass().getField("energy");
-                } catch (NoSuchFieldException ignored2) {
-                    return 0;
-                }
-            }
-            // 仅当字段类型是 OP 存储类时才处理，避免误伤同名非能量字段
-            if (!field.getType().getName().contains("OPStorage")) {
+            DraconicInfo info = DRACONIC_CACHE.computeIfAbsent(target.getClass(), EnergyBypass::resolveDraconic);
+            if (info.field == null) {
                 return 0;
             }
-            Object storage = field.get(target);
+            Object storage = info.field.get(target);
             if (storage == null) {
                 return 0;
             }
-            Method getStored = storage.getClass().getMethod("getOPStored");
-            Method getMax = storage.getClass().getMethod("getMaxOPStored");
-            Method modify = storage.getClass().getMethod("modifyEnergyStored", long.class);
-            long cur = (long) getStored.invoke(storage);
-            long max = (long) getMax.invoke(storage);
+            long cur = (long) info.getStored.invoke(storage);
+            long max = (long) info.getMax.invoke(storage);
             // 容量无效（如 -1 无限）或已满则跳过
             if (max <= 0 || cur >= max) {
                 return 0;
@@ -212,10 +211,38 @@ public final class EnergyBypass {
             if (give <= 0) {
                 return 0;
             }
-            modify.invoke(storage, give);
+            info.modify.invoke(storage, give);
             return give;
         } catch (Exception ignored) {
             return 0;
+        }
+    }
+
+    /**
+     * 解析一个龙之研究方块实体的 OP 存储字段与方法；类型不含 OP 存储字段时返回 {@link DraconicInfo#NONE}。
+     */
+    private static DraconicInfo resolveDraconic(Class<?> clazz) {
+        try {
+            Field field;
+            try {
+                field = clazz.getField("opStorage");
+            } catch (NoSuchFieldException ignored) {
+                try {
+                    field = clazz.getField("energy");
+                } catch (NoSuchFieldException ignored2) {
+                    return DraconicInfo.NONE;
+                }
+            }
+            // 仅当字段类型是 OP 存储类时才处理，避免误伤同名非能量字段
+            if (!field.getType().getName().contains("OPStorage")) {
+                return DraconicInfo.NONE;
+            }
+            Method getStored = field.getType().getMethod("getOPStored");
+            Method getMax = field.getType().getMethod("getMaxOPStored");
+            Method modify = field.getType().getMethod("modifyEnergyStored", long.class);
+            return new DraconicInfo(field, getStored, getMax, modify);
+        } catch (Exception ignored) {
+            return DraconicInfo.NONE;
         }
     }
 
@@ -306,7 +333,7 @@ public final class EnergyBypass {
         // 解包 CoFH 的侧面限制包装 EnergyHandlerRestrictionWrapper
         if (initCoFH()) {
             Object storage = unwrapCoFH(cap);
-            if (storage != null && cofhStorage.isInstance(storage)) {
+            if (cofhStorage.isInstance(storage)) {
                 try {
                     int cur = cofhEnergy.getInt(storage);
                     int max = cofhCapacity.getInt(storage);

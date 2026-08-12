@@ -53,9 +53,10 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
      */
     private static final int MIN_BLOCK_LIGHT = 15 << 4;
 
-    public BlockGeneratorRenderer(BlockEntityRendererProvider.Context context) {
+    public BlockGeneratorRenderer(BlockEntityRendererProvider.Context ignored) {
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     public void render(@Nonnull BlockGeneratorEntity entity, float partialTick, @Nonnull PoseStack poseStack, @Nonnull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         ItemStack marked = entity.getMarkedItem();
@@ -64,10 +65,8 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         }
         BlockState state = blockItem.getBlock().defaultBlockState();
         TextureAtlasSprite sprite = Minecraft.getInstance().getBlockRenderer().getBlockModel(state).getParticleIcon(ModelData.EMPTY);
-        if (sprite == null) {
-            return;
-        }
         // 强制从当前方块图集重新解析精灵，确保首次渲染时贴图已加载
+        //noinspection resource
         sprite = Minecraft.getInstance().getModelManager().getAtlas(TextureAtlas.LOCATION_BLOCKS).getSprite(sprite.contents().name());
         // 显式绑定方块纹理图集（与物品 GUI 渲染 renderGuiItem 一致）
         RenderSystem.setShaderTexture(0, TextureAtlas.LOCATION_BLOCKS);
