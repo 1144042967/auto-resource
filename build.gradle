@@ -47,6 +47,11 @@ repositories {
 }
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // 机械动力 Create 0.5.1（1.20.1 Forge）编译期依赖（官方映射 jar，本地 libs/ 提供）。
+    // 仅用于编译水车马达的联动代码；不随 mod 分发，运行时由玩家自行安装 Create 及其前置。
+    // 注意：compat/create 的代码只用 Create 0.5.1 与 6.0.8 共享的 API（已用 javap 逐项核验签名一致），
+    // 故同一 jar 可同时运行在 Create 0.5.1.j 与 6.0.8（Flywheel 0.6/1.0）环境。
+    compileOnly files("libs/create-1.20.1-0.5.1.j.jar")
 }
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [

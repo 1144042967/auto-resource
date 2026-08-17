@@ -1,0 +1,45 @@
+package cn.sd.jrz.autoresource.compat.create;
+
+import net.minecraft.ChatFormatting;
+import net.minecraft.network.chat.Component;
+import net.minecraft.world.item.BlockItem;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.level.Level;
+import net.minecraft.world.level.block.Block;
+import net.minecraftforge.api.distmarker.Dist;
+import net.minecraftforge.api.distmarker.OnlyIn;
+
+import javax.annotation.Nonnull;
+import javax.annotation.Nullable;
+import java.util.List;
+
+/**
+ * 水车马达物品（仅当机械动力 Create 加载时注册）。
+ * <p>
+ * tooltip 说明机器用途：转速/应力容量由放入的水车数量决定、输出方向与旋转方向可在 GUI 调节、
+ * 破坏方块会掉落内部水车。
+ */
+public class WaterWheelMotorItem extends BlockItem {
+
+    public WaterWheelMotorItem(Block block) {
+        super(block, new Properties().stacksTo(1).fireResistant());
+    }
+
+    /** 物品名称使用水主题色（与水生成机一致） */
+    @Override
+    public @Nonnull Component getName(@Nonnull ItemStack stack) {
+        return super.getName(stack).copy().withStyle(ChatFormatting.AQUA);
+    }
+
+    @Override
+    @OnlyIn(Dist.CLIENT)
+    public void appendHoverText(@Nonnull ItemStack stack, @Nullable Level worldIn, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flagIn) {
+        super.appendHoverText(stack, worldIn, tooltip, flagIn);
+        tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.owner").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.speed").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.capacity").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.dir").withStyle(ChatFormatting.GRAY));
+        tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
+    }
+}

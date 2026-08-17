@@ -24,3 +24,9 @@ license="${mod_license}"
     versionRange="${minecraft_version_range}"
     ordering="NONE"
     side="BOTH"
+[[dependencies.${mod_id}]]
+    modId="create"
+    mandatory=false
+    versionRange="[0.5.1,)"
+    ordering="AFTER"
+    side="BOTH"

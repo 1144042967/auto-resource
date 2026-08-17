@@ -5,6 +5,7 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
@@ -27,6 +28,8 @@ import net.minecraftforge.registries.DeferredRegister;
 import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
+import javax.annotation.Nullable;
+
 public class Registration {
     private static final DeferredRegister<Block> BLOCKS = DeferredRegister.create(ForgeRegistries.BLOCKS, AutoResource.MODID);
     private static final DeferredRegister<Item> ITEMS = DeferredRegister.create(ForgeRegistries.ITEMS, AutoResource.MODID);
@@ -38,6 +41,15 @@ public class Registration {
         ITEMS.register(context.getModEventBus());
         BLOCK_ENTITIES.register(context.getModEventBus());
         CONTAINERS.register(context.getModEventBus());
+
+        // 机械动力联动：仅当 Create 加载时注册水车马达（未加载则字段保持 null，物品完全不存在）。
+        // 关键：Create 类只能经反射按类名加载（CreateCompat.invokeRegistration），
+        // 不能在 Registration 的字节码里出现任何 Create 类引用——否则 JVM 在加载 Registration 时
+        // 会急切解析这些引用，无 Create 时直接 NoClassDefFoundError。
+        if (CreateCompat.isCreateLoaded()) {
+            CreateCompat.invokeRegistration("register",
+                    new Class<?>[]{FMLJavaModLoadingContext.class}, new Object[]{context});
+        }
     }
 
     private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of()
@@ -72,4 +84,15 @@ public class Registration {
     public static final RegistryObject<MenuType<EnergyGeneratorMenu>> ENERGY_GENERATOR_MENU = CONTAINERS.register("energy_generator", () -> IForgeMenuType.create((id, inv, buf) -> new EnergyGeneratorMenu(id, inv, buf.readBlockPos())));
     public static final RegistryObject<MenuType<LiquidGeneratorMenu>> LIQUID_GENERATOR_MENU = CONTAINERS.register("liquid_generator", () -> IForgeMenuType.create((id, inv, buf) -> new LiquidGeneratorMenu(id, inv, buf.readBlockPos())));
     public static final RegistryObject<MenuType<BlockGeneratorMenu>> BLOCK_GENERATOR_MENU = CONTAINERS.register("block_generator", () -> IForgeMenuType.create((id, inv, buf) -> new BlockGeneratorMenu(id, inv, buf.readBlockPos())));
+
+    // Create（机械动力）联动 —— 仅当 Create 加载时在 init() 中注册，否则均为 null
+
+    @Nullable
+    public static RegistryObject<Block> WATER_WHEEL_MOTOR;
+    @Nullable
+    public static RegistryObject<Item> WATER_WHEEL_MOTOR_ITEM;
+    @Nullable
+    public static RegistryObject<BlockEntityType<?>> WATER_WHEEL_MOTOR_ENTITY;
+    @Nullable
+    public static RegistryObject<MenuType<?>> WATER_WHEEL_MOTOR_MENU;
 }

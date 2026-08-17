@@ -69,8 +69,16 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── LiquidGeneratorScreen.java  # 流体生成器 GUI
 │   ├── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
 │   └── BlockGeneratorRenderer.java # 方块生成器方块实体渲染（四侧面显示标记物品）
+├── compat/create/                  # 机械动力（Create）联动（仅当 Create 加载时注册，未加载则整个包不被引用）
+│   ├── CreateCompat.java           # isCreateLoaded 判断 + 水车/大水车物品懒加载缓存
+│   ├── WaterWheelMotorBlock.java   # 水车马达方块（DirectionalKineticBlock + IBE，单向动力源）
+│   ├── WaterWheelMotorEntity.java  # 水车马达实体（GeneratingKineticBlockEntity，转速/方向/应力容量）
+│   ├── WaterWheelMotorItem.java    # 水车马达物品（水主题色名称 + tooltip 讲解）
+│   ├── WaterWheelMotorMenu.java    # 水车马达容器（32 水车槽 + 转速/方向/六面按钮）
+│   ├── WaterWheelMotorScreen.java  # 水车马达 GUI（客户端）
+│   └── WaterWheelMotorRenderer.java# 水车马达方块实体渲染（四面侧显示转速文字）
 ├── setup/                          # 注册
-│   └── Registration.java           # 所有方块/物品/实体/菜单的注册
+│   └── Registration.java           # 所有方块/物品/实体/菜单的注册（含 Create 联动条件注册）
 └── util/                           # 工具类
     ├── Tool.java                   # 数值裁剪等工具方法
     └── EnergyBypass.java           # 反射式能量绕过（补满第三方MOD机器能量到容量，零编译期依赖；龙之研究反射按类缓存）
@@ -190,6 +198,26 @@ src/main/java/cn/sd/jrz/autoresource/
 **管道输出（BlockConnection）**:
 - 未标记时 `getStackInSlot`/`extractItem` 返回空；标记后按标记物品输出存量方块
 - `insertItem` 返回原物品（禁止输入）
+
+### 4. 水车马达（Create 联动，可选）
+
+一个机械动力（Create）动力源，**仅当 Create 加载时注册**，无 Create 时该方块/物品完全不存在（`compat/create/` 包整体不被引用，类加载安全）。
+
+- **依赖**：`libs/create-1.20.1-0.5.1.j.jar`（`compileOnly files(...)`，见 build.gradle；可从 Modrinth 下载）。mods.toml 声明 `create` 软依赖（`mandatory=false`, `after`）。
+- **双版本兼容（0.5.1.j 与 6.0.8 通用）**：`compat/create` 的代码**只使用两版共享的 API**——Create 6.0.8（1.20.1）保留了 `com.simibubi.create.foundation.*` 包，经 javap 逐项核验 `DirectionalKineticBlock/IBE/GeneratingKineticBlockEntity/KineticBlockEntity 动力方法/SmartBlockEntity NBT 钩子/ScrollValueBehaviour/KineticScrollValueBehaviour/ValueBoxTransform$Sided` 两版签名一致。**同一 jar 可同时运行在 Create 0.5.1.j 与 6.0.8（Flywheel 0.6/1.0）环境**。规避点：转速框标签用 vanilla `Component.translatable`（避开 `Lang`→`CreateLang`）；值框定位直接写 `new Vec3(...)`（避开 `VecHelper`）。
+- **条件注册（关键：类加载安全）**：Create 相关注册全部集中在 `compat/create/CreateRegistration`（自持 4 个 DeferredRegister），由 `Registration.init()` / `ClientSetup` 在 `CreateCompat.isCreateLoaded()` 为真时**经 `CreateCompat.invokeRegistration()` 反射按类名加载**。⚠️ 不能在无条件加载类的字节码里直接引用 Create/Flywheel 类（即使写在 `if` 分支内也不行）——JVM 在链接这些类时会急切解析常量池里的类引用，无 Create 时直接 `NoClassDefFoundError`。本模块已用 `javap -v` 核验：Registration/ItemManager/ClientSetup/AutoResource/Config/DataConfig/CreateCompat 常量池 Create/Flywheel/Catnip/Ponder 引用均为 0。
+- **动力**：方块 `extends DirectionalKineticBlock implements IBE`（FACING=输出面，`hasShaftTowards` 仅输出面）；实体 `extends GeneratingKineticBlockEntity`。
+  - **转速由水车数量决定**：`currentSpeed()` = 小水车数量 ×1 RPM、大水车数量 ×4 RPM（槽内只能放一种）；`getGeneratedSpeed()` 返回 `convertToDirection(±speed, FACING)`，**未放入水车时返回 0（马达不转）**。旋转方向可切换（`counterClockwise`），**转速不可手动调节**。
+  - **应力容量动态**：重写 `calculateAddedStressCapacity()`，按**单个水车槽**内堆叠数量累加（水车 256 SU/个、大水车 512 SU/个），放入/取出即 `updateGeneratedRotation()` 通知网络重算；`onContentsChanged` 还会**兜底显式**调用 `network.updateCapacityFor/updateStressFor/updateStress` 推送最新容量与应力（Create 的 `updateGeneratedRotation` 内部受 `hasNetwork() && 转速≠0` 守卫，网络重挂后可能跳过导致容量不更新）。
+- **GUI**：上部大框正中放六面输出方向按钮；中部左侧水车槽位（右侧提示"水车槽位"，同排右侧为旋转方向开关，无标签）；下部物品栏行：左侧物品栏名称、右侧当前转速（3 位补零，如 `004 RPM`）。**无转速调节按钮**；不挂 `ScrollValueBehaviour`（无方块表面转速显示与滚动调节）。面板与槽位背景烘焙在 `textures/gui/water_wheel_motor_gui.png`（用户 PS 修改；槽位坐标需与 `WaterWheelMotorMenu` 一致：水车槽 7,56，玩家槽 `7+col*18`，y=96/114/132/150）。
+- **命中形状**：整方块 `Shapes.block()`，与整方块模型一致。
+- **渲染**：整方块模型（`parent: minecraft:block/cube`，无镂空，方块不设 `.noOcclusion()`）；`WaterWheelMotorRenderer`（BlockEntityRenderer）在**垂直于应力输出方向的四个面**中央用 1.20.1 的 `Font.drawInBatch`（世界文字统一走该方法）渲染当前转速文字（`%03d RPM`，`screen.autoresource.water_wheel_motor.block_speed` 键），白色带阴影、强制 15 级方块光照，叠放在 LCD 显示窗上；**文字上方始终指向应力输出方向**——用 `(右=U=V×N, 上=V=输出方向, 法线=N)` 基向量直接构建变换矩阵（`Matrix4f.set(col,row,v)`，JOML 字段为包私有不可直接访问），六个面统一处理，输出面与其对面（水车轮/底座贴图）不显示文字。转速由实体 `currentSpeed()` 读取（经 `SmartBlockEntity` 同步包下发到客户端）。渲染器由 `ClientSetup.onRegisterRenderers` 经 `CreateCompat.invokeRegistration("registerRenderers", ...)` 反射注册，避免无条件类字节码引用 Create 依赖类。不使用 Flywheel/实例化/`ScrollValueBehaviour`（双版本 API 不兼容）。
+- **持久化**：重写 `write(tag, clientPacket)`/`read(tag, clientPacket)`（Create `SmartBlockEntity` 的钩子，`load` 为 final 不可覆写）保存 `speed`/`counterClockwise`/`wheelSlots`。
+- **模型/朝向**：整方块模型（`parent: minecraft:block/cube`），六面贴图由 `tools/make_water_wheel_motor_textures.py`（Python/PIL）生成并写入 `textures/block/water_wheel_motor/`：`side` 灰色机器面板 + 中央 LCD 显示窗（上下水蓝强调条，风格对齐其他机器，六面侧贴图）、`top` 俯视水车轮（外环 + 8 辐条 + 轮毂 + 青色状态灯，即输出面标记）、`bottom` 深色底座板（中心轴承盘 + 四角铆钉）。`blockstates` 按 FACING 旋转模型：水平朝向（north/south/east/west）用 `x:90` + `y` 使**顶面水车轮贴图朝向输出方向**，朝上/朝下用 `x:0`/`x:180`；`front` 箭头贴图与旧 createaddition 模型/黄铜贴图（`*_old.json`、`brass_*.png`）保留备份未使用。
+- **配方**：`data/autoresource/recipes/water_wheel_motor.json`——铁锭 ×8 围框 + 中央活塞 + 左右各一水车（`create:water_wheel`）合成 1 个马达；材料含 Create 物品，仅 Create 加载时可用。
+- **物品/tooltip**：`WaterWheelMotorItem`（`BlockItem` 子类）——物品名用水主题色（`ChatFormatting.AQUA`，与水生成机一致）；tooltip 用 `item.autoresource.water_wheel_motor.tooltip.*` 语言键讲解用途（Create 动力源、转速/应力容量由水车数量决定、GUI 可调方向、破坏掉落内部水车）。
+- **破坏掉落**：`data/autoresource/loot_tables/blocks/water_wheel_motor.json`（掉落方块自身）；`WaterWheelMotorBlock.getDrops` 覆写把水车槽内放入的水车/大水车一并掉落（不随物品 NBT 保留槽内容，避免重复）。
+- 语言键：`block.autoresource.water_wheel_motor`、`screen.autoresource.water_wheel_motor.*`（目前仅 en_us/zh_cn 两个语言文件加入，其余语言后续同步）。
 
 ## Capability 系统
 

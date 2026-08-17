@@ -1,0 +1,23 @@
+{
+  "type": "minecraft:crafting_shaped",
+  "group": "water_wheel_motor",
+  "key": {
+    "I": {
+      "item": "minecraft:iron_ingot"
+    },
+    "W": {
+      "item": "create:water_wheel"
+    },
+    "P": {
+      "item": "minecraft:piston"
+    }
+  },
+  "pattern": [
+    "III",
+    "WPW",
+    "III"
+  ],
+  "result": {
+    "item": "autoresource:water_wheel_motor"
+  }
+}
