@@ -1,6 +1,6 @@
 package cn.sd.jrz.autoresource.menu;
 
-import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -14,11 +14,7 @@ import net.minecraftforge.items.SlotItemHandler;
 import javax.annotation.Nonnull;
 
 /**
- * 方块生成器容器。
- * <p>
- * 包含标记槽（0，放入合法物品后锁定，决定输出方块种类）、输出展示槽（1，显示标记物品，单击提取）以及玩家背包。
- * 通过数据槽把存量、产量、下次增长量、增长进度、六面开关、"下方生成方块"等同步到客户端用于 GUI 展示，
- * 并通过按钮（clickMenuButton）修改六面开关、"下方生成方块"以及执行输出槽的提取操作。
+ * 方块生成器容器：标记槽（0，锁定决定输出种类）、输出展示槽（1，单击提取）与玩家背包；数据槽同步 GUI，按钮修改开关/提取。
  */
 public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEntity> {
     // 按钮 ID
@@ -50,7 +46,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     public BlockGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.BLOCK_GENERATOR_MENU.get(), id, playerInventory, pos);
 
-        // 机器槽位：0=标记槽（放入后锁定），1=输出展示槽（显示标记物品，单击提取）
+        // 机器槽位：0=标记槽（锁定），1=输出展示槽（单击提取）
         addSlot(new SlotItemHandler(entity.markerSlot, 0, 8, 113) {
             @Override
             public boolean mayPickup(@Nonnull Player player) {
@@ -193,7 +189,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     }
 
     /**
-     * 从存量中提取最多 maxCount 个标记方块放入玩家背包；背包放不下时退回存量
+     * 从存量中提取最多 maxCount 个标记方块放入玩家背包；放不下时退回存量
      */
     private void extractBlocks(Player player, long maxCount) {
         if (entity.getMarkedItem().isEmpty() || maxCount <= 0) {
@@ -239,7 +235,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
         if (slot.hasItem()) {
             ItemStack stack = slot.getItem();
             ItemStack itemStack = stack.copy();
-            // 玩家背包 -> 尝试移入标记槽（仅合法物品且槽为空时成功）
+            // 玩家背包 -> 尝试移入标记槽
             if (!this.moveItemStackTo(stack, 0, 1, false)) {
                 return ItemStack.EMPTY;
             }

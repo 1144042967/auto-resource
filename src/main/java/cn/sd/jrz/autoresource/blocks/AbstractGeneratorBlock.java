@@ -14,10 +14,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 机器方块基类。
- * <p>
- * 共享机器配置持有、方块实体创建与 tick 分发逻辑。
- * 子类只需实现 {@link #createEntity} 与 {@link #tickEntity}，并各自提供 {@code use()}、{@code getDrops()} 等机器专属逻辑。
+ * 机器方块基类：共享配置持有、方块实体创建与 tick 分发；子类实现 {@link #createEntity} 与 {@link #tickEntity} 并提供机器专属逻辑。
  */
 public abstract class AbstractGeneratorBlock extends Block implements EntityBlock {
     protected final DataConfig config;
@@ -27,10 +24,14 @@ public abstract class AbstractGeneratorBlock extends Block implements EntityBloc
         this.config = config;
     }
 
-    /** 创建对应的方块实体 */
+    /**
+     * 创建对应的方块实体
+     */
     protected abstract BlockEntity createEntity(BlockPos pos, BlockState state);
 
-    /** 服务端 tick 分发（子类按实体类型调用对应 serverTick） */
+    /**
+     * 服务端 tick 分发（子类按实体类型调用对应 serverTick）
+     */
     protected abstract void tickEntity(Level level, BlockEntity tile);
 
     @Override

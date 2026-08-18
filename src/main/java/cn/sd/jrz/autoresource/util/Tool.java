@@ -14,16 +14,14 @@ public class Tool {
     }
 
     /**
-     * 归一化无线充电区块范围，只允许 1/3/5（1x1、3x3、5x5 区块）。
-     * 配置中若填写了 2 或 4 等非标准值，向上归一到最近的奇数。
+     * 归一化无线充电区块范围，只允许 1/3/5（非标准值向上归一到最近奇数）
      */
     public static int normalizeWirelessRange(int range) {
         return range <= 1 ? 1 : (range <= 3 ? 3 : 5);
     }
 
     /**
-     * 格式化大数值用于 GUI 展示。小于 10000 时原样显示，更大时使用 K/M/G/T/P/E 单位缩写（2 位小数），
-     * 避免 long 最大值等超长数字在 GUI 中溢出。
+     * 格式化大数值用于 GUI 展示：小于 10000 原样显示，更大用 K/M/G/T/P/E 单位缩写避免长数字溢出
      */
     public static String formatLong(long value) {
         if (value < 0) {

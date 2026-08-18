@@ -1,6 +1,6 @@
-package cn.sd.jrz.autoresource.connection;
+package cn.sd.jrz.autoresource.capability;
 
-import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.items.IItemHandler;
@@ -26,7 +26,7 @@ public class BlockConnection implements IItemHandler {
         if (owner.getMarkedItem().isEmpty()) {
             return ItemStack.EMPTY;
         }
-        // 复用内部缓存实例避免每 tick 分配，但对外返回副本，防止调用方持有引用后改动内部状态
+        // 复用缓存实例避免每 tick 分配，返回副本防外部改动
         if (stack.isEmpty() || !stack.is(owner.getMarkedItem().getItem())) {
             stack = new ItemStack(owner.getMarkedItem().getItem(), 0);
         }

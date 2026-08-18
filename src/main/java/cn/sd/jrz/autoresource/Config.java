@@ -15,9 +15,6 @@ public class Config {
     public static ForgeConfigSpec.ConfigValue<String> FE_STAR_ITEM;
     /**
      * 反射绕过第三方MOD机器能量限制（补满到容量）总开关，默认开启。
-     * 开启后，当目标机器因容量/速率限制无法接收能量时，通过反射直接把其内部能量补满到容量，
-     * 支持：Mekanism（通用机械）、Thermal Expansion（热力膨胀）、Industrial Foregoing（工业先锋）、
-     * Draconic Evolution（龙之研究）、Flux Networks（能量网络）。不依赖这些 MOD 的编译期代码。
      */
     public static ForgeConfigSpec.BooleanValue FE_BYPASS_ENABLED;
 
@@ -35,7 +32,9 @@ public class Config {
     public static ForgeConfigSpec.LongValue BLOCK_MAX;
     public static ForgeConfigSpec.LongValue BLOCK_SECOND;
     public static ForgeConfigSpec.LongValue BLOCK_STEP;
-    /** 方块生成机可生成的产品列表：支持物品 ID（如 minecraft:dirt）或物品标签（以 # 开头，如 #minecraft:planks） */
+    /**
+     * 方块生成机可生成的产品列表：支持物品 ID（如 minecraft:dirt）或物品标签（以 # 开头，如 #minecraft:planks）
+     */
     public static ForgeConfigSpec.ConfigValue<List<? extends String>> BLOCK_GENERATOR_ITEMS;
 
     public static ForgeConfigSpec SERVER_CONFIG;
@@ -82,27 +81,27 @@ public class Config {
         BLOCK_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
         BLOCK_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
         BLOCK_GENERATOR_ITEMS = SERVER_BUILDER.comment(
-                "List of items (registry names like minecraft:dirt) or item tags (prefixed with # like #minecraft:stone_bricks) that the block generator can produce. The marker slot accepts items matching any entry.")
+                        "List of items (registry names like minecraft:dirt) or item tags (prefixed with # like #minecraft:stone_bricks) that the block generator can produce. The marker slot accepts items matching any entry.")
                 .defineList("items",
                         List.of(
-                                // 主世界 — 自然生成/基础方块（按常见程度排序）
+                                // 主世界 — 自然生成/基础方块
                                 "minecraft:stone", "minecraft:deepslate", "minecraft:dirt", "minecraft:sand", "minecraft:gravel",
                                 "minecraft:cobblestone", "minecraft:andesite", "minecraft:granite", "minecraft:diorite", "minecraft:tuff",
                                 "minecraft:cobbled_deepslate", "minecraft:clay", "minecraft:red_sand", "minecraft:moss_block", "minecraft:rooted_dirt",
                                 "minecraft:mud", "minecraft:dripstone_block", "minecraft:calcite", "minecraft:amethyst_block", "minecraft:obsidian",
                                 "minecraft:prismarine",
-                                // 主世界 — 建筑加工方块（按常见程度排序）
+                                // 主世界 — 建筑加工方块
                                 "minecraft:bricks", "minecraft:smooth_stone",
-                                // 标签优先：#minecraft:stone_bricks 覆盖石砖/苔石砖/裂纹石砖/錾制石砖
+                                // 标签优先：#minecraft:stone_bricks 覆盖全部石砖变种
                                 "#minecraft:stone_bricks",
                                 "minecraft:mossy_cobblestone", "minecraft:sandstone", "minecraft:smooth_sandstone", "minecraft:red_sandstone",
                                 "minecraft:polished_andesite", "minecraft:polished_granite", "minecraft:polished_diorite",
                                 "minecraft:polished_deepslate", "minecraft:deepslate_bricks", "minecraft:mud_bricks",
-                                // 下界 — 按常见程度排序
+                                // 下界
                                 "minecraft:netherrack", "minecraft:basalt", "minecraft:smooth_basalt", "minecraft:soul_sand", "minecraft:soul_soil",
                                 "minecraft:blackstone", "minecraft:polished_blackstone_bricks", "minecraft:polished_blackstone",
                                 "minecraft:nether_bricks", "minecraft:magma_block",
-                                // 末地 — 按常见程度排序
+                                // 末地
                                 "minecraft:end_stone", "minecraft:end_stone_bricks"),
                         obj -> obj instanceof String);
         SERVER_BUILDER.pop();

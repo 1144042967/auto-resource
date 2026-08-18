@@ -34,11 +34,8 @@ import java.util.ArrayList;
 import java.util.List;
 
 /**
- * 水车马达方块（仅当机械动力 Create 加载时注册）。
- * <p>
- * 一个面向单方向的动力源方块：默认顺时针旋转，转速与方向可通过 GUI 调节，
- * 应力容量由放入机内水车/大水车的数量决定。输出面（FACING）决定应力输出方向。
- * 方块为整方块模型（顶/底/侧面不同贴图），转速数值由方块实体渲染器显示在四面侧。
+ * 水车马达方块（仅 Create 加载时注册）。单方向动力源：转速/应力容量由放入的水车数量决定，
+ * 输出面（FACING）决定应力输出方向，转速数值由方块实体渲染器显示在四面侧。
  */
 public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE<WaterWheelMotorEntity> {
 
@@ -55,7 +52,9 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
         return defaultBlockState().setValue(FACING, preferred);
     }
 
-    /** 整方块的点击/碰撞形状 */
+    /**
+     * 整方块的点击/碰撞形状
+     */
     @SuppressWarnings("deprecation")
     @Override
     public @Nonnull VoxelShape getShape(@Nonnull BlockState state, @Nonnull BlockGetter worldIn, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
@@ -63,9 +62,7 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
     }
 
     /**
-     * 破坏时，掉落水车槽内放入的水车/大水车（方块自身由战利品表掉落）。
-     * <p>
-     * 不随物品 NBT 保留槽内容：放入的水车会作为独立物品掉落，符合预期行为。
+     * 破坏时把水车槽内的水车/大水车作为独立物品掉落（方块自身由战利品表掉落）。
      */
     @SuppressWarnings("deprecation")
     @Override

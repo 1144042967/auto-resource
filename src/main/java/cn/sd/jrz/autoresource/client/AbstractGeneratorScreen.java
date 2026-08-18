@@ -13,11 +13,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 
 /**
- * 机器 GUI 基类。
- * <p>
- * 共享：按钮点击发送、增长百分比计算、渲染循环（叠加 tooltip 提示窗并刷新开关状态），
- * 以及带状态颜色的开关按钮与带边框的通用小按钮。
- * 子类负责各自的槽位布局、进度条配色、文本面板与开关初始化。
+ * 机器 GUI 基类：共享按钮点击发送、增长百分比计算、渲染循环与开关/通用小按钮；子类负责槽位布局、进度条配色与开关初始化。
  */
 @OnlyIn(Dist.CLIENT)
 public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>> extends AbstractContainerScreen<M> {
@@ -51,7 +47,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
     @Override
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
-        // 渲染鼠标悬浮物品的信息提示窗（与工作台一致，AbstractContainerScreen.render 不会自动调用）
+        // 渲染鼠标悬浮物品信息提示窗（render 不会自动调用）
         super.renderTooltip(guiGraphics, mouseX, mouseY);
         // 刷新各开关状态
         refreshButtonStates();

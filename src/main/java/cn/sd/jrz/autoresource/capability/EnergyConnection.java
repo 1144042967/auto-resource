@@ -1,6 +1,6 @@
-package cn.sd.jrz.autoresource.connection;
+package cn.sd.jrz.autoresource.capability;
 
-import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraftforge.energy.IEnergyStorage;
 

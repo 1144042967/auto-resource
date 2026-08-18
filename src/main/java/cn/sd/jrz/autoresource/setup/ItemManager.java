@@ -1,4 +1,4 @@
-package cn.sd.jrz.autoresource.items;
+package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.setup.Registration;

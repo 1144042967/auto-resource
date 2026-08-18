@@ -15,24 +15,15 @@ import org.joml.Vector3f;
 import javax.annotation.Nonnull;
 
 /**
- * 水车马达方块实体渲染器（仅当机械动力 Create 加载时使用）。
- * <p>
- * 在<b>垂直于应力输出方向</b>的四个侧面上渲染当前转速文字（如 {@code 004 RPM}），
- * 叠放在侧面贴图中央的 LCD 显示窗上，且<b>文字上方始终指向应力输出方向</b>
- * （输出面由顶面水车轮贴图随 FACING 旋转指示，LCD 侧贴图分布在其四周）。
- * 例如输出朝北时，文字出现在东西与上下四面，文字顶部朝北。
- * <p>
- * 变换只用标准的 {@link PoseStack} 方法（translate/mulPose/scale）与 {@link Quaternionf}，
- * 与既有可用的渲染器（BlockGeneratorRenderer）结构一致，不直接构造 Matrix4f
- * （JOML 1.10.5 字段为包私有，且避免手写矩阵的风险）。
- * 转速由 {@link WaterWheelMotorEntity#currentSpeed()} 读取——水车槽内容随 Create 的
- * {@code SmartBlockEntity} 同步包下发，客户端无需额外网络同步。
+ * 水车马达方块实体渲染器（仅 Create 加载时使用）。在垂直于输出方向的四面侧
+ * 渲染当前转速文字（叠放在 LCD 显示窗上），文字上方始终指向输出方向。
+ * 变换只用标准 PoseStack 方法 + Quaternionf，转速经 currentSpeed() 读取
+ * （随 SmartBlockEntity 同步包下发，客户端无需额外网络同步）。
  */
 @OnlyIn(Dist.CLIENT)
 public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMotorEntity> {
     /**
-     * 旋转角度倍数（DOWN/UP/NORTH/SOUTH/WEST/EAST）：仅 N/S/E/W 用 Y 轴旋转把面转到 +Z，
-     * 上下两面用 X 轴旋转（见 {@link #faceRotation}）
+     * 各面绕 Y 轴旋转倍数（N/S/E/W 用 Y 轴，上下两面用 X 轴，见 faceRotation）
      */
     private static final float[] SIDE_ROT_Y = {0, 0, 2, 0, 3, 1};
     /**
@@ -69,11 +60,8 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
     }
 
     /**
-     * 在指定侧面绘制居中转速文字，文字上方指向应力输出方向。
-     * <p>
-     * 旋转中心必须是方块中心 (0.5,0.5,0.5)：此前误用 y=0（底面），
-     * 导致上下两面（UP/DOWN，绕 X 轴旋转）的文字被转到方块内部/错误位置，
-     * 表现为输出面非上下方向时顶底侧文字错位。
+     * 在指定侧面绘制居中转速文字，文字上方指向输出方向。
+     * 旋转中心必须是方块中心 (0.5,0.5,0.5)：此前误用 y=0 导致上下两面文字错位。
      */
     private void renderTextOnFace(Component text, Direction output, Direction face, PoseStack poseStack, MultiBufferSource buffer, int light) {
         poseStack.pushPose();
@@ -94,7 +82,9 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
         poseStack.popPose();
     }
 
-    /** 把目标面转到 +Z 的旋转（N/S/E/W 用 Y 轴，上下两面用 X 轴） */
+    /**
+     * 把目标面转到 +Z 的旋转（N/S/E/W 用 Y 轴，上下两面用 X 轴）
+     */
     private static Quaternionf faceRotation(Direction face) {
         return switch (face) {
             case UP -> new Quaternionf().rotateX(-90f * DEG_TO_RAD);

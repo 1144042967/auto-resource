@@ -1,7 +1,7 @@
-package cn.sd.jrz.autoresource.entities;
+package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.connection.BlockConnection;
+import cn.sd.jrz.autoresource.capability.BlockConnection;
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
@@ -29,11 +29,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 方块生成器实体。
- * <p>
- * 负责：产量自动增长、标记槽（放入一个合法方块生成机产品后锁定，决定输出方块的种类）、
- * 六面方块传输（可逐面禁用）以及"下方生成方块"。
- * 自动生成会一直计算，但未标记时无法取出/传输/放置；标记后不可更换。
+ * 方块生成器实体：产量自动增长、标记槽（放入合法产品后锁定，决定输出方块种类）、
+ * 六面方块传输（可逐面禁用）、"下方生成方块"。未标记时无法取出/传输/放置。
  */
 public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     private final LazyOptional<BlockConnection> blockOptional = LazyOptional.of(() -> new BlockConnection(this));
@@ -59,7 +56,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         @Override
         protected void onContentsChanged(int slot) {
             setChanged();
-            // 标记槽变化时强制同步到客户端，并触发重新渲染（否则客户端看不到标记的物品）
+            // 标记槽变化时同步到客户端并触发重新渲染（否则客户端看不到标记物品）
             Level level = getLevel();
             if (level != null && !level.isClientSide) {
                 level.sendBlockUpdated(worldPosition, getBlockState(), getBlockState(), net.minecraft.world.level.block.Block.UPDATE_CLIENTS);
@@ -79,7 +76,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         if (level == null || level.isClientSide) {
             return;
         }
-        // 增长逻辑：产量到间隔后增加（自动生成一直计算，与是否标记无关）
+        // 增长逻辑：产量到间隔后增加（与是否标记无关）
         tickCount = Tool.suit(tickCount + 1);
         if (tickCount / 20 >= config.getSecond()) {
             tickCount = 0;
@@ -105,7 +102,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 六面方块传输（跳过被禁用的面），轮询索引实现负载均衡；仅输出标记的方块
+     * 六面方块传输（跳过被禁用的面），轮询索引负载均衡；仅输出标记的方块
      */
     private void outputToSides(ItemStack marked) {
         Level level = getLevel();
@@ -146,7 +143,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 开启"下方生成方块"时，每 5 ticks 尝试向下方空气方块放置标记的方块，每次消耗 1000 单位
+     * "下方生成方块"开启时每 5 ticks 向下方空气放置标记方块，每次消耗 1000 单位
      */
     private void placeBlockBelow(ItemStack marked) {
         Level level = getLevel();
@@ -223,7 +220,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 初始同步到客户端的数据（包含标记槽），保证进游戏后方块机上即可显示标记物品
+     * 初始同步到客户端的数据（含标记槽），保证进游戏后方块机即显示标记物品
      */
     @Override
     @Nonnull

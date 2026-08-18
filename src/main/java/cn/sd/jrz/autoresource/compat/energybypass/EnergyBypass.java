@@ -1,4 +1,4 @@
-package cn.sd.jrz.autoresource.util;
+package cn.sd.jrz.autoresource.compat.energybypass;
 
 import net.minecraft.core.Direction;
 import net.minecraft.world.level.block.entity.BlockEntity;
@@ -11,21 +11,10 @@ import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
- * 反射式能量绕过工具类。
- * <p>
- * 当 FE 发电机向第三方 MOD 机器输送能量时，目标机器会因内部容量上限或接收速率限制而拒收
- * （正常 {@link IEnergyStorage#receiveEnergy} 返回 0 或注入量受限）。本类通过反射直接读取/修改
- * 这些机器内部的能量字段，把其内部能量"补满到容量"，从而绕过容量/接收限制，让机器始终满电运行。
- * <p>
- * 所有目标 MOD 均通过字符串类名 + 反射调用定位，编译期不依赖任何第三方 MOD 代码；
- * 若对应 MOD 未安装或类结构发生变化，相关反射会静默失败并返回 0，不影响原有功能。
- * 各 MOD 的反射只在首次命中时解析一次并缓存；未安装的 MOD 会记录"初始化失败"并永久跳过，
- * 避免每 tick 反复抛出反射异常影响性能。
- * <p>
- * 支持：Mekanism（通用机械）、Thermal Expansion（热力膨胀，CoFHCore）、
- * Industrial Foregoing（工业先锋，Titanium）、Draconic Evolution（龙之研究）、
- * Flux Networks（能量网络）。Modern Industrialization（现代化工业）1.20.1 仅提供 Fabric 版，
- * 与本 Forge 版不共存，故不在此处理（后续移植 NeoForge 版本时再补充）。
+ * 反射式能量绕过工具：当第三方 MOD 机器因容量/接收速率限制拒收能量时，反射读取/修改其内部
+ * 能量字段，把能量补满到容量。全部通过字符串类名 + 反射定位，编译期零依赖；反射失败静默返回 0，
+ * 各 MOD 首次解析后缓存（未安装的 MOD 记录失败并永久跳过）。支持：Mekanism、Thermal(CoFH)、
+ * Industrial Foregoing(Titanium)、Draconic Evolution、Flux Networks。
  */
 public final class EnergyBypass {
 
@@ -76,13 +65,12 @@ public final class EnergyBypass {
     }
 
     /**
-     * 尝试把目标方块实体的内部能量"补满到容量"，绕过其容量/接收限制。
-     * 按已知 MOD 依次尝试，命中后返回并停止。
+     * 尝试把目标内部能量补满到容量，绕过其容量/接收限制。按已知 MOD 依次尝试，命中即返回。
      *
      * @param target    目标方块实体
      * @param side      注入面（可为 null）
      * @param cap       目标暴露的 ENERGY 能力实例（可为 null，部分 MOD 不依赖它）
-     * @param available 本机当前可用能量（FE），注入量不会超过该值
+     * @param available 本机可用能量（FE），注入量不会超过该值
      * @return 实际消耗的 FE；0 表示无需补满或补满失败
      */
     public static long tryRefill(BlockEntity target, @Nullable Direction side, @Nullable IEnergyStorage cap, long available) {
@@ -138,11 +126,9 @@ public final class EnergyBypass {
     }
 
     /**
-     * Mekanism：反射调用 {@code TileEntityMekanism} 的接口默认方法
-     * {@code getMaxEnergy(int, Direction)}/{@code getEnergy(int, Direction)}/{@code setEnergy(int, FloatingLong, Direction)}，
-     * 把内部能量直接补到容量。能量以 FloatingLong（long 无符号整数部分）存储，可容纳超过 int 上限的量。
-     * 单位换算：1 FE = 2.5 J，消耗按补满的 J 数换算回 FE。
+     * Mekanism：反射调用 getMaxEnergy/getEnergy/setEnergy(FloatingLong) 把能量补到容量；能量以 J 存储，1 FE = 2.5 J
      */
+
     private static long tryRefillMekanism(BlockEntity target, Direction side, long available) {
         if (!initMekanism()) {
             return 0;
@@ -181,12 +167,9 @@ public final class EnergyBypass {
     }
 
     /**
-     * Draconic Evolution：机器（TileGrinder/TileDraconiumChest 等）持有 {@code public OPStorage opStorage} 字段，
-     * 能量核心 TileEnergyCore 持有 {@code public OPStorageOP energy} 字段。反射调用
-     * {@code getOPStored()}/{@code getMaxOPStored()}/{@code modifyEnergyStored(long)} 补满。
-     * OP 与 RF/FE 1:1 换算；容量为 -1（T8 无限核心）或已满时跳过。
-     * 字段与方法的解析按目标类缓存（{@link #DRACONIC_CACHE}），避免每 tick 重复反射解析。
+     * Draconic Evolution：反射 OP 存储字段（opStorage/energy）调用 getOPStored/getMaxOPStored/modifyEnergyStored 补满；OP 与 FE 1:1，按类缓存
      */
+
     private static long tryRefillDraconic(BlockEntity target, long available) {
         try {
             // 先按类名粗过滤，避免对普通方块实体做字段反射
@@ -269,10 +252,9 @@ public final class EnergyBypass {
     }
 
     /**
-     * Flux Networks：网络能量存储在每个设备的 {@code TransferHandler.mBuffer}（long，无容量上限），
-     * 每 tick 传输受限 {@code getLimit()}（默认 80 万 FE）。反射解除该限制（mDisableLimit=true）
-     * 并把 mBuffer 补到 {@link #FLUX_FULL}，使网络拥有充足能量持续供给连接的机器。
+     * Flux Networks：反射解除 TransferHandler 每 tick 传输上限（mDisableLimit）并把 mBuffer 补到 FLUX_FULL
      */
+
     private static long tryRefillFlux(BlockEntity target, long available) {
         if (!initFlux()) {
             return 0;

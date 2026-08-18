@@ -1,6 +1,6 @@
 package cn.sd.jrz.autoresource.client;
 
-import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import com.mojang.blaze3d.systems.RenderSystem;
 import com.mojang.blaze3d.vertex.PoseStack;
 import com.mojang.blaze3d.vertex.VertexConsumer;
@@ -23,21 +23,13 @@ import org.joml.Matrix4f;
 import javax.annotation.Nonnull;
 
 /**
- * 方块生成机的方块实体渲染器。
- * <p>
- * 当机器标记槽中有物品时，在除上下外的四个侧面（北/南/东/西）各绘制一个标记方块的贴图矩形，
- * 表示该机器当前生成的方块种类。
- * <p>
- * 实现说明：
- * - 直接取标记方块的精灵（getParticleIcon）用 {@link RenderType#cutout()} 画平面四边形，
- * 与方块本体共用方块图集，避免 {@code ItemRenderer} 首次渲染时贴图未加载的问题；
- * - 强制至少 15 级方块光照，保证贴图清晰可见。
+ * 方块生成机的方块实体渲染器：标记槽有物品时，在四个侧面（北/南/东/西）各画一个标记方块贴图矩形。
+ * 实现要点：取 getParticleIcon 用 cutout 画平面四边形（共用方块图集，避免首帧贴图未加载），强制至少 15 级方块光照。
  */
 @OnlyIn(Dist.CLIENT)
 public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGeneratorEntity> {
     /**
-     * 旋转角度倍数（DOWN/UP/NORTH/SOUTH/WEST/EAST）：旋转后目标面朝向 +Z，
-     * 与 StorageDrawers 的 alignRendering 一致
+     * 旋转角度倍数（DOWN/UP/NORTH/SOUTH/WEST/EAST）：旋转后目标面朝向 +Z（与 StorageDrawers 一致）
      */
     private static final float[] SIDE_ROT_Y = {0, 0, 2, 0, 3, 1};
     /**
@@ -45,11 +37,11 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
      */
     private static final Direction[] SIDES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
     /**
-     * 面的四周留边比例（居中矩形约占面 55%，即贴图大小为面的 0.55 倍）
+     * 面的四周留边比例（居中矩形约占面 55%）
      */
     private static final float INSET = 0.275f;
     /**
-     * 强制的最低方块光照（15 级 = 全亮），避免贴图太暗看不清
+     * 强制的最低方块光照（15 级 = 全亮），避免贴图太暗
      */
     private static final int MIN_BLOCK_LIGHT = 15 << 4;
 

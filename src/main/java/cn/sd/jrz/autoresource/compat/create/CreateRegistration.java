@@ -18,11 +18,8 @@ import net.minecraftforge.registries.ForgeRegistries;
 import net.minecraftforge.registries.RegistryObject;
 
 /**
- * Create（机械动力）联动的注册入口。
- * <p>
- * 本类直接引用 Create 类，因此<b>绝不能</b>被无条件加载的类（Registration/ClientSetup 等）在字节码中引用，
- * 只能由它们通过 {@link CreateCompat#invokeRegistration}（{@code Class.forName} 反射按类名加载）在
- * {@code CreateCompat.isCreateLoaded()} 为真时调用。这样无 Create 时本类不会被加载，类加载安全。
+ * Create 联动的注册入口。本类直接引用 Create 类，只能由 CreateCompat.invokeRegistration
+ * 经 Class.forName 反射在 Create 加载时调用，保证无 Create 时类加载安全。
  */
 public final class CreateRegistration {
 
@@ -41,7 +38,9 @@ public final class CreateRegistration {
     private CreateRegistration() {
     }
 
-    /** 注册水车马达（双端），仅由 Registration.init 反射调用 */
+    /**
+     * 注册水车马达（双端），仅由 Registration.init 反射调用
+     */
     public static void register(FMLJavaModLoadingContext context) {
         BLOCKS.register(context.getModEventBus());
         ITEMS.register(context.getModEventBus());
@@ -58,13 +57,17 @@ public final class CreateRegistration {
                 () -> IForgeMenuType.create((id, inv, buf) -> new WaterWheelMotorMenu(id, inv, buf.readBlockPos())));
     }
 
-    /** 客户端注册水车马达 GUI，仅由 ClientSetup 反射调用 */
+    /**
+     * 客户端注册水车马达 GUI，仅由 ClientSetup 反射调用
+     */
     @SuppressWarnings("unchecked")
     public static void registerClient() {
         MenuScreens.register((MenuType<? extends WaterWheelMotorMenu>) Registration.WATER_WHEEL_MOTOR_MENU.get(), WaterWheelMotorScreen::new);
     }
 
-    /** 客户端注册水车马达方块实体渲染器（四面侧显示转速文字），仅由 ClientSetup 反射调用 */
+    /**
+     * 客户端注册水车马达方块实体渲染器（四面侧显示转速文字），仅由 ClientSetup 反射调用
+     */
     @SuppressWarnings("unchecked")
     public static void registerRenderers(EntityRenderersEvent.RegisterRenderers event) {
         // WATER_WHEEL_MOTOR_ENTITY 声明为 BlockEntityType<?>，需显式强转以匹配泛型（与 registerClient 一致）

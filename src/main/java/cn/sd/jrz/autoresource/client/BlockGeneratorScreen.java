@@ -15,11 +15,7 @@ import org.lwjgl.glfw.GLFW;
 import javax.annotation.Nonnull;
 
 /**
- * 方块生成器 GUI。
- * <p>
- * 展示当前存量、产量、下次增长量、增长百分比（含进度条），并提供六个传输面开关、
- * 标记槽（放入合法物品后锁定）、输出展示槽（单击提取一个、Shift+单击提取一组、空格+单击提取到背包满）
- * 以及"下方生成方块"开关。数值使用单位缩写（K/M/G/T/P/E）避免 long 大数溢出。
+ * 方块生成器 GUI：展示存量/产量/增长百分比与六个面开关、标记槽、输出展示槽（单击/Shift/空格提取）及"下方生成方块"开关；数值用单位缩写。
  */
 @OnlyIn(Dist.CLIENT)
 public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGeneratorMenu> {
@@ -64,7 +60,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         this.addRenderableWidget(this.faceSouth);
         this.addRenderableWidget(this.faceWest);
         this.addRenderableWidget(this.faceEast);
-        // "下方生成方块"按钮（位于输出槽下方，开启后向机器下方空气方块放置标记的方块）
+        // "下方生成方块"按钮（向机器下方空气方块放置标记方块）
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceBlockBelow(), Component.translatable("screen.autoresource.block_generator.place_below"), button -> sendButton(BlockGeneratorMenu.BUTTON_PLACE_BLOCK));
         this.addRenderableWidget(this.placeButton);
     }

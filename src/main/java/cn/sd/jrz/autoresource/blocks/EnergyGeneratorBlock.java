@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
@@ -40,7 +40,7 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
     }
 
     /**
-     * 破坏时，充电槽中的物品掉落（加速槽内容随物品 NBT 保留，不在此掉落）
+     * 破坏时充电槽物品掉落（加速槽内容随物品 NBT 保留，不在此掉落）
      */
     @SuppressWarnings("deprecation")
     @Override

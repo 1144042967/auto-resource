@@ -1,6 +1,6 @@
 package cn.sd.jrz.autoresource.menu;
 
-import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -15,11 +15,7 @@ import net.minecraftforge.items.SlotItemHandler;
 import javax.annotation.Nonnull;
 
 /**
- * 流体生成器容器（水源机/岩浆机）。
- * <p>
- * 包含输入槽（0，放入空桶或可容纳流体的物品）、输出槽（1，存放已填满的桶/物品）以及玩家背包。
- * 通过数据槽把流体量、产量、下次增长量、增长进度、六面开关等同步到客户端用于 GUI 展示，
- * 并在 GUI 中通过按钮（clickMenuButton）修改每台机器的六面传输开关。
+ * 流体生成器容器：输入槽（0，空桶/可容纳流体物品）、输出槽（1，已填满桶）与玩家背包；数据槽同步 GUI，按钮修改六面开关。
  */
 public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEntity> {
     // 按钮 ID
@@ -173,11 +169,9 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
                     return ItemStack.EMPTY;
                 }
             } else {
-                // 玩家背包 -> 优先输入槽，其次输出槽
+                // 玩家背包 -> 输入槽（输出槽拒绝插入，无需尝试）
                 if (!this.moveItemStackTo(stack, 0, 1, false)) {
-                    if (!this.moveItemStackTo(stack, 1, 2, false)) {
-                        return ItemStack.EMPTY;
-                    }
+                    return ItemStack.EMPTY;
                 }
             }
             if (stack.isEmpty()) {

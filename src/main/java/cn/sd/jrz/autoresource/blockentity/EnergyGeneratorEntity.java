@@ -1,10 +1,10 @@
-package cn.sd.jrz.autoresource.entities;
+package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.Config;
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.connection.EnergyConnection;
+import cn.sd.jrz.autoresource.capability.EnergyConnection;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
-import cn.sd.jrz.autoresource.util.EnergyBypass;
+import cn.sd.jrz.autoresource.compat.energybypass.EnergyBypass;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -34,12 +34,8 @@ import java.util.List;
 import java.util.Map;
 
 /**
- * FE 发电机实体。
- * <p>
- * 负责：发电量自动增长、能量存储、上方实体（玩家/生物）全部槽位充电、
- * 上方容器内物品充电、六面输电（可逐面禁用）、充电槽物品充电、
- * 指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
- * 无线充电与输电面等参数均为每台发电机独立保存，可在 GUI 中修改。
+ * FE 发电机实体：发电量自动增长、能量存储、上方实体/容器物品充电、充电槽充电、
+ * 六面输电（可逐面禁用）、指定物品加速增长、无线充电。各参数逐台独立保存。
  */
 public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     private final LazyOptional<EnergyConnection> fecOptional = LazyOptional.of(() -> new EnergyConnection(this));
@@ -47,22 +43,20 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     // 核心数据
     public long energy = 0;
     /**
-     * 下次增长的发电量（同时用于增长时实际增量）
+     * 下次增长的发电量（增长时实际增量）
      */
     public long nextIncrease = 0;
 
-    // 无线充电开关（逐台保存）
+    // 无线充电（逐台保存，可在 GUI 修改）
     public boolean wirelessOn = false;
     /**
-     * 无线扫描游标：记录上次扫描到的线性位置（按全部方块展平），下次从该位置继续
+     * 无线扫描游标：记录上次扫描到的线性位置，下次从该位置继续
      */
-    public long scanCursor = 0;
+    private long scanCursor = 0;
     /**
-     * 已记录的支持电量接收的位置及其接收面（分片扫描时更新，传输时遍历）
+     * 已记录的支持电量接收的位置及其接收面
      */
-    public final Map<BlockPos, Direction> wirelessTargets = new HashMap<>();
-
-    // 无线充电参数（逐台保存，可在 GUI 修改）
+    private final Map<BlockPos, Direction> wirelessTargets = new HashMap<>();
     public int wirelessInterval = 5;
     public int wirelessRange = 1;
     /**
@@ -144,12 +138,11 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 计算下一次增长的发电量并保存到 nextIncrease（原信标功能已由加速槽代替）
+     * 计算下一次增长的发电量；放入加速物品后变为当前发电量的 1%（至少 1）
      */
     private void updateNextIncrease() {
         long increase = config.getStep();
         if (!starSlot.getStackInSlot(0).isEmpty()) {
-            // 放入指定物品后，增长的发电量变为当前发电量的 1%（至少 1，避免低产量时停止增长）
             increase = Math.max(1, output / 100);
         }
         nextIncrease = increase;
@@ -183,7 +176,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 给站在机器上方实体的所有槽位中可充电物品充电（玩家物品栏/存储栏/装备栏均覆盖）
+     * 给机器上方实体（玩家/生物）所有槽位中可充电物品充电
      */
     private void chargeEntitiesAbove() {
         Level level = getLevel();
@@ -192,8 +185,8 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         }
         List<LivingEntity> entityList = level.getEntitiesOfClass(LivingEntity.class, new AABB(getBlockPos().relative(Direction.UP)));
         for (LivingEntity livingEntity : entityList) {
-            Iterable<ItemStack> slots = livingEntity.getAllSlots();
-            for (ItemStack stack : slots) {
+            boolean[] charged = {false};
+            for (ItemStack stack : livingEntity.getAllSlots()) {
                 if (energy <= 0) {
                     return;
                 }
@@ -208,14 +201,19 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
                     }
                     if (result > 0) {
                         energy -= result;
+                        charged[0] = true;
                     }
                 });
+            }
+            // 玩家背包物品被充电后需同步到客户端，否则物品能量条不刷新
+            if (charged[0] && livingEntity instanceof Player player) {
+                player.inventoryMenu.broadcastChanges();
             }
         }
     }
 
     /**
-     * 给机器上方容器中的可充电物品充电（箱子、漏斗等带物品栏的方块实体）
+     * 给机器上方容器中的可充电物品充电
      */
     private void chargeContainersAbove() {
         Level level = getLevel();
@@ -255,7 +253,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 六面输电（跳过被禁用的面），轮询索引实现负载均衡；重复传电次数生效
+     * 六面输电（跳过被禁用的面），轮询索引负载均衡；重复传电次数生效
      */
     private void outputToSides() {
         Level level = getLevel();
@@ -285,11 +283,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 向相邻/无线目标方块输出能量：
-     * 1. 先走标准 ENERGY 能力注入（保留原有行为）；
-     * 2. 若目标因容量/接收速率限制无法接收（如第三方 MOD 机器已满或拒收），
-     * 且配置开启了反射绕过（{@link Config#FE_BYPASS_ENABLED}），则通过反射把目标内部能量直接补满到容量，
-     * 使机器始终满电运行（不依赖目标是否暴露标准 ENERGY 能力，覆盖龙之研究等自定义能量系统）。
+     * 向目标方块输出能量：先走标准 ENERGY 注入；受限且配置开启时，反射把目标内部能量补满到容量。
      *
      * @param entity        目标方块实体
      * @param fromDirection 目标接收能量的面（即本机对应面的对面）
@@ -326,20 +320,19 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 无线充电每 tick 处理：
-     * 每 tick 扫描一片（整个区域按全部方块线性均分为 wirelessInterval*20 片，游标记录上次位置下次继续），
-     * 然后按重复传电次数遍历已记录位置尝试输电。
+     * 无线充电每 tick 处理：扫描一个分片，再按重复传电次数遍历已记录目标输电
      */
     private void wirelessTick() {
-        // 扫描推进：每 tick 扫一片
+        // 无能量时无需扫描/输电
+        if (energy <= 0) {
+            return;
+        }
         scanWirelessSlice();
-        // 每 tick 遍历所有已记录目标，按重复传电次数循环输电
         wirelessTransfer();
     }
 
     /**
-     * 扫描当前分片：把整个扫描区域按全部方块线性均分为 wirelessInterval*20 片，每 tick 扫一片。
-     * 线性索引 index = (x-minX) + (z-minZ)*width + (y-minY)*width*width，scanCursor 记录上次扫描到的位置，下次继续。
+     * 扫描当前分片：整个区域线性均分为 wirelessInterval*20 片，每 tick 扫一片，scanCursor 记录位置
      */
     private void scanWirelessSlice() {
         Level level = getLevel();
@@ -414,7 +407,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 扫描目标的所有面，找到第一个可输入能量的面截止并缓存该面；没有可接收面则移除旧记录
+     * 扫描目标所有面，缓存第一个可接收能量的面；无可接收面则移除旧记录
      */
     private void refreshWirelessTarget(BlockPos bp, BlockEntity target) {
         for (Direction dir : Direction.values()) {
@@ -427,7 +420,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量（使用扫描时缓存的面）
+     * 遍历已记录目标，按重复传电次数循环输电（使用扫描时缓存的面）
      */
     private void wirelessTransfer() {
         Level level = getLevel();

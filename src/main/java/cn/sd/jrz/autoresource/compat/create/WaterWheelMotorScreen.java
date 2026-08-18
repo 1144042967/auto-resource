@@ -14,11 +14,8 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 
 /**
- * 水车马达 GUI。
- * <p>
- * 布局（与背景纹理 water_wheel_motor_gui.png 对应）：上部大框正中放六面输出方向按钮；
- * 中部左侧水车槽位（槽位右侧提示"水车槽位"，同排右侧为旋转方向开关）；下部物品栏行，
- * 左侧物品栏名称、右侧当前转速（3 位补零）。
+ * 水车马达 GUI。布局：上部大框放六面输出方向按钮；中部左侧水车槽位、右侧旋转方向开关；
+ * 下部物品栏名称 + 当前转速（3 位补零）。
  */
 @OnlyIn(Dist.CLIENT)
 public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMotorMenu> {
@@ -61,7 +58,9 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         this.addRenderableWidget(this.faceEast);
     }
 
-    /** 面名标签 */
+    /**
+     * 面名标签
+     */
     private static Component faceLabel(Direction face) {
         return Component.translatable("screen.autoresource.water_wheel_motor.face." + face.getName());
     }
@@ -99,7 +98,9 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         refreshButtonStates();
     }
 
-    /** 刷新各开关显示状态 */
+    /**
+     * 刷新各开关显示状态
+     */
     private void refreshButtonStates() {
         boolean counterClockwise = this.menu.isCounterClockwise();
         this.directionButton.setState(counterClockwise);
@@ -114,7 +115,9 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         this.faceEast.setState(this.menu.getFace() == Direction.EAST);
     }
 
-    /** 带状态颜色的开关按钮（选中=绿色，未选=红色） */
+    /**
+     * 带状态颜色的开关按钮（选中=绿色，未选=红色）
+     */
     private class StateButton extends SimpleButton {
         private boolean state;
 
@@ -133,7 +136,9 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         }
     }
 
-    /** 带边框与居中文字的通用按钮 */
+    /**
+     * 带边框与居中文字的通用按钮
+     */
     private abstract class SimpleButton extends Button {
         SimpleButton(int x, int y, int width, int height, Component label, OnPress onPress) {
             super(x, y, width, height, label, onPress, DEFAULT_NARRATION);

@@ -14,11 +14,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 
 /**
- * FE 发电机 GUI。
- * <p>
- * 展示当前发电量、当前电量、下次增长的发电量、增长百分比（含进度条），
- * 并提供无线充电开关、扫描间隔、区块范围、重复传电次数以及六个输电面的独立开关。
- * 数值使用单位缩写（K/M/G/T/P/E）避免 long 大数溢出。
+ * FE 发电机 GUI：展示发电量/电量/下次增长/增长百分比，并提供无线充电开关、扫描间隔、区块范围、重复传电次数与六个输电面开关；数值用单位缩写。
  */
 @OnlyIn(Dist.CLIENT)
 public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGeneratorMenu> {

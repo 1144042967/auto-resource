@@ -1,6 +1,6 @@
-package cn.sd.jrz.autoresource.connection;
+package cn.sd.jrz.autoresource.capability;
 
-import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraftforge.fluids.FluidStack;
 import net.minecraftforge.fluids.capability.IFluidHandler;
@@ -21,7 +21,7 @@ public class LiquidConnection implements IFluidHandler {
 
     @Override
     public @Nonnull FluidStack getFluidInTank(int tank) {
-        // 每次返回新实例，避免返回共享可变 FluidStack 被调用方持有引用后误改
+        // 每次返回新实例，避免共享可变 FluidStack 被外部误改
         return new FluidStack(owner.config.getFluid(), Tool.suitInt(owner.liquid));
     }
 

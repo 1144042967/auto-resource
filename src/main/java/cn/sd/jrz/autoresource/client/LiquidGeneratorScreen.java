@@ -15,10 +15,7 @@ import net.minecraftforge.api.distmarker.OnlyIn;
 import javax.annotation.Nonnull;
 
 /**
- * 流体生成器 GUI（水源机/岩浆机）。
- * <p>
- * 展示当前流体量、当前产量、下次增长量、增长百分比（含进度条），
- * 并提供六个流体传输面的独立开关以及输入/输出槽。数值使用单位缩写（K/M/G/T/P/E）避免 long 大数溢出。
+ * 流体生成器 GUI：展示流体量/产量/下次增长/增长百分比，并提供六个传输面开关与输入/输出槽；数值用单位缩写。
  */
 @OnlyIn(Dist.CLIENT)
 public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGeneratorMenu> {
@@ -55,7 +52,7 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
         this.addRenderableWidget(this.faceSouth);
         this.addRenderableWidget(this.faceWest);
         this.addRenderableWidget(this.faceEast);
-        // "下方生成流体"按钮（位于输出槽下方，开启后向机器下方空气方块放置对应流体）
+        // "下方生成流体"按钮（向机器下方空气方块放置对应流体）
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceFluidBelow(), Component.translatable("screen.autoresource.liquid_generator.place_below"), button -> sendButton(LiquidGeneratorMenu.BUTTON_PLACE_FLUID));
         this.addRenderableWidget(this.placeButton);
     }

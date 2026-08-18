@@ -96,7 +96,7 @@ public class BlockGeneratorItem extends BlockItem {
         } else {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
         }
-        // 可生成方块列表：配置中的 # 标签展开为实际物品；最多展示前 MAX_ITEMS 种，超过则在尾部提示总数量
+        // 可生成方块列表（# 标签展开为实际物品；最多展示 MAX_ITEMS 种）
         List<Item> items = new ArrayList<>(getSupportedItems());
         if (!items.isEmpty()) {
             tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.blocks").withStyle(ChatFormatting.GRAY));
@@ -130,12 +130,12 @@ public class BlockGeneratorItem extends BlockItem {
      */
     private static List<? extends String> cachedConfigItems;
     /**
-     * 展开后的实际物品集合缓存（避免 tooltip 每帧重建时重复展开标签）
+     * 展开后的实际物品集合缓存（避免 tooltip 每帧重复展开标签）
      */
     private static Set<Item> cachedSupportedItems;
 
     /**
-     * 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序），结果按配置内容缓存
+     * 展开配置的产品为实际物品集合（标签展开、去重、保持顺序），按配置内容缓存
      */
     private static Set<Item> getSupportedItems() {
         List<? extends String> current = DataConfig.getBlockGeneratorItems();
@@ -181,5 +181,4 @@ public class BlockGeneratorItem extends BlockItem {
         }
         return supported;
     }
-
 }

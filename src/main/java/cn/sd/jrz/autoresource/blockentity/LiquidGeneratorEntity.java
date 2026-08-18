@@ -1,7 +1,7 @@
-package cn.sd.jrz.autoresource.entities;
+package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.connection.LiquidConnection;
+import cn.sd.jrz.autoresource.capability.LiquidConnection;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
@@ -33,17 +33,13 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 流体生成器实体（水源机/岩浆机）。
- * <p>
- * 负责：产量自动增长、输入槽（空桶/可容纳流体物品）自动填充并转移到输出槽、
- * 上方容器内可容纳流体物品的填充、六面流体传输（可逐面禁用）以及"下方生成流体"。
- * 六面开关与"下方生成流体"为每台机器独立保存，可在 GUI 中修改。
+ * 流体生成器实体（水源机/岩浆机）：产量自动增长、输入槽填充/转移输出、上方容器充液、
+ * 六面流体传输（可逐面禁用）、"下方生成流体"。各参数逐台独立保存。
  */
 public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     private final LazyOptional<LiquidConnection> fluidOptional = LazyOptional.of(() -> new LiquidConnection(this));
     /**
-     * 物品管道能力：输入走输入槽（可插入），输出走输出槽（可抽取）；
-     * 输入槽不可抽取、输出槽不可插入，保证管道单向流动。
+     * 物品管道能力：输入走输入槽（可插入），输出走输出槽（可抽取），保证单向流动
      */
     private final LazyOptional<IItemHandler> itemOptional = LazyOptional.of(() -> new IItemHandler() {
         @Override
@@ -80,13 +76,13 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         }
     });
 
-    // 核心数据（流体数量单位为 mB/1000，即 B；output 单位同样为 mB/1000）
+    // 核心数据（流体数量单位为 mB/1000，即 B）
     public long liquid = 0;
 
-    // 是否在下方空气方块放置对应流体（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
+    // 是否在下方空气方块放置对应流体（GUI 按钮控制，替代原红石激活判断，默认关闭）
     public boolean placeFluidBelow = false;
 
-    // 输入槽：放入空桶或可容纳本机流体的物品，可放一组物品，组的大小由物品自身堆叠上限决定
+    // 输入槽：空桶或可容纳本机流体的物品，组大小由物品自身堆叠上限决定
     public final ItemStackHandler inputSlot = new ItemStackHandler(1) {
         @Override
         public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
@@ -181,8 +177,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 填充输入槽：
-     * 空桶需要 1000 mB，填满后转移到输出槽；可容纳流体的物品尽量填充，填满后转移到输出槽。
+     * 填充输入槽：空桶需 1000 mB、可容纳流体的物品尽量填充，填满后转移到输出槽
      */
     private void fillInputSlot() {
         if (liquid <= 0) {
@@ -241,7 +236,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 给上方容器中可容纳流体的物品充入流体（箱子、漏斗等带物品栏的方块实体）
+     * 给上方容器中可容纳流体的物品充入流体
      */
     private void fillContainersAbove() {
         Level level = getLevel();
@@ -291,7 +286,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 六面流体传输（跳过被禁用的面），轮询索引实现负载均衡
+     * 六面流体传输（跳过被禁用的面），轮询索引负载均衡
      */
     private void outputToSides() {
         Level level = getLevel();
@@ -339,7 +334,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 开启"下方生成流体"时，每 5 ticks 尝试向下方空气方块放置对应流体，每次消耗 1000 mB
+     * "下方生成流体"开启时每 5 ticks 向下方空气放置对应流体，每次消耗 1000 mB
      */
     private void placeFluidBelow() {
         Level level = getLevel();
@@ -355,7 +350,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 输入槽中是否有正在等待填充的空桶（此时保留液体、暂不向六面输出，以便积累液体填桶）
+     * 输入槽是否有等待填充的空桶（此时保留液体、暂不向六面输出）
      */
     private boolean isBucketPending() {
         ItemStack input = inputSlot.getStackInSlot(0);
@@ -377,7 +372,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 输出槽能否放入该物品（空槽或同种且未达到槽位堆叠上限）
+     * 输出槽能否放入该物品（空槽或同种且未达堆叠上限）
      */
     private boolean canInsertOutput(ItemStack stack) {
         ItemStack out = outputSlot.getStackInSlot(0);
@@ -401,7 +396,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 判断物品是否已无法再容纳本机流体
+     * 物品是否已无法再容纳本机流体
      */
     private boolean isFull(ItemStack stack) {
         return stack.getCapability(ForgeCapabilities.FLUID_HANDLER_ITEM)
@@ -417,7 +412,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 消耗输入槽中的 1 个物品（输入槽容量为 1）
+     * 消耗输入槽中的 1 个物品
      */
     private void consumeOne(ItemStack input) {
         input.shrink(1);

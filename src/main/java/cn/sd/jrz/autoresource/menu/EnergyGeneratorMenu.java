@@ -1,6 +1,6 @@
 package cn.sd.jrz.autoresource.menu;
 
-import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
@@ -16,11 +16,7 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * FE 发电机容器。
- * <p>
- * 包含加速槽（0）、充电槽（1）以及玩家背包。
- * 通过数据槽把能量、发电量、下次增长量、无线充电参数、六面开关等同步到客户端用于 GUI 展示，
- * 并在 GUI 中通过按钮（clickMenuButton）修改每台发电机的独立配置。
+ * FE 发电机容器：加速槽（0）、充电槽（1）与玩家背包；数据槽同步 GUI，按钮（clickMenuButton）修改逐台独立配置。
  */
 public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEntity> {
     // 按钮 ID

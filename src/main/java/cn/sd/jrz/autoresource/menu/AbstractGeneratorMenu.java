@@ -14,11 +14,8 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /**
- * 机器容器基类。
- * <p>
- * 共享：实体引用（{@code entity}）、数据槽工具方法（long 拆高低 32 位）、
- * 玩家背包布局（行距固定的三行 + 快捷栏）与存活校验。
- * 子类负责机器专属槽位、数据槽、按钮与快速转移逻辑，并实现 GUI 展示所需的抽象取值方法。
+ * 机器容器基类：实体引用、DataSlot 工具（long 拆高低 32 位）、玩家背包布局与存活校验。
+ * 子类负责专属槽位、数据槽、按钮与快速转移，并实现 GUI 展示取值方法。
  *
  * @param <T> 对应机器方块实体类型
  */

@@ -6,9 +6,9 @@ import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.compat.create.CreateCompat;
-import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
-import cn.sd.jrz.autoresource.entities.EnergyGeneratorEntity;
-import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
@@ -42,10 +42,7 @@ public class Registration {
         BLOCK_ENTITIES.register(context.getModEventBus());
         CONTAINERS.register(context.getModEventBus());
 
-        // 机械动力联动：仅当 Create 加载时注册水车马达（未加载则字段保持 null，物品完全不存在）。
-        // 关键：Create 类只能经反射按类名加载（CreateCompat.invokeRegistration），
-        // 不能在 Registration 的字节码里出现任何 Create 类引用——否则 JVM 在加载 Registration 时
-        // 会急切解析这些引用，无 Create 时直接 NoClassDefFoundError。
+        // 机械动力联动：仅当 Create 加载时经反射注册（不能在字节码里引用 Create 类，否则无 Create 时 NoClassDefFoundError）。
         if (CreateCompat.isCreateLoaded()) {
             CreateCompat.invokeRegistration("register",
                     new Class<?>[]{FMLJavaModLoadingContext.class}, new Object[]{context});

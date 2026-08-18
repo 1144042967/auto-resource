@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.entities.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;

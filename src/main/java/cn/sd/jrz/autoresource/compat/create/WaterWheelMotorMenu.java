@@ -16,11 +16,8 @@ import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
 /**
- * 水车马达容器。
- * <p>
- * 包含单个水车槽位（放入水车/大水车，决定转速与总应力容量）以及玩家背包。
- * 通过数据槽把转速、旋转方向、输出面、总应力容量同步到客户端用于 GUI 展示，
- * 并通过按钮（clickMenuButton）切换旋转方向与六面输出方向（转速由水车数量决定，不可手动调节）。
+ * 水车马达容器：单个水车槽 + 玩家背包，数据槽同步转速/方向/面/容量到客户端，
+ * 按钮切换旋转方向与六面输出方向（转速由水车数量决定，不可手动调节）。
  */
 public class WaterWheelMotorMenu extends AbstractContainerMenu {
     // 按钮 ID
@@ -45,7 +42,16 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         this.entity = (WaterWheelMotorEntity) playerInventory.player.level().getBlockEntity(pos);
 
         // 水车槽位（单个槽；位置与背景纹理 water_wheel_motor_gui.png 中的槽位框一致）
-        addSlot(new SlotItemHandler(entity.wheelSlots, 0, 8, 57));
+        addSlot(new SlotItemHandler(entity.wheelSlots, 0, 8, 57) {
+            @Override
+            public void setChanged() {
+                super.setChanged();
+                // Shift+点击合并（moveItemStackTo）只调 setChanged、不触发 onContentsChanged，这里补发
+                if (entity.getLevel() != null && !entity.getLevel().isClientSide) {
+                    entity.handleWheelContentsChanged();
+                }
+            }
+        });
         // 玩家背包：1-36（纹理中 4 行槽框在 y=96/114/132/150）
         addPlayerInventory(playerInventory, 97);
 
@@ -56,7 +62,9 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         addDataSlot(makeDataSlot(() -> (int) entity.totalCapacity(), v -> clientCapacity = v));
     }
 
-    /** 客户端/服务端都能访问的展示值（服务端读实体，客户端读同步值） */
+    /**
+     * 客户端/服务端都能访问的展示值（服务端读实体，客户端读同步值）
+     */
     public int getSpeed() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.currentSpeed() : clientSpeed;
     }
@@ -76,7 +84,9 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) entity.totalCapacity() : clientCapacity;
     }
 
-    /** 处理 GUI 按钮点击 */
+    /**
+     * 处理 GUI 按钮点击
+     */
     @Override
     public boolean clickMenuButton(@Nonnull Player player, int id) {
         if (entity == null || player.level().isClientSide) {
@@ -106,7 +116,9 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         return entity.getLevel() != null && entity.getLevel().getBlockEntity(entity.getBlockPos()) == entity;
     }
 
-    /** 快速转移物品：水车槽位与玩家背包互移（水车槽每格限 1 个） */
+    /**
+     * 快速转移物品：水车槽位与玩家背包互移（水车槽每格限 1 个）
+     */
     @Override
     @Nonnull
     public ItemStack quickMoveStack(@Nonnull Player player, int index) {

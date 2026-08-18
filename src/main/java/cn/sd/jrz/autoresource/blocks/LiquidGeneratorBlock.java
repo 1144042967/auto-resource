@@ -1,7 +1,7 @@
 package cn.sd.jrz.autoresource.blocks;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
@@ -45,7 +45,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
     }
 
     /**
-     * 破坏时，输入槽与输出槽中的物品掉落
+     * 破坏时输入槽与输出槽中的物品掉落
      */
     @SuppressWarnings("deprecation")
     @Override
@@ -74,7 +74,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
         if (generator == null) {
             return InteractionResult.FAIL;
         }
-        // 保留：手持空桶右击直接提取一桶液体
+        // 手持空桶右击直接提取一桶液体
         if (generator.liquid >= 1000 && useBucket(player, generator)) {
             return InteractionResult.SUCCESS;
         }

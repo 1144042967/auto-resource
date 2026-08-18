@@ -43,17 +43,16 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── EnergyGeneratorBlock.java   # 发电机方块
 │   ├── LiquidGeneratorBlock.java   # 流体生成器方块
 │   └── BlockGeneratorBlock.java    # 方块生成器方块
-├── entities/                       # BlockEntity 类
+├── blockentity/                    # BlockEntity 类
 │   ├── AbstractGeneratorEntity.java# 机器实体基类（output/tickCount/六面开关/面NBT/markDirtyTick 节流）
 │   ├── EnergyGeneratorEntity.java  # 发电机实体
 │   ├── LiquidGeneratorEntity.java  # 流体生成器实体
 │   └── BlockGeneratorEntity.java   # 方块生成器实体
 ├── items/                          # 物品类
-│   ├── ItemManager.java            # 创造标签注册（items/ 包，见"注册体系"）
 │   ├── EnergyGeneratorItem.java    # 发电机物品
 │   ├── LiquidGeneratorItem.java    # 流体生成器物品
 │   └── BlockGeneratorItem.java     # 方块生成器物品（tooltip 支持物品集合缓存）
-├── connection/                     # Forge Capability 实现
+├── capability/                     # Forge Capability 实现
 │   ├── EnergyConnection.java       # 能量 IEnergyStorage
 │   ├── LiquidConnection.java       # 流体 IFluidHandler
 │   └── BlockConnection.java        # 物品 IItemHandler
@@ -77,11 +76,13 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── WaterWheelMotorMenu.java    # 水车马达容器（32 水车槽 + 转速/方向/六面按钮）
 │   ├── WaterWheelMotorScreen.java  # 水车马达 GUI（客户端）
 │   └── WaterWheelMotorRenderer.java# 水车马达方块实体渲染（四面侧显示转速文字）
+├── compat/energybypass/            # 第三方MOD能量反射绕过（零编译期依赖）
+│   └── EnergyBypass.java           # 反射补满第三方MOD机器能量到容量（龙之研究反射按类缓存）
 ├── setup/                          # 注册
-│   └── Registration.java           # 所有方块/物品/实体/菜单的注册（含 Create 联动条件注册）
+│   ├── Registration.java           # 所有方块/物品/实体/菜单的注册（含 Create 联动条件注册）
+│   └── ItemManager.java            # 创造标签注册
 └── util/                           # 工具类
-    ├── Tool.java                   # 数值裁剪等工具方法
-    └── EnergyBypass.java           # 反射式能量绕过（补满第三方MOD机器能量到容量，零编译期依赖；龙之研究反射按类缓存）
+    └── Tool.java                   # 数值裁剪等工具方法
 ```
 
 ## 注册体系
@@ -130,7 +131,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 **反射能量绕过**（`bypass_enabled` 配置，默认开启）:
 - 相邻输电与无线输电统一走 `outputTo()`：先走标准 `ForgeCapabilities.ENERGY` 注入；若目标机器因**容量/接收速率限制**拒收（如第三方 MOD 机器已满），且配置开启，则通过反射把目标内部能量**直接补满到容量**，使其满电运行（不超额）。
-- 纯反射实现（`util/EnergyBypass.java`），字符串类名定位，**编译期零依赖**；未安装的 MOD 记录 `initFailed` 永久跳过，避免每 tick 抛异常。
+- 纯反射实现（`compat/energybypass/EnergyBypass.java`），字符串类名定位，**编译期零依赖**；未安装的 MOD 记录 `initFailed` 永久跳过，避免每 tick 抛异常。
 - 支持：Mekanism（`TileEntityMekanism` 接口 `getMaxEnergy/setEnergy`，FloatingLong 可超 int）、Thermal Expansion（`EnergyStorageCoFH.energy/capacity` int）、Industrial Foregoing（Titanium `EnergyStorageComponent.energy` int）、Draconic Evolution（public `OPStorage`/`OPStorageOP` 字段）、Flux Networks（`TransferHandler.mBuffer` + 解除速率限制）。
 - Modern Industrialization 1.20.1 仅 Fabric，与 Forge 不共存，未支持。
 

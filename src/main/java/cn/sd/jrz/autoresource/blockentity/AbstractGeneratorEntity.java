@@ -1,4 +1,4 @@
-package cn.sd.jrz.autoresource.entities;
+package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.core.BlockPos;
@@ -17,11 +17,8 @@ import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
 
 /**
- * 机器方块实体基类。
- * <p>
- * 持有三种机器共有的数据：产量（output，单位因机器而异）、增长 tick 计数（tickCount）、
- * 六面传输开关（transferDown/Up/North/South/West/East）与六面轮询索引（findIndex），
- * 并提供面的开关判断、六面开关的 NBT 读写以及 {@link #markDirtyTick()} 的 setChanged 节流。
+ * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
+ * 六面传输开关与轮询索引（findIndex），提供面的开关判断、六面开关 NBT 读写与 setChanged 节流。
  */
 public abstract class AbstractGeneratorEntity extends BlockEntity implements MenuProvider {
     public final DataConfig config;
@@ -65,10 +62,7 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     }
 
     /**
-     * 每 tick 存档标记：节流到约每 20 tick 调用一次 {@code setChanged()}。
-     * <p>
-     * 机器数量较多时，每 tick 都使所在 chunk 标记为"未保存"会增加存档序列化开销；
-     * 而 GUI 实时数值由数据槽读取实体字段，不受此节流影响。
+     * 每 tick 存档标记，节流到约每 20 tick 调用一次 setChanged()，避免大量机器每 tick 标记 chunk 未保存
      */
     protected void markDirtyTick() {
         if (++dirtyTicks >= 20) {
@@ -77,7 +71,9 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         }
     }
 
-    /** 六面开关写入 NBT（子类 {@code saveAdditional} 调用） */
+    /**
+     * 六面开关写入 NBT（子类 {@code saveAdditional} 调用）
+     */
     protected void saveTransferFaces(CompoundTag nbt) {
         nbt.putBoolean("transferDown", transferDown);
         nbt.putBoolean("transferUp", transferUp);
@@ -87,7 +83,9 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         nbt.putBoolean("transferEast", transferEast);
     }
 
-    /** 六面开关从 NBT 读取（子类 {@code load} 调用） */
+    /**
+     * 六面开关从 NBT 读取（子类 {@code load} 调用）
+     */
     protected void loadTransferFaces(CompoundTag nbt) {
         if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
             transferDown = nbt.getBoolean("transferDown");
