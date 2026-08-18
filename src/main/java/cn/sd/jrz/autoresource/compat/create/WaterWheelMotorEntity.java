@@ -1,9 +1,11 @@
 package cn.sd.jrz.autoresource.compat.create;
 
+import com.mojang.logging.LogUtils;
 import com.simibubi.create.content.kinetics.KineticNetwork;
 import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import com.simibubi.create.foundation.blockEntity.behaviour.BlockEntityBehaviour;
 import net.minecraft.core.BlockPos;
+import org.slf4j.Logger;
 import net.minecraft.core.Direction;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
@@ -28,6 +30,7 @@ import java.util.List;
  * 旋转方向开关、六面输出方向通过 GUI 完成并持久化到 NBT。
  */
 public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implements MenuProvider {
+    private static final Logger LOGGER = LogUtils.getLogger();
     /** 水车槽位数量（单个槽，可放一组水车/大水车） */
     public static final int SLOT_COUNT = 1;
     /** 每个水车增加的转速 */
@@ -51,7 +54,7 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
             setChanged();
             // 转速/应力容量变化：通知网络重新计算
             updateGeneratedRotation();
-            // 兜底：Create 的 updateGeneratedRotation 内部在 hasNetwork() && 转速≠0 的守卫下
+            // 兜底1：Create 的 updateGeneratedRotation 内部在 hasNetwork() && 转速≠0 的守卫下
             // 才调用 notifyStressCapacityChange 推送容量，网络重挂（detach/attach）后可能被跳过，
             // 导致后续放入/取出水车时应力容量不更新。这里显式把最新容量与应力同步到网络。
             if (level != null && !level.isClientSide && hasNetwork()) {
@@ -60,10 +63,43 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
                 network.updateStressFor(WaterWheelMotorEntity.this, calculateStressApplied());
                 network.updateStress();
             }
+            // 兜底2：强制重建动力传播。
+            // Create 的 updateGeneratedRotation → applyNewSpeed 在"已有网络、非0→非0"时走
+            // detach/setSpeed/attach 分支，而 propagateNewSource 对网络 ID 相同的成员不重播转速
+            // （同网络短路），因此水车数量增加后新转速只反映在 GUI、不传播到下游
+            // （从无到有/改方向/改转向因网络状态不同而恰好生效）。这里把本机彻底脱离网络并清零
+            // 自身速度，再调 updateGeneratedRotation 走 applyNewSpeed 的 previous==0 分支
+            // （setSpeed + setNetwork + attachKinetics），令 propagateNewSource 判定本机与下游
+            // 网络不同而重新传播最新转速。
+            if (level != null && !level.isClientSide) {
+                float generated = getGeneratedSpeed();
+                LOGGER.info("[WaterWheelMotor] slot变化 slot={} count={} current={} generated={} last={} speedField={} hasNet={} net={}",
+                        slot, wheelSlots.getStackInSlot(0).getCount(), currentSpeed(), generated,
+                        lastPropagatedGenerated, getSpeed(), hasNetwork(), network);
+                if (generated != lastPropagatedGenerated) {
+                    lastPropagatedGenerated = generated;
+                    detachKinetics();
+                    setNetwork(null);
+                    setSpeed(0);
+                    updateGeneratedRotation();
+                }
+                // 兜底3：置位 updateSpeed，让下一 tick 的 attachKinetics 以最新转速重新传播到整个动力网络。
+                updateSpeed = true;
+            }
         }
     };
     /** 是否逆时针（默认顺时针=false） */
     public boolean counterClockwise = false;
+    /**
+     * 上次已成功传播到动力网络的生成速度（运行时缓存，用于检测水车槽内容变化）。
+     * <p>
+     * Create 的 {@code GeneratingKineticBlockEntity.updateGeneratedRotation} 在"已有网络、非0→非0"
+     * 时由 applyNewSpeed 走 detach/setSpeed/attach 分支，但 propagateNewSource 对<b>网络 ID 相同</b>
+     * 的成员不会重播转速（同网络短路），导致水车数量增加后新转速只反映在 GUI 显示、不传播到下游。
+     * 因此槽内容变化时需强制把本机脱离网络并清零速度后重新走 applyNewSpeed 的 previous==0 分支。
+     * 用本字段避免无实际变化的序列化读取（deserializeNBT 也会触发 onContentsChanged）造成多余重建。
+     */
+    private float lastPropagatedGenerated = 0;
 
     public WaterWheelMotorEntity(BlockEntityType<?> type, BlockPos pos, BlockState state) {
         super(type, pos, state);
@@ -167,6 +203,8 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
         if (tag.contains("wheelSlots")) {
             wheelSlots.deserializeNBT(tag.getCompound("wheelSlots"));
         }
+        // 记录本次加载后的生成速度，避免加载完成后首次变更槽时多余重建
+        lastPropagatedGenerated = getGeneratedSpeed();
     }
 
     @Override

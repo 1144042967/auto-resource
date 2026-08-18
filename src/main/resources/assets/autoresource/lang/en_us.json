@@ -76,7 +76,7 @@
   "screen.autoresource.block_generator.place_below": "Place Below",
   "block.autoresource.water_wheel_motor": "Water Wheel Motor",
   "screen.autoresource.water_wheel_motor.speed": "Speed: %s RPM",
-  "screen.autoresource.water_wheel_motor.block_speed": "%s RPM",
+  "screen.autoresource.water_wheel_motor.block_speed": "%s",
   "screen.autoresource.water_wheel_motor.capacity": "Stress: %s SU",
   "item.autoresource.water_wheel_motor.tooltip.owner": "A Create kinetic power source",
   "item.autoresource.water_wheel_motor.tooltip.speed": "Speed is determined by water wheels inside: +1 RPM per water wheel, +4 RPM per large water wheel",

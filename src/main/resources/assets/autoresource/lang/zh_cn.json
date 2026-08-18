@@ -76,7 +76,7 @@
   "screen.autoresource.block_generator.place_below": "下方生成方块",
   "block.autoresource.water_wheel_motor": "水车马达",
   "screen.autoresource.water_wheel_motor.speed": "转速: %s RPM",
-  "screen.autoresource.water_wheel_motor.block_speed": "%s RPM",
+  "screen.autoresource.water_wheel_motor.block_speed": "%s",
   "screen.autoresource.water_wheel_motor.capacity": "应力: %s SU",
   "item.autoresource.water_wheel_motor.tooltip.owner": "机械动力（Create）动力源",
   "item.autoresource.water_wheel_motor.tooltip.speed": "转速由内部水车数量决定: 水车 +1 RPM/个, 大水车 +4 RPM/个",

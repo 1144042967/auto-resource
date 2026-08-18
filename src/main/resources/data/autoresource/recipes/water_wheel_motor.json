@@ -19,5 +19,11 @@
   ],
   "result": {
     "item": "autoresource:water_wheel_motor"
-  }
+  },
+  "conditions": [
+    {
+      "type": "forge:mod_loaded",
+      "modid": "create"
+    }
+  ]
 }
