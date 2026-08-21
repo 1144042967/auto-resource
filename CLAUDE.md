@@ -215,7 +215,7 @@ src/main/java/cn/sd/jrz/autoresource/
 - **渲染**：整方块模型（`parent: minecraft:block/cube`，无镂空，方块不设 `.noOcclusion()`）；`WaterWheelMotorRenderer`（BlockEntityRenderer）在**垂直于应力输出方向的四个面**中央用 1.20.1 的 `Font.drawInBatch`（世界文字统一走该方法）渲染当前转速文字（`%03d RPM`，`screen.autoresource.water_wheel_motor.block_speed` 键），白色带阴影、强制 15 级方块光照，叠放在 LCD 显示窗上；**文字上方始终指向应力输出方向**。变换只用标准 `PoseStack.translate/mulPose/scale` + `Quaternionf`（与 BlockGeneratorRenderer 一致，不手写 Matrix4f——JOML 1.10.5 字段包私有）：`faceRotation` 把目标面转到 +Z（N/S/E/W 用 Y 轴 `SIDE_ROT_Y`，上下两面用 X 轴），`textAngle` 把输出方向转到面局部坐标求绕 Z 的旋转角，使文字顶部朝向输出方向；输出面与其对面（水车轮/底座贴图）不显示文字。转速由实体 `currentSpeed()` 读取（经 `SmartBlockEntity` 同步包下发到客户端）。渲染器由 `ClientSetup.onRegisterRenderers` 经 `CreateCompat.invokeRegistration("registerRenderers", ...)` 反射注册，避免无条件类字节码引用 Create 依赖类。不使用 Flywheel/实例化/`ScrollValueBehaviour`（双版本 API 不兼容）。
 - **持久化**：重写 `write(tag, clientPacket)`/`read(tag, clientPacket)`（Create `SmartBlockEntity` 的钩子，`load` 为 final 不可覆写）保存 `speed`/`counterClockwise`/`wheelSlots`。
 - **模型/朝向**：整方块模型（`parent: minecraft:block/cube`），六面贴图由 `tools/make_water_wheel_motor_textures.py`（Python/PIL）生成并写入 `textures/block/water_wheel_motor/`：`side` 灰色机器面板 + 中央 LCD 显示窗（上下水蓝强调条，风格对齐其他机器，六面侧贴图）、`top` 俯视水车轮（外环 + 8 辐条 + 轮毂 + 青色状态灯，即输出面标记）、`bottom` 深色底座板（中心轴承盘 + 四角铆钉）。`blockstates` 按 FACING 旋转模型：水平朝向（north/south/east/west）用 `x:90` + `y` 使**顶面水车轮贴图朝向输出方向**，朝上/朝下用 `x:0`/`x:180`；`front` 箭头贴图与旧 createaddition 模型/黄铜贴图（`*_old.json`、`brass_*.png`）保留备份未使用。
-- **配方**：`data/autoresource/recipes/water_wheel_motor.json`——铁锭 ×8 围框 + 中央活塞 + 左右各一水车（`create:water_wheel`）合成 1 个马达；材料含 Create 物品，仅 Create 加载时可用。
+- **配方**：`data/autoresource/recipes/water_wheel_motor.json`——6 个铁锭（顶行 3 + 底行 3） + 中央活塞 + 左右各一水车（`create:water_wheel`）合成 1 个马达；材料含 Create 物品，仅 Create 加载时可用。
 - **物品/tooltip**：`WaterWheelMotorItem`（`BlockItem` 子类）——物品名用水主题色（`ChatFormatting.AQUA`，与水生成机一致）；tooltip 用 `item.autoresource.water_wheel_motor.tooltip.*` 语言键讲解用途（Create 动力源、转速/应力容量由水车数量决定、GUI 可调方向、破坏掉落内部水车）。
 - **破坏掉落**：`data/autoresource/loot_tables/blocks/water_wheel_motor.json`（掉落方块自身）；`WaterWheelMotorBlock.getDrops` 覆写把水车槽内放入的水车/大水车一并掉落（不随物品 NBT 保留槽内容，避免重复）。
 - 语言键：`block.autoresource.water_wheel_motor`、`screen.autoresource.water_wheel_motor.*`（目前仅 en_us/zh_cn 两个语言文件加入，其余语言后续同步）。
@@ -224,7 +224,7 @@ src/main/java/cn/sd/jrz/autoresource/
 
 使用 Forge Capability 实现与其他 Mod 的互操作：
 
-- **EnergyConnection** (`IEnergyStorage`): 
+- **EnergyConnection** (`IEnergyStorage`):
   - 实现 `receiveEnergy` (返回 0，禁止输入) 和 `extractEnergy` (输出当前存储能量)
   - `canReceive` 返回 `false`, `canExtract` 返回 `true`
 

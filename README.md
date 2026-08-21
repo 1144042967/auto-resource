@@ -49,6 +49,18 @@
 - **管道支持**：标记后，方块机会主动向六个面均匀传输标记的方块（每个面可在 GUI 中独立开关），也可用其他 MOD 的管道抽取标记的方块
 - **下方生成方块**：开启输出槽下方"下方生成方块"按钮后，每秒将尝试 4 次，向机器下方的空气方块中放置标记的方块（替代原红石激活行为）
 
+## 水车马达（Create 联动）
+
+- 一个机械动力（Create）动力源，**仅在安装 Create 后可用**（未安装时方块与物品完全不存在，合成配方也不会显示）
+- **转速由水车数量决定**：每个小水车 +1 RPM、每个大水车 +4 RPM；未放入水车时马达不转，转速不可手动调节
+- **应力容量动态累加**：水车 256 SU/个、大水车 512 SU/个，放入/取出水车后自动同步到动力网络
+- **旋转方向**：可在 GUI 中在顺时针 / 逆时针之间切换
+- **输出面**：可在 GUI 中把动力输出到六个面中的任意一面（决定轴的朝向）
+- **GUI**：展示当前转速（3 位补零，如 `004 RPM`）、旋转方向开关、六面输出方向按钮，以及一个水车槽位（只能放入水车 / 大水车，可放一组）
+- **侧面显示**：垂直于动力输出方向的四个侧面会显示当前转速文字
+- **合成配方**：6 个铁锭 + 1 个活塞 + 左右各 1 个水车（`create:water_wheel`）
+- **破坏掉落**：掉落方块自身，并同时掉落机内放入的水车 / 大水车
+
 ---
 
 [查看中文翻译](#自动资源)
@@ -100,3 +112,15 @@ Added some machines that automatically generate resources, supporting the genera
 - **Output slot**: displays the marked item. Click to take one, Shift+click to take a stack, Space+click to take until the inventory is full. The marker and output slots do not support pipe input/output
 - **Pipe support**: after marking, the machine actively transfers the marked block evenly to the six faces (each can be enabled / disabled independently in the GUI), and other MOD pipelines can extract the marked block
 - **Place block below**: when the "Place Below" button below the output slot is enabled, 4 attempts will be made per second to place the marked block into the air block below the machine (replaces the old redstone behavior)
+
+## Water Wheel Motor (Create add-on)
+
+- A Create kinetic power source, **only available when Create is installed** (without Create, neither the block nor the item exists, and the recipe is hidden)
+- **Speed is determined by the wheels inside**: each water wheel adds +1 RPM, each large water wheel adds +4 RPM; with no wheels inside the motor does not spin, and the speed cannot be adjusted manually
+- **Stress capacity scales with the wheels**: 256 SU per water wheel, 512 SU per large water wheel, synced to the kinetic network automatically when wheels are added / removed
+- **Rotation direction**: can be switched between clockwise / counter-clockwise in the GUI
+- **Output face**: the kinetic output can be directed to any of the six faces in the GUI (determines the shaft orientation)
+- **GUI**: shows the current speed (zero-padded to 3 digits, e.g. `004 RPM`), a rotation-direction toggle, six output-face buttons and a single wheel slot (accepts only water wheels / large water wheels, and holds a whole stack)
+- **Side display**: the four faces perpendicular to the output direction show the current speed text
+- **Recipe**: 6 iron ingots + 1 piston + 1 water wheel (`create:water_wheel`) on each side
+- **Drops**: drops itself, plus the water wheels / large water wheels stored inside
