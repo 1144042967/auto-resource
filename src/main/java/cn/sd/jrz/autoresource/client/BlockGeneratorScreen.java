@@ -132,8 +132,8 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         // 信息面板（存量/产量/下次增长均以 个 为单位，大数值用单位缩写）
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR, false);
         guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 37, TEXT_COLOR, false);
-        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 47, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 39, TEXT_COLOR, false);
+        guiGraphics.drawString(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 标记槽标签（贴近标记槽右侧）
         Component markerLabel = Component.translatable("screen.autoresource.block_generator.marker");
         guiGraphics.drawString(this.font, markerLabel, 28, 116, TEXT_COLOR, false);
