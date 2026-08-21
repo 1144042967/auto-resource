@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "ورودی",
   "screen.autoresource.liquid_generator.output_slot": "خروجی",
   "screen.autoresource.liquid_generator.place_below": "قرار دادن در پایین",
+  "screen.autoresource.liquid_generator.output_toggle": "خروجی",
   "item.autoresource.block_generator.tooltip.block": "بلوک: %s",
   "item.autoresource.block_generator.tooltip.output": "خروجی: %s/تیک",
   "item.autoresource.block_generator.tooltip.growth": "رشد: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "رشد: %s%%",
   "screen.autoresource.block_generator.marker": "نشانگر",
   "screen.autoresource.block_generator.output_slot": "خروجی",
-  "screen.autoresource.block_generator.place_below": "قرار دادن در پایین"
+  "screen.autoresource.block_generator.place_below": "قرار دادن در پایین",
+  "screen.autoresource.block_generator.output_toggle": "خروجی"
 }

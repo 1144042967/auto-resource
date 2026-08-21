@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "입력",
   "screen.autoresource.liquid_generator.output_slot": "출력",
   "screen.autoresource.liquid_generator.place_below": "아래에 액체 놓기",
+  "screen.autoresource.liquid_generator.output_toggle": "출력",
   "item.autoresource.block_generator.tooltip.block": "블록: %s개",
   "item.autoresource.block_generator.tooltip.output": "출력: %s개/tick",
   "item.autoresource.block_generator.tooltip.growth": "성장: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "성장: %s%%",
   "screen.autoresource.block_generator.marker": "표시",
   "screen.autoresource.block_generator.output_slot": "출력",
-  "screen.autoresource.block_generator.place_below": "아래에 블록 놓기"
+  "screen.autoresource.block_generator.place_below": "아래에 블록 놓기",
+  "screen.autoresource.block_generator.output_toggle": "출력"
 }

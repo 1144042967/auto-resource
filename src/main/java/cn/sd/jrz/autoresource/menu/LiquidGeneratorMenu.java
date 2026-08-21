@@ -26,6 +26,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     public static final int BUTTON_TRANSFER_WEST = 4;
     public static final int BUTTON_TRANSFER_EAST = 5;
     public static final int BUTTON_PLACE_FLUID = 6;
+    public static final int BUTTON_OUTPUT = 7;
 
     // 客户端展示数据（服务端通过数据槽同步而来）
     private long clientLiquid;
@@ -40,6 +41,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     private boolean clientTransferWest;
     private boolean clientTransferEast;
     private boolean clientPlaceFluidBelow;
+    private boolean clientOutputEnabled;
 
     public LiquidGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.LIQUID_GENERATOR_MENU.get(), id, playerInventory, pos);
@@ -66,6 +68,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
         addDataSlot(makeDataSlot(() -> entity.transferWest ? 1 : 0, v -> clientTransferWest = v != 0));
         addDataSlot(makeDataSlot(() -> entity.transferEast ? 1 : 0, v -> clientTransferEast = v != 0));
         addDataSlot(makeDataSlot(() -> entity.placeFluidBelow ? 1 : 0, v -> clientPlaceFluidBelow = v != 0));
+        addDataSlot(makeDataSlot(() -> entity.outputEnabled ? 1 : 0, v -> clientOutputEnabled = v != 0));
     }
 
     /**
@@ -128,6 +131,13 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     }
 
     /**
+     * 是否开启主动输出（客户端读同步值，服务端读实体）
+     */
+    public boolean isOutputEnabled() {
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.outputEnabled : clientOutputEnabled;
+    }
+
+    /**
      * 处理 GUI 按钮点击（六面传输开关）
      */
     @Override
@@ -144,6 +154,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
             case BUTTON_TRANSFER_WEST -> entity.transferWest = !entity.transferWest;
             case BUTTON_TRANSFER_EAST -> entity.transferEast = !entity.transferEast;
             case BUTTON_PLACE_FLUID -> entity.placeFluidBelow = !entity.placeFluidBelow;
+            case BUTTON_OUTPUT -> entity.outputEnabled = !entity.outputEnabled;
             default -> {
                 return false;
             }

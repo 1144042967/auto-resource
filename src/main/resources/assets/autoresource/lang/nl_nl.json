@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Invoer",
   "screen.autoresource.liquid_generator.output_slot": "Uitvoer",
   "screen.autoresource.liquid_generator.place_below": "Hieronder plaatsen",
+  "screen.autoresource.liquid_generator.output_toggle": "Uitvoer",
   "item.autoresource.block_generator.tooltip.block": "Blok: %s",
   "item.autoresource.block_generator.tooltip.output": "Uitvoer: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Groei: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Groei: %s%%",
   "screen.autoresource.block_generator.marker": "Markeren",
   "screen.autoresource.block_generator.output_slot": "Uitvoer",
-  "screen.autoresource.block_generator.place_below": "Hieronder plaatsen"
+  "screen.autoresource.block_generator.place_below": "Hieronder plaatsen",
+  "screen.autoresource.block_generator.output_toggle": "Uitvoer"
 }

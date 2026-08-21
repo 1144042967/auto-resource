@@ -167,8 +167,8 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         fillInputSlot();
         // 填充上方容器中的可容纳流体物品
         fillContainersAbove();
-        // 六面传输（有待填充的铁桶时保留液体，优先积累液体填桶）
-        if (!isBucketPending()) {
+        // 六面传输（有待填充的铁桶时保留液体，优先积累液体填桶；关闭主动输出总开关时不传输）
+        if (!isBucketPending() && outputEnabled) {
             outputToSides();
         }
         // 开启"下方生成流体"时，向下方空气方块放置流体
@@ -454,6 +454,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         nbt.putLong("liquid", liquid);
         nbt.putLong("tickCount", tickCount);
         saveTransferFaces(nbt);
+        saveOutputEnabled(nbt);
         nbt.putBoolean("placeFluidBelow", placeFluidBelow);
         nbt.put("inputSlot", inputSlot.serializeNBT());
         nbt.put("outputSlot", outputSlot.serializeNBT());
@@ -472,6 +473,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
             tickCount = Tool.suit(nbt.getLong("tickCount"));
         }
         loadTransferFaces(nbt);
+        loadOutputEnabled(nbt);
         if (nbt.contains("placeFluidBelow", Tag.TAG_BYTE)) {
             placeFluidBelow = nbt.getBoolean("placeFluidBelow");
         }

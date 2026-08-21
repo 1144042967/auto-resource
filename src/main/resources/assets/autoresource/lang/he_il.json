@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "קלט",
   "screen.autoresource.liquid_generator.output_slot": "פלט",
   "screen.autoresource.liquid_generator.place_below": "הצבה מתחת",
+  "screen.autoresource.liquid_generator.output_toggle": "פלט",
   "item.autoresource.block_generator.tooltip.block": "בלוק: %s",
   "item.autoresource.block_generator.tooltip.output": "תפוקה: %s/טיק",
   "item.autoresource.block_generator.tooltip.growth": "גידול: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "גידול: %s%%",
   "screen.autoresource.block_generator.marker": "סימון",
   "screen.autoresource.block_generator.output_slot": "פלט",
-  "screen.autoresource.block_generator.place_below": "הצבה מתחת"
+  "screen.autoresource.block_generator.place_below": "הצבה מתחת",
+  "screen.autoresource.block_generator.output_toggle": "פלט"
 }

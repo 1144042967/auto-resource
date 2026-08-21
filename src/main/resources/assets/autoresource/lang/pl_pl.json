@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Wejście",
   "screen.autoresource.liquid_generator.output_slot": "Wyjście",
   "screen.autoresource.liquid_generator.place_below": "Umieść poniżej",
+  "screen.autoresource.liquid_generator.output_toggle": "Wyjście",
   "item.autoresource.block_generator.tooltip.block": "Blok: %s",
   "item.autoresource.block_generator.tooltip.output": "Wydajność: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Wzrost: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Wzrost: %s%%",
   "screen.autoresource.block_generator.marker": "Znacznik",
   "screen.autoresource.block_generator.output_slot": "Wyjście",
-  "screen.autoresource.block_generator.place_below": "Umieść poniżej"
+  "screen.autoresource.block_generator.place_below": "Umieść poniżej",
+  "screen.autoresource.block_generator.output_toggle": "Wyjście"
 }

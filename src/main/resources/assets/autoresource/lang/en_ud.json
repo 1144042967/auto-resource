@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Iudnʇ",
   "screen.autoresource.liquid_generator.output_slot": "Onʇdnʇ",
   "screen.autoresource.liquid_generator.place_below": "Ԁlɐɔǝ ᒰǝloʍ",
+  "screen.autoresource.liquid_generator.output_toggle": "Onʇdnʇ",
   "item.autoresource.block_generator.tooltip.block": "ᒰloɔʞ: %s",
   "item.autoresource.block_generator.tooltip.output": "Onʇdnʇ: %s\\ʇᴉɔʞ",
   "item.autoresource.block_generator.tooltip.growth": "⅁ɹoʍʇɥ: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "⅁ɹoʍʇɥ: %s%%",
   "screen.autoresource.block_generator.marker": "Wɐɹʞ",
   "screen.autoresource.block_generator.output_slot": "Onʇdnʇ",
-  "screen.autoresource.block_generator.place_below": "Ԁlɐɔǝ ᒰǝloʍ"
+  "screen.autoresource.block_generator.place_below": "Ԁlɐɔǝ ᒰǝloʍ",
+  "screen.autoresource.block_generator.output_toggle": "Onʇdnʇ"
 }

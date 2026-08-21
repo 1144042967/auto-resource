@@ -32,6 +32,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     private StateButton faceWest;
     private StateButton faceEast;
     private StateButton placeButton;
+    private StateButton outputButton;
     /**
      * 空格键是否按下（空格+单击输出槽 = 提取到背包满）
      */
@@ -63,6 +64,9 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         // "下方生成方块"按钮（向机器下方空气方块放置标记方块）
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceBlockBelow(), Component.translatable("screen.autoresource.block_generator.place_below"), button -> sendButton(BlockGeneratorMenu.BUTTON_PLACE_BLOCK));
         this.addRenderableWidget(this.placeButton);
+        // "输出"按钮（GUI 右上角，控制主动输出总开关，默认开启）
+        this.outputButton = new StateButton(this.leftPos + 120, this.topPos + 20, 44, 12, this.menu.isOutputEnabled(), Component.translatable("screen.autoresource.block_generator.output_toggle"), button -> sendButton(BlockGeneratorMenu.BUTTON_OUTPUT));
+        this.addRenderableWidget(this.outputButton);
     }
 
     @Override
@@ -147,6 +151,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         this.faceWest.setState(this.menu.isFaceEnabled(Direction.WEST));
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
         this.placeButton.setState(this.menu.isPlaceBlockBelow());
+        this.outputButton.setState(this.menu.isOutputEnabled());
     }
 
     /**

@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Mewnbwn",
   "screen.autoresource.liquid_generator.output_slot": "Allbwn",
   "screen.autoresource.liquid_generator.place_below": "Gosod Islaw",
+  "screen.autoresource.liquid_generator.output_toggle": "Allbwn",
   "item.autoresource.block_generator.tooltip.block": "Bloc: %s",
   "item.autoresource.block_generator.tooltip.output": "Allbwn: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Twf: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Twf: %s%%",
   "screen.autoresource.block_generator.marker": "Marcio",
   "screen.autoresource.block_generator.output_slot": "Allbwn",
-  "screen.autoresource.block_generator.place_below": "Gosod Islaw"
+  "screen.autoresource.block_generator.place_below": "Gosod Islaw",
+  "screen.autoresource.block_generator.output_toggle": "Allbwn"
 }

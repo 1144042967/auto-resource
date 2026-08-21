@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "الإدخال",
   "screen.autoresource.liquid_generator.output_slot": "الإخراج",
   "screen.autoresource.liquid_generator.place_below": "الوضع بالأسفل",
+  "screen.autoresource.liquid_generator.output_toggle": "الإخراج",
   "item.autoresource.block_generator.tooltip.block": "الكتلة: %s",
   "item.autoresource.block_generator.tooltip.output": "الإنتاج: %s/تيك",
   "item.autoresource.block_generator.tooltip.growth": "النمو: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "النمو: %s%%",
   "screen.autoresource.block_generator.marker": "علامة",
   "screen.autoresource.block_generator.output_slot": "الإخراج",
-  "screen.autoresource.block_generator.place_below": "الوضع بالأسفل"
+  "screen.autoresource.block_generator.place_below": "الوضع بالأسفل",
+  "screen.autoresource.block_generator.output_toggle": "الإخراج"
 }

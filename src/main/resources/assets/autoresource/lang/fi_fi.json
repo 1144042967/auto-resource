@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Syöttö",
   "screen.autoresource.liquid_generator.output_slot": "Ulostulo",
   "screen.autoresource.liquid_generator.place_below": "Aseta alapuolelle",
+  "screen.autoresource.liquid_generator.output_toggle": "Ulostulo",
   "item.autoresource.block_generator.tooltip.block": "Lohko: %s",
   "item.autoresource.block_generator.tooltip.output": "Tuotto: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Kasvu: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Kasvu: %s%%",
   "screen.autoresource.block_generator.marker": "Merkitse",
   "screen.autoresource.block_generator.output_slot": "Ulostulo",
-  "screen.autoresource.block_generator.place_below": "Aseta alapuolelle"
+  "screen.autoresource.block_generator.place_below": "Aseta alapuolelle",
+  "screen.autoresource.block_generator.output_toggle": "Ulostulo"
 }

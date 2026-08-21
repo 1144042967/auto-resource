@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Đầu vào",
   "screen.autoresource.liquid_generator.output_slot": "Đầu ra",
   "screen.autoresource.liquid_generator.place_below": "Đặt chất lỏng bên dưới",
+  "screen.autoresource.liquid_generator.output_toggle": "Đầu ra",
   "item.autoresource.block_generator.tooltip.block": "Khối: %s",
   "item.autoresource.block_generator.tooltip.output": "Sản lượng: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Tăng trưởng: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Tăng trưởng: %s%%",
   "screen.autoresource.block_generator.marker": "Đánh dấu",
   "screen.autoresource.block_generator.output_slot": "Đầu ra",
-  "screen.autoresource.block_generator.place_below": "Đặt khối bên dưới"
+  "screen.autoresource.block_generator.place_below": "Đặt khối bên dưới",
+  "screen.autoresource.block_generator.output_toggle": "Đầu ra"
 }

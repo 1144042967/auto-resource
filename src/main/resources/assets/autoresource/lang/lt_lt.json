@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Įvestis",
   "screen.autoresource.liquid_generator.output_slot": "Išvestis",
   "screen.autoresource.liquid_generator.place_below": "Dėti žemiau",
+  "screen.autoresource.liquid_generator.output_toggle": "Išvestis",
   "item.autoresource.block_generator.tooltip.block": "Blokas: %s",
   "item.autoresource.block_generator.tooltip.output": "Gamyba: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Augimas: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Augimas: %s%%",
   "screen.autoresource.block_generator.marker": "Pažymėti",
   "screen.autoresource.block_generator.output_slot": "Išvestis",
-  "screen.autoresource.block_generator.place_below": "Dėti žemiau"
+  "screen.autoresource.block_generator.place_below": "Dėti žemiau",
+  "screen.autoresource.block_generator.output_toggle": "Išvestis"
 }

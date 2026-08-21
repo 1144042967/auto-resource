@@ -86,8 +86,10 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
 
         ItemStack marked = getMarkedItem();
         if (!marked.isEmpty()) {
-            // 标记后才向六面传输方块
-            outputToSides(marked);
+            // 标记后才向六面传输方块（关闭主动输出总开关时不传输）
+            if (outputEnabled) {
+                outputToSides(marked);
+            }
             // 开启"下方生成方块"时，向下方空气方块放置方块
             placeBlockBelow(marked);
         }
@@ -215,6 +217,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         nbt.putLong("block", block);
         nbt.putLong("tickCount", tickCount);
         saveTransferFaces(nbt);
+        saveOutputEnabled(nbt);
         nbt.putBoolean("placeBlockBelow", placeBlockBelow);
         nbt.put("markerSlot", markerSlot.serializeNBT());
     }
@@ -250,6 +253,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             tickCount = Tool.suit(nbt.getLong("tickCount"));
         }
         loadTransferFaces(nbt);
+        loadOutputEnabled(nbt);
         if (nbt.contains("placeBlockBelow", Tag.TAG_BYTE)) {
             placeBlockBelow = nbt.getBoolean("placeBlockBelow");
         }

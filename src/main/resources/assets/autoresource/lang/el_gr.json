@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Είσοδος",
   "screen.autoresource.liquid_generator.output_slot": "Έξοδος",
   "screen.autoresource.liquid_generator.place_below": "Τοποθέτηση κάτω",
+  "screen.autoresource.liquid_generator.output_toggle": "Έξοδος",
   "item.autoresource.block_generator.tooltip.block": "Μπλοκ: %s",
   "item.autoresource.block_generator.tooltip.output": "Παραγωγή: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Αύξηση: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Αύξηση: %s%%",
   "screen.autoresource.block_generator.marker": "Σήμανση",
   "screen.autoresource.block_generator.output_slot": "Έξοδος",
-  "screen.autoresource.block_generator.place_below": "Τοποθέτηση κάτω"
+  "screen.autoresource.block_generator.place_below": "Τοποθέτηση κάτω",
+  "screen.autoresource.block_generator.output_toggle": "Έξοδος"
 }
