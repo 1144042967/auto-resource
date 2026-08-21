@@ -58,7 +58,8 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
     }
 
     @Override
-    protected void renderBg(GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+        renderBackground(guiGraphics);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
         int trackLeft = this.leftPos + 12;
