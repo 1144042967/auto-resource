@@ -18,7 +18,8 @@
     "III"
   ],
   "result": {
-    "item": "autoresource:water_wheel_motor"
+    "id": "autoresource:water_wheel_motor",
+    "count": 1
   },
   "conditions": [
     {

@@ -266,11 +266,11 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
                 }
                 BlockPos pos = getBlockPos().relative(direction);
                 IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, pos, direction.getOpposite());
-                if (storage == null || !storage.canReceive()) {
-                    continue;
+                // 目标暴露标准能量能力且可接收时才标准注入；否则（如 Flux 拒收设备）交由反射绕过处理
+                if (storage != null && storage.canReceive()) {
+                    charge(ItemStack.EMPTY, storage);
                 }
-                charge(ItemStack.EMPTY, storage);
-                // 标准注入后若仍有多余能量且目标因容量/接收速率限制拒收，反射补满其内部能量
+                // 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量
                 if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
                     long consumed = EnergyBypass.tryRefill(level.getBlockEntity(pos), direction.getOpposite(), storage, energy);
                     if (consumed > 0) {
@@ -410,11 +410,10 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
                     continue;
                 }
                 IEnergyStorage storage = level.getCapability(Capabilities.EnergyStorage.BLOCK, targetPos, entry.getValue());
-                if (storage == null || !storage.canReceive()) {
-                    continue;
+                if (storage != null && storage.canReceive()) {
+                    charge(ItemStack.EMPTY, storage);
                 }
-                charge(ItemStack.EMPTY, storage);
-                // 标准注入后若仍有多余能量且目标因容量/接收速率限制拒收，反射补满其内部能量
+                // 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量
                 if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
                     long consumed = EnergyBypass.tryRefill(level.getBlockEntity(targetPos), entry.getValue(), storage, energy);
                     if (consumed > 0) {

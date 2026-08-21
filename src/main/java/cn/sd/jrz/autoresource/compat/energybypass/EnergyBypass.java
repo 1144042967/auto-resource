@@ -26,12 +26,10 @@ public final class EnergyBypass {
     // ---- Mekanism 反射缓存 ----
     private static boolean mekInitFailed;
     private static Class<?> mekTile;
+    private static Method mekGetEnergyContainers;
     private static Method mekGetEnergy;
     private static Method mekGetMaxEnergy;
     private static Method mekSetEnergy;
-    private static Method mekGetValue;
-    private static Method mekSmaller;
-    private static Method mekCreate;
 
     // ---- Flux Networks 反射缓存 ----
     private static boolean fluxInitFailed;
@@ -77,7 +75,7 @@ public final class EnergyBypass {
         if (target == null || target.getLevel() == null || target.getLevel().isClientSide || available <= 0) {
             return 0;
         }
-        // 1. Mekanism（机器：TileEntityMekanism 子类，能量 long 型 FloatingLong）
+        // 1. Mekanism（机器：TileEntityMekanism 子类，能量经 IEnergyContainer 读取/写入，单位 J）
         long consumed = tryRefillMekanism(target, side, available);
         if (consumed > 0) {
             return consumed;
@@ -111,13 +109,11 @@ public final class EnergyBypass {
         }
         try {
             mekTile = Class.forName("mekanism.common.tile.base.TileEntityMekanism");
-            Class<?> mekFloatingLong = Class.forName("mekanism.api.math.FloatingLong");
-            mekGetEnergy = mekTile.getMethod("getEnergy", int.class, Direction.class);
-            mekGetMaxEnergy = mekTile.getMethod("getMaxEnergy", int.class, Direction.class);
-            mekSetEnergy = mekTile.getMethod("setEnergy", int.class, mekFloatingLong, Direction.class);
-            mekGetValue = mekFloatingLong.getMethod("getValue");
-            mekSmaller = mekFloatingLong.getMethod("smallerThan", mekFloatingLong);
-            mekCreate = mekFloatingLong.getMethod("create", long.class);
+            mekGetEnergyContainers = mekTile.getMethod("getEnergyContainers", Direction.class);
+            Class<?> mekContainer = Class.forName("mekanism.api.energy.IEnergyContainer");
+            mekGetEnergy = mekContainer.getMethod("getEnergy");
+            mekGetMaxEnergy = mekContainer.getMethod("getMaxEnergy");
+            mekSetEnergy = mekContainer.getMethod("setEnergy", long.class);
             return true;
         } catch (Exception e) {
             mekInitFailed = true;
@@ -126,7 +122,8 @@ public final class EnergyBypass {
     }
 
     /**
-     * Mekanism：反射调用 getMaxEnergy/getEnergy/setEnergy(FloatingLong) 把能量补到容量；能量以 J 存储，1 FE = 2.5 J
+     * Mekanism（1.21.x 新 API）：反射 getEnergyContainers(Direction) 取所有 IEnergyContainer，
+     * 逐容器 getEnergy/getMaxEnergy/setEnergy(long) 把能量补到容量；能量以 J 存储，1 FE = 2.5 J
      */
 
     private static long tryRefillMekanism(BlockEntity target, Direction side, long available) {
@@ -137,29 +134,34 @@ public final class EnergyBypass {
             if (!mekTile.isInstance(target)) {
                 return 0;
             }
-            Object cur = mekGetEnergy.invoke(target, 0, side);
-            Object max = mekGetMaxEnergy.invoke(target, 0, side);
-            if (cur == null || max == null) {
+            Object containers = mekGetEnergyContainers.invoke(target, side);
+            if (containers == null) {
                 return 0;
             }
-            // 已满则无需补满
-            if (!(boolean) mekSmaller.invoke(cur, max)) {
-                return 0;
+            long consumed = 0;
+            // 遍历所有能量容器（主容器 + 辅助）依次补满
+            for (Object container : (Iterable<?>) containers) {
+                if (available - consumed <= 0) {
+                    break;
+                }
+                long curJ = (long) mekGetEnergy.invoke(container);
+                long maxJ = (long) mekGetMaxEnergy.invoke(container);
+                // 容量无效（如无限）或已满则跳过
+                if (maxJ <= 0 || curJ >= maxJ) {
+                    continue;
+                }
+                long needJ = maxJ - curJ;
+                // 可用 FE 换算为 J（1 J = 0.4 FE）
+                long availableJ = (long) ((available - consumed) / FE_PER_J);
+                long giveJ = Math.min(needJ, Math.max(0, availableJ));
+                if (giveJ <= 0) {
+                    continue;
+                }
+                mekSetEnergy.invoke(container, curJ + giveJ);
+                long fe = Math.max(1, (long) (giveJ * FE_PER_J));
+                consumed += Math.min(fe, available - consumed);
             }
-            long curJ = (long) mekGetValue.invoke(cur);
-            long maxJ = (long) mekGetValue.invoke(max);
-            long needJ = maxJ - curJ;
-            // 可用 FE 换算为 J（1 J = 0.4 FE）
-            long availableJ = (long) (available / FE_PER_J);
-            long giveJ = Math.min(needJ, Math.max(0, availableJ));
-            if (giveJ <= 0) {
-                return 0;
-            }
-            // 补到 curJ + giveJ；若本机能量足以补满，则直接用容量值（无需重新构造）
-            Object newEnergy = giveJ >= needJ ? max : mekCreate.invoke(null, curJ + giveJ);
-            mekSetEnergy.invoke(target, 0, newEnergy, side);
-            long consumed = Math.max(1, (long) (giveJ * FE_PER_J));
-            return Math.min(consumed, available);
+            return consumed;
         } catch (Exception ignored) {
             // 反射失败或目标类型变化：静默跳过
             return 0;

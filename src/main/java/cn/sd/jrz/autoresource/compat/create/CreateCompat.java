@@ -3,7 +3,7 @@ package cn.sd.jrz.autoresource.compat.create;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.item.Item;
-import net.neoforged.fml.ModList;
+import net.neoforged.fml.loading.FMLLoader;
 
 import javax.annotation.Nullable;
 
@@ -23,10 +23,15 @@ public final class CreateCompat {
     }
 
     /**
-     * Create 是否已加载（在 mod 构造阶段即可判断）
+     * Create 是否已加载（在 mod 构造阶段即可判断）。
+     * 用 FMLLoader.getLoadingModList() 而非 ModList.get()：NeoForge 在 mod 构造早期 ModList 可能未填充完，
+     * 而 loadingModList 基于已扫描的 mods.toml 声明，能可靠判断 Create 是否声明加载。
      */
     public static boolean isCreateLoaded() {
-        return ModList.get().isLoaded(CREATE_ID);
+        boolean loaded = FMLLoader.getLoadingModList().getModFileById(CREATE_ID) != null;
+        // 调试：确认 Create 检测结果（看 logs 里 [AutoResource] 行）
+        System.out.println("[AutoResource] CreateCompat.isCreateLoaded = " + loaded);
+        return loaded;
     }
 
     /**

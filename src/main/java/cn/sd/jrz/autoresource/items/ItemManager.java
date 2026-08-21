@@ -21,6 +21,10 @@ public class ItemManager {
                 output.accept(Registration.LIQUID_GENERATOR_WATER_ITEM.get());
                 output.accept(Registration.LIQUID_GENERATOR_LAVA_ITEM.get());
                 output.accept(Registration.BLOCK_GENERATOR_ITEM.get());
+                // Create 联动：仅当 Create 加载时显示水车马达
+                if (Registration.WATER_WHEEL_MOTOR_ITEM != null) {
+                    output.accept(Registration.WATER_WHEEL_MOTOR_ITEM.get());
+                }
             })
             .build()
     );
