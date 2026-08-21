@@ -7,18 +7,13 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.neoforged.neoforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
-import java.util.function.IntConsumer;
-import java.util.function.IntSupplier;
 
 /**
  * FE 发电机容器。
@@ -27,7 +22,7 @@ import java.util.function.IntSupplier;
  * 通过数据槽把能量、发电量、下次增长量、无线充电参数、六面开关等同步到客户端用于 GUI 展示，
  * 并在 GUI 中通过按钮（clickMenuButton）修改每台发电机的独立配置。
  */
-public class EnergyGeneratorMenu extends AbstractContainerMenu {
+public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEntity> {
     // 按钮 ID
     public static final int BUTTON_WIRELESS = 0;
     public static final int BUTTON_INTERVAL_DOWN = 1;
@@ -42,8 +37,6 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
     public static final int BUTTON_TRANSFER_SOUTH = 10;
     public static final int BUTTON_TRANSFER_WEST = 11;
     public static final int BUTTON_TRANSFER_EAST = 12;
-
-    public final EnergyGeneratorEntity entity;
 
     // 客户端展示数据（服务端通过数据槽同步而来）
     private long clientEnergy;
@@ -63,15 +56,13 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
     private boolean clientTransferEast;
 
     public EnergyGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
-        super(Registration.ENERGY_GENERATOR_MENU.get(), id);
-        BlockEntity blockEntity = playerInventory.player.level().getBlockEntity(pos);
-        this.entity = (EnergyGeneratorEntity) blockEntity;
+        super(Registration.ENERGY_GENERATOR_MENU.get(), id, playerInventory, pos);
 
         // 机器槽位：0=加速，1=充电
         addSlot(new SlotItemHandler(entity.starSlot, 0, 8, 190));
         addSlot(new SlotItemHandler(entity.chargeSlot, 0, 152, 190));
         // 玩家背包：2-37
-        addPlayerInventory(playerInventory);
+        addPlayerInventory(playerInventory, 230);
 
         // 数据同步（long 拆成高低 32 位两个数据槽）
         addDataSlot(makeDataSlot(() -> hiWord(entity.energy), v -> clientEnergy = mergeLong(v, loWord(clientEnergy))));
@@ -99,6 +90,7 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.energy : clientEnergy;
     }
 
+    @Override
     public long getOutput() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.output : clientOutput;
     }
@@ -107,14 +99,17 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.nextIncrease : clientNextIncrease;
     }
 
+    @Override
     public long getMax() {
         return entity != null ? entity.config.getMax() : Long.MAX_VALUE;
     }
 
+    @Override
     public int getTickCount() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.tickCount) : clientTickCount;
     }
 
+    @Override
     public int getSecond() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()) : clientSecond;
     }
@@ -185,14 +180,6 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
         return current <= 1 ? 5 : current - 2;
     }
 
-    @Override
-    public boolean stillValid(@Nonnull Player player) {
-        if (entity == null) {
-            return false;
-        }
-        return entity.getLevel() != null && entity.getLevel().getBlockEntity(entity.getBlockPos()) == entity;
-    }
-
     /** 快速转移物品 */
     @Override
     @Nonnull
@@ -228,46 +215,9 @@ public class EnergyGeneratorMenu extends AbstractContainerMenu {
         return itemStack;
     }
 
-    private void addPlayerInventory(Inventory playerInventory) {
-        for (int i = 0; i < 3; ++i) {
-            for (int j = 0; j < 9; ++j) {
-                this.addSlot(new Slot(playerInventory, j + i * 9 + 9, 8 + j * 18, 230 + i * 18));
-            }
-        }
-        for (int i = 0; i < 9; ++i) {
-            this.addSlot(new Slot(playerInventory, i, 8 + i * 18, 284));
-        }
-    }
-
     /** 加速槽所需物品（来自配置文件） */
     @Nullable
     public Item getStarItem() {
         return entity != null ? entity.config.getStarItem() : null;
-    }
-
-    private static DataSlot makeDataSlot(IntSupplier getter, IntConsumer setter) {
-        return new DataSlot() {
-            @Override
-            public int get() {
-                return getter.getAsInt();
-            }
-
-            @Override
-            public void set(int value) {
-                setter.accept(value);
-            }
-        };
-    }
-
-    private static int hiWord(long value) {
-        return (int) (value >> 32);
-    }
-
-    private static int loWord(long value) {
-        return (int) (value & 0xFFFFFFFFL);
-    }
-
-    private static long mergeLong(int hi, int lo) {
-        return ((long) hi << 32) | (lo & 0xFFFFFFFFL);
     }
 }

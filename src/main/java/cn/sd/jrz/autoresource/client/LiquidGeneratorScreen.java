@@ -3,11 +3,8 @@ package cn.sd.jrz.autoresource.client;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphics;
-import net.minecraft.client.gui.components.Button;
-import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.material.Fluid;
@@ -22,9 +19,8 @@ import net.neoforged.api.distmarker.OnlyIn;
  * 并提供六个流体传输面的独立开关以及输入/输出槽。数值使用单位缩写（K/M/G/T/P/E）避免 long 大数溢出。
  */
 @OnlyIn(Dist.CLIENT)
-public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGeneratorMenu> {
+public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGeneratorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/liquid_generator_gui.png");
-    private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
 
     private StateButton faceDown;
     private StateButton faceUp;
@@ -33,6 +29,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
     private StateButton faceWest;
     private StateButton faceEast;
     private StateButton placeButton;
+    private StateButton outputButton;
 
     public LiquidGeneratorScreen(LiquidGeneratorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -60,15 +57,9 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
         // "下方生成流体"按钮（位于输出槽下方，开启后向机器下方空气方块放置对应流体）
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceFluidBelow(), Component.translatable("screen.autoresource.liquid_generator.place_below"), button -> sendButton(LiquidGeneratorMenu.BUTTON_PLACE_FLUID));
         this.addRenderableWidget(this.placeButton);
-    }
-
-    /**
-     * 发送容器按钮点击到服务端
-     */
-    private void sendButton(int id) {
-        if (this.minecraft != null && this.minecraft.player != null) {
-            this.minecraft.player.connection.send(new ServerboundContainerButtonClickPacket(this.menu.containerId, id));
-        }
+        // "输出"按钮（GUI 右上角，控制主动输出总开关，默认开启）
+        this.outputButton = new StateButton(this.leftPos + 120, this.topPos + 20, 44, 12, this.menu.isOutputEnabled(), Component.translatable("screen.autoresource.liquid_generator.output_toggle"), button -> sendButton(LiquidGeneratorMenu.BUTTON_OUTPUT));
+        this.addRenderableWidget(this.outputButton);
     }
 
     @Override
@@ -117,11 +108,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
     }
 
     @Override
-    public void render(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.render(guiGraphics, mouseX, mouseY, partialTick);
-        // 渲染鼠标悬浮物品的信息提示窗（与工作台一致，AbstractContainerScreen.render 不会自动调用）
-        super.renderTooltip(guiGraphics, mouseX, mouseY);
-        // 刷新各开关状态
+    protected void refreshButtonStates() {
         this.faceDown.setState(this.menu.isFaceEnabled(Direction.DOWN));
         this.faceUp.setState(this.menu.isFaceEnabled(Direction.UP));
         this.faceNorth.setState(this.menu.isFaceEnabled(Direction.NORTH));
@@ -129,18 +116,7 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
         this.faceWest.setState(this.menu.isFaceEnabled(Direction.WEST));
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
         this.placeButton.setState(this.menu.isPlaceFluidBelow());
-    }
-
-    /**
-     * 计算增长百分比（0-100）；达最大产量时固定为 100%
-     */
-    private int growthPercent() {
-        if (this.menu.getOutput() >= this.menu.getMax()) {
-            return 100;
-        }
-        int second = Math.max(1, this.menu.getSecond());
-        double percent = this.menu.getTickCount() / (second * 20.0) * 100.0;
-        return (int) Math.max(0, Math.min(100, percent));
+        this.outputButton.setState(this.menu.isOutputEnabled());
     }
 
     /**
@@ -151,46 +127,5 @@ public class LiquidGeneratorScreen extends AbstractContainerScreen<LiquidGenerat
             return String.format("%.2f", mb / 1000.0);
         }
         return Tool.formatLong(mb / 1000);
-    }
-
-    /**
-     * 带状态颜色的开关按钮（开=绿色，关=红色）
-     */
-    private class StateButton extends SimpleButton {
-        private boolean state;
-
-        StateButton(int x, int y, int width, int height, boolean initial, Component label, OnPress onPress) {
-            super(x, y, width, height, label, onPress);
-            this.state = initial;
-        }
-
-        void setState(boolean state) {
-            this.state = state;
-        }
-
-        @Override
-        protected void renderWidget(GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
-        }
-    }
-
-    /**
-     * 带边框与居中文字的通用按钮
-     */
-    private abstract class SimpleButton extends Button {
-        SimpleButton(int x, int y, int width, int height, Component label, OnPress onPress) {
-            super(x, y, width, height, label, onPress, DEFAULT_NARRATION);
-        }
-
-        protected void renderButton(GuiGraphics guiGraphics, int color) {
-            guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
-            // 1px 边框（鼠标悬浮时边框变亮，用于指示可交互）
-            int borderColor = this.isHovered() ? 0xFFFFFF00 : 0xFF000000;
-            guiGraphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.getWidth() + 1, this.getY(), borderColor);
-            guiGraphics.fill(this.getX() - 1, this.getY() + this.getHeight(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1, borderColor);
-            guiGraphics.fill(this.getX() - 1, this.getY(), this.getX(), this.getY() + this.getHeight(), borderColor);
-            guiGraphics.fill(this.getX() + this.getWidth(), this.getY(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(), borderColor);
-            guiGraphics.drawCenteredString(LiquidGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
-        }
     }
 }

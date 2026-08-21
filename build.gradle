@@ -10,6 +10,11 @@ tasks.named('wrapper', Wrapper).configure {
 version = mod_version
 group = mod_group_id
 repositories {
+    // Create 及其前置库（ponder/flywheel）——参考 Create 官方构建配置
+    maven {
+        name = "CreateMod"
+        url = "https://maven.createmod.net"
+    }
 }
 base {
     archivesName = "autoresource-neoforge${minecraft_version}"
@@ -55,6 +60,11 @@ configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 dependencies {
+    // Create 联动（水车马达）：编译期依赖，运行时 Create 为可选（无 Create 时整个联动不加载）
+    compileOnly files("libs/create-1.21.1-6.0.10.jar")
+    // Create 的前置库（编译水车马达需要其 API 类；运行时随 Create 提供，不影响动态加载）
+    compileOnly("net.createmod.ponder:ponder-neoforge:1.0.82+mc1.21.1")
+    compileOnly("dev.engine-room.flywheel:flywheel-neoforge-api-1.21.1:1.0.6")
 }
 var generateModMetadata = tasks.register("generateModMetadata", ProcessResources) {
     var replaceProperties = [

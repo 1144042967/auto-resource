@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "入力",
   "screen.autoresource.liquid_generator.output_slot": "出力",
   "screen.autoresource.liquid_generator.place_below": "下に液体を設置",
+  "screen.autoresource.liquid_generator.output_toggle": "出力",
   "item.autoresource.block_generator.tooltip.block": "ブロック: %s 個",
   "item.autoresource.block_generator.tooltip.output": "出力: %s 個/tick",
   "item.autoresource.block_generator.tooltip.growth": "成長: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "成長: %s%%",
   "screen.autoresource.block_generator.marker": "マーク",
   "screen.autoresource.block_generator.output_slot": "出力",
-  "screen.autoresource.block_generator.place_below": "下にブロックを設置"
+  "screen.autoresource.block_generator.place_below": "下にブロックを設置",
+  "screen.autoresource.block_generator.output_toggle": "出力"
 }

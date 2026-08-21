@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.AutoResource;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.neoforged.api.distmarker.Dist;
 import net.neoforged.bus.api.SubscribeEvent;
@@ -18,11 +19,19 @@ public class ClientSetup {
         event.register(Registration.ENERGY_GENERATOR_MENU.get(), EnergyGeneratorScreen::new);
         event.register(Registration.LIQUID_GENERATOR_MENU.get(), LiquidGeneratorScreen::new);
         event.register(Registration.BLOCK_GENERATOR_MENU.get(), BlockGeneratorScreen::new);
+        // Create 联动：水车马达 GUI（仅在 Create 加载时反射注册）
+        if (CreateCompat.isCreateLoaded() && Registration.WATER_WHEEL_MOTOR_MENU != null) {
+            CreateCompat.invokeRegistration("registerClient", new Class<?>[]{RegisterMenuScreensEvent.class}, new Object[]{event});
+        }
     }
 
     /** 注册方块生成机的方块实体渲染器（在四个侧面显示标记物品） */
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(Registration.BLOCK_GENERATOR_ENTITY.get(), BlockGeneratorRenderer::new);
+        // Create 联动：水车马达渲染器（仅在 Create 加载时反射注册）
+        if (CreateCompat.isCreateLoaded() && Registration.WATER_WHEEL_MOTOR_ENTITY != null) {
+            CreateCompat.invokeRegistration("registerRenderers", new Class<?>[]{EntityRenderersEvent.RegisterRenderers.class}, new Object[]{event});
+        }
     }
 }

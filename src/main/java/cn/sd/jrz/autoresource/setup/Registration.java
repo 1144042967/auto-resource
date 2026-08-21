@@ -2,6 +2,7 @@ package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.DataConfig;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
@@ -49,6 +50,10 @@ public class Registration {
         BLOCK_ENTITIES.register(bus);
         MENUS.register(bus);
         bus.addListener(Registration::initCapabilities);
+        // Create 联动（水车马达）：仅在 Create 加载时经反射注册，避免无条件类字节码引用 Create 类
+        if (CreateCompat.isCreateLoaded()) {
+            CreateCompat.invokeRegistration("register", new Class<?>[]{IEventBus.class}, new Object[]{bus});
+        }
     }
 
     private static void initCapabilities(RegisterCapabilitiesEvent event) {
@@ -94,4 +99,11 @@ public class Registration {
     public static final DeferredHolder<MenuType<?>, MenuType<EnergyGeneratorMenu>> ENERGY_GENERATOR_MENU = MENUS.register("energy_generator", () -> IMenuTypeExtension.create((id, inv, buf) -> new EnergyGeneratorMenu(id, inv, buf.readBlockPos())));
     public static final DeferredHolder<MenuType<?>, MenuType<LiquidGeneratorMenu>> LIQUID_GENERATOR_MENU = MENUS.register("liquid_generator", () -> IMenuTypeExtension.create((id, inv, buf) -> new LiquidGeneratorMenu(id, inv, buf.readBlockPos())));
     public static final DeferredHolder<MenuType<?>, MenuType<BlockGeneratorMenu>> BLOCK_GENERATOR_MENU = MENUS.register("block_generator", () -> IMenuTypeExtension.create((id, inv, buf) -> new BlockGeneratorMenu(id, inv, buf.readBlockPos())));
+
+    // ---- Create 联动（水车马达，仅在 Create 加载时由 CreateRegistration 反射注册）----
+    // 字段类型用通配符，避免本类字节码引用 Create 子类（类加载安全）
+    public static DeferredHolder<Block, ? extends Block> WATER_WHEEL_MOTOR;
+    public static DeferredHolder<Item, ? extends Item> WATER_WHEEL_MOTOR_ITEM;
+    public static DeferredHolder<BlockEntityType<?>, ?> WATER_WHEEL_MOTOR_ENTITY;
+    public static DeferredHolder<MenuType<?>, ?> WATER_WHEEL_MOTOR_MENU;
 }

@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Intrare",
   "screen.autoresource.liquid_generator.output_slot": "Ieșire",
   "screen.autoresource.liquid_generator.place_below": "Plasează dedesubt",
+  "screen.autoresource.liquid_generator.output_toggle": "Ieșire",
   "item.autoresource.block_generator.tooltip.block": "Bloc: %s",
   "item.autoresource.block_generator.tooltip.output": "Producție: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Creștere: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Creștere: %s%%",
   "screen.autoresource.block_generator.marker": "Marchează",
   "screen.autoresource.block_generator.output_slot": "Ieșire",
-  "screen.autoresource.block_generator.place_below": "Plasează dedesubt"
+  "screen.autoresource.block_generator.place_below": "Plasează dedesubt",
+  "screen.autoresource.block_generator.output_toggle": "Ieșire"
 }

@@ -9,41 +9,32 @@ import net.minecraft.world.ItemInteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
-public class EnergyGeneratorBlock extends Block implements EntityBlock {
-    private final DataConfig config;
+/**
+ * FE 发电机方块。
+ */
+public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
 
     public EnergyGeneratorBlock(Properties properties, DataConfig config) {
-        super(properties);
-        this.config = config;
+        super(properties, config);
     }
 
     @Override
-    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+    protected BlockEntity createEntity(BlockPos pos, BlockState state) {
         return new EnergyGeneratorEntity(pos, state, config);
     }
 
-    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
-        return (l, p, s, tile) -> tick(l, tile);
-    }
-
-    private <T extends BlockEntity> void tick(Level level, T tile) {
+    protected void tickEntity(Level level, BlockEntity tile) {
         if (level.isClientSide || !(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
@@ -73,20 +64,5 @@ public class EnergyGeneratorBlock extends Block implements EntityBlock {
     @Override
     protected @Nonnull ItemInteractionResult useItemOn(@Nonnull ItemStack stack, @Nonnull BlockState state, @Nonnull Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult hit) {
         return openGui(level, pos, player) ? ItemInteractionResult.SUCCESS : ItemInteractionResult.FAIL;
-    }
-
-    /**
-     * 打开 FE 发电机 GUI
-     */
-    private boolean openGui(Level level, BlockPos pos, Player player) {
-        if (level.isClientSide) {
-            return true;
-        }
-        EnergyGeneratorEntity generator = (EnergyGeneratorEntity) level.getBlockEntity(pos);
-        if (generator == null) {
-            return false;
-        }
-        player.openMenu(generator, pos);
-        return true;
     }
 }

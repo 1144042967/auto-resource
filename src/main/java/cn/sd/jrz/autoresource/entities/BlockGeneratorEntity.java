@@ -14,7 +14,6 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -39,21 +38,9 @@ import javax.annotation.Nullable;
  * 六面方块传输（可逐面禁用）以及"下方生成方块"。
  * 自动生成会一直计算，但未标记时无法取出/传输/放置；标记后不可更换。
  */
-public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
-    public final DataConfig config;
-
+public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     // 核心数据（方块数量单位为 Block/1000，即块）
-    public long output;
     public long block = 0;
-    public long tickCount = 0;
-
-    // 六面方块传输开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 是否在下方空气方块放置对应方块（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
     public boolean placeBlockBelow = false;
@@ -81,13 +68,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    // 六面传输轮询索引
-    private int findIndex = 0;
-
     public BlockGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -108,12 +90,14 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
 
         ItemStack marked = getMarkedItem();
         if (!marked.isEmpty()) {
-            // 标记后才向六面传输方块
-            outputToSides(marked);
+            // 标记后才向六面传输方块（关闭主动输出总开关时不传输）
+            if (outputEnabled) {
+                outputToSides(marked);
+            }
             // 开启"下方生成方块"时，向下方空气方块放置方块
             placeBlockBelow(marked);
         }
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -204,20 +188,6 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         return toExtract;
     }
 
-    /**
-     * 指定面是否允许方块传输
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
-    }
-
     @Override
     @Nonnull
     public Component getDisplayName() {
@@ -258,12 +228,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         nbt.putLong("output", output);
         nbt.putLong("block", block);
         nbt.putLong("tickCount", tickCount);
-        nbt.putBoolean("transferDown", transferDown);
-        nbt.putBoolean("transferUp", transferUp);
-        nbt.putBoolean("transferNorth", transferNorth);
-        nbt.putBoolean("transferSouth", transferSouth);
-        nbt.putBoolean("transferWest", transferWest);
-        nbt.putBoolean("transferEast", transferEast);
+        saveTransferFaces(nbt);
+        saveOutputEnabled(nbt);
         nbt.putBoolean("placeBlockBelow", placeBlockBelow);
         nbt.put("markerSlot", markerSlot.serializeNBT(provider));
     }
@@ -280,24 +246,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         if (nbt.contains("tickCount", Tag.TAG_LONG)) {
             tickCount = Tool.suit(nbt.getLong("tickCount"));
         }
-        if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
-            transferDown = nbt.getBoolean("transferDown");
-        }
-        if (nbt.contains("transferUp", Tag.TAG_BYTE)) {
-            transferUp = nbt.getBoolean("transferUp");
-        }
-        if (nbt.contains("transferNorth", Tag.TAG_BYTE)) {
-            transferNorth = nbt.getBoolean("transferNorth");
-        }
-        if (nbt.contains("transferSouth", Tag.TAG_BYTE)) {
-            transferSouth = nbt.getBoolean("transferSouth");
-        }
-        if (nbt.contains("transferWest", Tag.TAG_BYTE)) {
-            transferWest = nbt.getBoolean("transferWest");
-        }
-        if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
-            transferEast = nbt.getBoolean("transferEast");
-        }
+        loadTransferFaces(nbt);
+        loadOutputEnabled(nbt);
         if (nbt.contains("placeBlockBelow", Tag.TAG_BYTE)) {
             placeBlockBelow = nbt.getBoolean("placeBlockBelow");
         }

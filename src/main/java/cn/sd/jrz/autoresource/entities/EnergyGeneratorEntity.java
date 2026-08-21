@@ -1,6 +1,8 @@
 package cn.sd.jrz.autoresource.entities;
 
+import cn.sd.jrz.autoresource.Config;
 import cn.sd.jrz.autoresource.DataConfig;
+import cn.sd.jrz.autoresource.compat.energybypass.EnergyBypass;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.util.Tool;
@@ -13,7 +15,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -42,13 +43,8 @@ import java.util.Map;
  * 指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
  * 无线充电与输电面等参数均为每台发电机独立保存，可在 GUI 中修改。
  */
-public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
-    public final DataConfig config;
-
-    // 核心数据
-    public long output;
+public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     public long energy = 0;
-    public long tickCount = 0;
     /**
      * 下次增长的发电量（同时用于增长时实际增量）
      */
@@ -72,14 +68,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
      * 重复传电次数，对相邻输电和无线输电都生效
      */
     public int transferRepeat = 1;
-
-    // 六面输电开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 加速增长槽位（放入配置指定物品后增长量变为当前发电量的 1%），只能放 1 个
     public final ItemStackHandler starSlot = new ItemStackHandler(1) {
@@ -118,13 +106,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    // 六面输电轮询索引
-    private int findIndex = 0;
-
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -157,7 +140,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         if (wirelessOn) {
             wirelessTick();
         }
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -287,6 +270,13 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     continue;
                 }
                 charge(ItemStack.EMPTY, storage);
+                // 标准注入后若仍有多余能量且目标因容量/接收速率限制拒收，反射补满其内部能量
+                if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
+                    long consumed = EnergyBypass.tryRefill(level.getBlockEntity(pos), direction.getOpposite(), storage, energy);
+                    if (consumed > 0) {
+                        energy -= consumed;
+                    }
+                }
             }
         }
     }
@@ -424,22 +414,15 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     continue;
                 }
                 charge(ItemStack.EMPTY, storage);
+                // 标准注入后若仍有多余能量且目标因容量/接收速率限制拒收，反射补满其内部能量
+                if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
+                    long consumed = EnergyBypass.tryRefill(level.getBlockEntity(targetPos), entry.getValue(), storage, energy);
+                    if (consumed > 0) {
+                        energy -= consumed;
+                    }
+                }
             }
         }
-    }
-
-    /**
-     * 指定面是否允许输电
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
     }
 
     @Override
@@ -465,12 +448,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         nbt.putInt("wirelessInterval", wirelessInterval);
         nbt.putInt("wirelessRange", wirelessRange);
         nbt.putInt("transferRepeat", transferRepeat);
-        nbt.putBoolean("transferDown", transferDown);
-        nbt.putBoolean("transferUp", transferUp);
-        nbt.putBoolean("transferNorth", transferNorth);
-        nbt.putBoolean("transferSouth", transferSouth);
-        nbt.putBoolean("transferWest", transferWest);
-        nbt.putBoolean("transferEast", transferEast);
+        saveTransferFaces(nbt);
+        saveOutputEnabled(nbt);
         nbt.put("starSlot", starSlot.serializeNBT(provider));
         nbt.put("chargeSlot", chargeSlot.serializeNBT(provider));
     }
@@ -505,24 +484,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         if (nbt.contains("transferRepeat", Tag.TAG_INT)) {
             transferRepeat = Math.max(1, nbt.getInt("transferRepeat"));
         }
-        if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
-            transferDown = nbt.getBoolean("transferDown");
-        }
-        if (nbt.contains("transferUp", Tag.TAG_BYTE)) {
-            transferUp = nbt.getBoolean("transferUp");
-        }
-        if (nbt.contains("transferNorth", Tag.TAG_BYTE)) {
-            transferNorth = nbt.getBoolean("transferNorth");
-        }
-        if (nbt.contains("transferSouth", Tag.TAG_BYTE)) {
-            transferSouth = nbt.getBoolean("transferSouth");
-        }
-        if (nbt.contains("transferWest", Tag.TAG_BYTE)) {
-            transferWest = nbt.getBoolean("transferWest");
-        }
-        if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
-            transferEast = nbt.getBoolean("transferEast");
-        }
+        loadTransferFaces(nbt);
+        loadOutputEnabled(nbt);
         if (nbt.contains("starSlot", Tag.TAG_COMPOUND)) {
             starSlot.deserializeNBT(provider, nbt.getCompound("starSlot"));
         }

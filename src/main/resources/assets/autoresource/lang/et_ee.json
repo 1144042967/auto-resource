@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Sisend",
   "screen.autoresource.liquid_generator.output_slot": "Väljund",
   "screen.autoresource.liquid_generator.place_below": "Aseta allapoole",
+  "screen.autoresource.liquid_generator.output_toggle": "Väljund",
   "item.autoresource.block_generator.tooltip.block": "Plokk: %s",
   "item.autoresource.block_generator.tooltip.output": "Väljund: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Kasv: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Kasv: %s%%",
   "screen.autoresource.block_generator.marker": "Märgi",
   "screen.autoresource.block_generator.output_slot": "Väljund",
-  "screen.autoresource.block_generator.place_below": "Aseta allapoole"
+  "screen.autoresource.block_generator.place_below": "Aseta allapoole",
+  "screen.autoresource.block_generator.output_toggle": "Väljund"
 }

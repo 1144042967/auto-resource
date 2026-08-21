@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Enank",
   "screen.autoresource.liquid_generator.output_slot": "Ezank",
   "screen.autoresource.liquid_generator.place_below": "Lakaat d'an traoñ",
+  "screen.autoresource.liquid_generator.output_toggle": "Ezank",
   "item.autoresource.block_generator.tooltip.block": "Bloc'h: %s",
   "item.autoresource.block_generator.tooltip.output": "Produktadur: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Kresk: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Kresk: %s%%",
   "screen.autoresource.block_generator.marker": "Merkañ",
   "screen.autoresource.block_generator.output_slot": "Ezank",
-  "screen.autoresource.block_generator.place_below": "Lakaat d'an traoñ"
+  "screen.autoresource.block_generator.place_below": "Lakaat d'an traoñ",
+  "screen.autoresource.block_generator.output_toggle": "Ezank"
 }

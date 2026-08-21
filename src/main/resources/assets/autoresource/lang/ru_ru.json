@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Вход",
   "screen.autoresource.liquid_generator.output_slot": "Выход",
   "screen.autoresource.liquid_generator.place_below": "Разместить снизу",
+  "screen.autoresource.liquid_generator.output_toggle": "Выход",
   "item.autoresource.block_generator.tooltip.block": "Блок: %s",
   "item.autoresource.block_generator.tooltip.output": "Выход: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Рост: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Рост: %s%%",
   "screen.autoresource.block_generator.marker": "Маркер",
   "screen.autoresource.block_generator.output_slot": "Выход",
-  "screen.autoresource.block_generator.place_below": "Разместить снизу"
+  "screen.autoresource.block_generator.place_below": "Разместить снизу",
+  "screen.autoresource.block_generator.output_toggle": "Выход"
 }
