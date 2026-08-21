@@ -35,6 +35,9 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     public boolean transferWest = true;
     public boolean transferEast = true;
 
+    // 主动输出总开关（GUI 右上角按钮控制，默认开启；关闭后不再向相邻方块/管道六面传输）
+    public boolean outputEnabled = true;
+
     // 六面传输轮询索引
     protected int findIndex = 0;
 
@@ -104,6 +107,22 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         }
         if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
             transferEast = nbt.getBoolean("transferEast");
+        }
+    }
+
+    /**
+     * 主动输出总开关写入 NBT（子类 {@code saveAdditional} 调用）
+     */
+    protected void saveOutputEnabled(CompoundTag nbt) {
+        nbt.putBoolean("outputEnabled", outputEnabled);
+    }
+
+    /**
+     * 主动输出总开关从 NBT 读取（子类 {@code load} 调用）
+     */
+    protected void loadOutputEnabled(CompoundTag nbt) {
+        if (nbt.contains("outputEnabled", Tag.TAG_BYTE)) {
+            outputEnabled = nbt.getBoolean("outputEnabled");
         }
     }
 

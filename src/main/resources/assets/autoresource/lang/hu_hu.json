@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Bemenet",
   "screen.autoresource.liquid_generator.output_slot": "Kimenet",
   "screen.autoresource.liquid_generator.place_below": "Helyezés alá",
+  "screen.autoresource.liquid_generator.output_toggle": "Kimenet",
   "item.autoresource.block_generator.tooltip.block": "Blokk: %s",
   "item.autoresource.block_generator.tooltip.output": "Kibocsátás: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Növekedés: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Növekedés: %s%%",
   "screen.autoresource.block_generator.marker": "Jelölés",
   "screen.autoresource.block_generator.output_slot": "Kimenet",
-  "screen.autoresource.block_generator.place_below": "Helyezés alá"
+  "screen.autoresource.block_generator.place_below": "Helyezés alá",
+  "screen.autoresource.block_generator.output_toggle": "Kimenet"
 }

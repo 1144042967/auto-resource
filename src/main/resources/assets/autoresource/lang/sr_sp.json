@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Ulaz",
   "screen.autoresource.liquid_generator.output_slot": "Izlaz",
   "screen.autoresource.liquid_generator.place_below": "Stavi ispod",
+  "screen.autoresource.liquid_generator.output_toggle": "Izlaz",
   "item.autoresource.block_generator.tooltip.block": "Blok: %s",
   "item.autoresource.block_generator.tooltip.output": "Izlaz: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Rast: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Rast: %s%%",
   "screen.autoresource.block_generator.marker": "Označi",
   "screen.autoresource.block_generator.output_slot": "Izlaz",
-  "screen.autoresource.block_generator.place_below": "Stavi ispod"
+  "screen.autoresource.block_generator.place_below": "Stavi ispod",
+  "screen.autoresource.block_generator.output_toggle": "Izlaz"
 }

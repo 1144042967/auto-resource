@@ -28,6 +28,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     public static final int BUTTON_EXTRACT_ONE = 7;
     public static final int BUTTON_EXTRACT_STACK = 8;
     public static final int BUTTON_EXTRACT_ALL = 9;
+    public static final int BUTTON_OUTPUT = 10;
 
     // 客户端展示数据（服务端通过数据槽同步而来）
     private long clientBlock;
@@ -42,6 +43,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     private boolean clientTransferWest;
     private boolean clientTransferEast;
     private boolean clientPlaceBlockBelow;
+    private boolean clientOutputEnabled;
 
     public BlockGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.BLOCK_GENERATOR_MENU.get(), id, playerInventory, pos);
@@ -106,6 +108,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
         addDataSlot(makeDataSlot(() -> entity.transferWest ? 1 : 0, v -> clientTransferWest = v != 0));
         addDataSlot(makeDataSlot(() -> entity.transferEast ? 1 : 0, v -> clientTransferEast = v != 0));
         addDataSlot(makeDataSlot(() -> entity.placeBlockBelow ? 1 : 0, v -> clientPlaceBlockBelow = v != 0));
+        addDataSlot(makeDataSlot(() -> entity.outputEnabled ? 1 : 0, v -> clientOutputEnabled = v != 0));
     }
 
     /**
@@ -161,6 +164,13 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     }
 
     /**
+     * 是否开启主动输出（客户端读同步值，服务端读实体）
+     */
+    public boolean isOutputEnabled() {
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.outputEnabled : clientOutputEnabled;
+    }
+
+    /**
      * 处理 GUI 按钮点击（六面开关、下方生成方块、输出槽提取）
      */
     @Override
@@ -177,6 +187,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
             case BUTTON_TRANSFER_WEST -> entity.transferWest = !entity.transferWest;
             case BUTTON_TRANSFER_EAST -> entity.transferEast = !entity.transferEast;
             case BUTTON_PLACE_BLOCK -> entity.placeBlockBelow = !entity.placeBlockBelow;
+            case BUTTON_OUTPUT -> entity.outputEnabled = !entity.outputEnabled;
             case BUTTON_EXTRACT_ONE -> extractBlocks(player, 1);
             case BUTTON_EXTRACT_STACK -> extractBlocks(player, entity.getMarkedItem().getMaxStackSize());
             case BUTTON_EXTRACT_ALL -> extractBlocks(player, Long.MAX_VALUE);

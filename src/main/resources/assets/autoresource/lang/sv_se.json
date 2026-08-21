@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Inmatning",
   "screen.autoresource.liquid_generator.output_slot": "Utdata",
   "screen.autoresource.liquid_generator.place_below": "Placera nedanför",
+  "screen.autoresource.liquid_generator.output_toggle": "Utdata",
   "item.autoresource.block_generator.tooltip.block": "Block: %s",
   "item.autoresource.block_generator.tooltip.output": "Produktion: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Tillväxt: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Tillväxt: %s%%",
   "screen.autoresource.block_generator.marker": "Markera",
   "screen.autoresource.block_generator.output_slot": "Utdata",
-  "screen.autoresource.block_generator.place_below": "Placera nedanför"
+  "screen.autoresource.block_generator.place_below": "Placera nedanför",
+  "screen.autoresource.block_generator.output_toggle": "Utdata"
 }

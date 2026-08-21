@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Vstup",
   "screen.autoresource.liquid_generator.output_slot": "Výstup",
   "screen.autoresource.liquid_generator.place_below": "Umístit pod",
+  "screen.autoresource.liquid_generator.output_toggle": "Výstup",
   "item.autoresource.block_generator.tooltip.block": "Blok: %s",
   "item.autoresource.block_generator.tooltip.output": "Výstup: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Růst: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Růst: %s%%",
   "screen.autoresource.block_generator.marker": "Značka",
   "screen.autoresource.block_generator.output_slot": "Výstup",
-  "screen.autoresource.block_generator.place_below": "Umístit pod"
+  "screen.autoresource.block_generator.place_below": "Umístit pod",
+  "screen.autoresource.block_generator.output_toggle": "Výstup"
 }

@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "輸入",
   "screen.autoresource.liquid_generator.output_slot": "輸出",
   "screen.autoresource.liquid_generator.place_below": "下方生成流體",
+  "screen.autoresource.liquid_generator.output_toggle": "輸出",
   "item.autoresource.block_generator.tooltip.block": "方塊: %s 個",
   "item.autoresource.block_generator.tooltip.output": "輸出: %s 個/tick",
   "item.autoresource.block_generator.tooltip.growth": "增長: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "增長: %s%%",
   "screen.autoresource.block_generator.marker": "標記",
   "screen.autoresource.block_generator.output_slot": "輸出",
-  "screen.autoresource.block_generator.place_below": "下方生成方塊"
+  "screen.autoresource.block_generator.place_below": "下方生成方塊",
+  "screen.autoresource.block_generator.output_toggle": "輸出"
 }

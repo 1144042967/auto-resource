@@ -53,6 +53,7 @@
   "screen.autoresource.liquid_generator.input": "Giriş",
   "screen.autoresource.liquid_generator.output_slot": "Çıktı",
   "screen.autoresource.liquid_generator.place_below": "Aşağıya Yerleştir",
+  "screen.autoresource.liquid_generator.output_toggle": "Çıktı",
   "item.autoresource.block_generator.tooltip.block": "Blok: %s",
   "item.autoresource.block_generator.tooltip.output": "Çıktı: %s/tick",
   "item.autoresource.block_generator.tooltip.growth": "Büyüme: %s%%",
@@ -73,5 +74,6 @@
   "screen.autoresource.block_generator.growth": "Büyüme: %s%%",
   "screen.autoresource.block_generator.marker": "İşaretle",
   "screen.autoresource.block_generator.output_slot": "Çıktı",
-  "screen.autoresource.block_generator.place_below": "Aşağıya Yerleştir"
+  "screen.autoresource.block_generator.place_below": "Aşağıya Yerleştir",
+  "screen.autoresource.block_generator.output_toggle": "Çıktı"
 }
