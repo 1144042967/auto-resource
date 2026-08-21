@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  */
 @OnlyIn(Dist.CLIENT)
 public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMotorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/water_wheel_motor_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/water_wheel_motor_gui.png");
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
 
     private StateButton directionButton;

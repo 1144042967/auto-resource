@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -112,6 +113,7 @@ public class Config {
     }
 
     public static void init(FMLJavaModLoadingContext context) {
-        context.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
+        // 47.2.20 的 FMLJavaModLoadingContext 不继承 ModLoadingContext，需通过 ModLoadingContext.get() 注册配置
+        ModLoadingContext.get().registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
     }
 }
