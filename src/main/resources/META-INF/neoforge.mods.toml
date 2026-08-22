@@ -7,7 +7,8 @@ issueTrackerURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
     displayName = "${mod_name}"
     updateJSONURL="https://gitee.com/scrambled_egg_with_eek/auto-resource/raw/master/update.json"
     displayURL="https://gitee.com/scrambled_egg_with_eek/auto-resource"
-    logoFile= "logo.png"
+    iconFile= "icon.png"
+    bannerFile="banner.png"
     authors = "JRZ"
     description = '''Water, Lava, Stone, Forge Energy and more.'''
 [[dependencies.${ mod_id }]]

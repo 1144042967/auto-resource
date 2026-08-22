@@ -1,7 +1,8 @@
 plugins {
     id 'java-library'
     id 'maven-publish'
-    id 'net.neoforged.gradle.userdev' version '7.1.26'
+    id 'net.neoforged.moddev' version '2.0.144'
+    id 'idea'
 }
 tasks.named('wrapper', Wrapper).configure {
     distributionType = Wrapper.DistributionType.BIN
@@ -13,31 +14,54 @@ repositories {
 base {
     archivesName = "autoresource-neoforge${minecraft_version}"
 }
+
+// Mojang ships Java 25 to end users in 26.2, so mods should target Java 25.
 java.toolchain.languageVersion = JavaLanguageVersion.of(25)
-runs {
-    configureEach {
-        systemProperty 'forge.logging.markers', 'REGISTRIES'
-        systemProperty 'forge.logging.console.level', 'debug'
-        workingDirectory project.layout.projectDirectory.dir('run').dir(name)
-        modSource project.sourceSets.main
-        jvmArgument '--enable-preview'
+
+neoForge {
+    // 指定 NeoForge 版本
+    version = project.neo_version
+
+    // 默认运行配置
+    runs {
+        client {
+            client()
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        server {
+            server()
+            programArgument '--nogui'
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        gameTestServer {
+            type = "gameTestServer"
+            systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+        }
+
+        // 应用到所有运行配置
+        configureEach {
+            systemProperty 'forge.logging.markers', 'REGISTRIES'
+            systemProperty 'forge.logging.console.level', 'debug'
+            // 默认运行目录为 run/<runName>
+            gameDirectory = project.file("run/${name}")
+        }
     }
-    client {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-    }
-    server {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
-        argument '--nogui'
-    }
-    gameTestServer {
-        systemProperty 'neoforge.enabledGameTestNamespaces', project.mod_id
+
+    mods {
+        // 定义 mod 与源码的绑定
+        "${mod_id}" {
+            sourceSet(sourceSets.main)
+        }
     }
 }
+
 configurations {
     runtimeClasspath.extendsFrom localRuntime
 }
 dependencies {
-    implementation "net.neoforged:neoforge:${neo_version}"
+    // moddev 会根据 neoForge.version 自动处理 neoforge 依赖
 }
 tasks.withType(ProcessResources).configureEach {
     var replaceProperties = [
@@ -68,7 +92,6 @@ publishing {
 }
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
-    options.compilerArgs += ['--enable-preview']
 }
 idea {
     module {
