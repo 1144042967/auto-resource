@@ -86,7 +86,9 @@ public abstract class DataConfig {
         }
     };
 
-    /** 通用可标记方块生成机（输出种类由标记槽决定） */
+    /**
+     * 通用可标记方块生成机（输出种类由标记槽决定）
+     */
     public static final DataConfig BLOCK_GENERATOR = new DataConfig(Config.BLOCK_MIN, Config.BLOCK_MAX, Config.BLOCK_SECOND, Config.BLOCK_STEP) {
         @Override
         public BlockEntityType<?> getEntityType() {
@@ -138,18 +140,24 @@ public abstract class DataConfig {
         return Blocks.AIR;
     }
 
-    /** 加速增长所需物品（放入后增长量变为当前发电量的 1%），仅 FE 发电机使用，默认返回空 */
+    /**
+     * 加速增长所需物品（放入后增长量变为当前发电量的 1%），仅 FE 发电机使用，默认返回空
+     */
     @Nullable
     public Item getStarItem() {
         return null;
     }
 
-    /** 机器主题色：用于物品名称与 tooltip 数值行的着色，子类按机器类型各自定义 */
+    /**
+     * 机器主题色：用于物品名称与 tooltip 数值行的着色，子类按机器类型各自定义
+     */
     public ChatFormatting getThemeColor() {
         return ChatFormatting.WHITE;
     }
 
-    /** 判断物品是否为合法的方块生成机产品（可放入标记槽）：支持配置的物品 ID（如 minecraft:dirt）或 # 标签（如 #minecraft:planks） */
+    /**
+     * 判断物品是否为合法的方块生成机产品（可放入标记槽）：支持配置的物品 ID（如 minecraft:dirt）或 # 标签（如 #minecraft:planks）
+     */
     public static boolean isBlockGeneratorItem(ItemStack stack) {
         if (stack.isEmpty()) {
             return false;
@@ -182,7 +190,9 @@ public abstract class DataConfig {
         return false;
     }
 
-    /** 配置的方块生成机可生成产品列表（原始配置内容，用于物品 tooltip 展示） */
+    /**
+     * 配置的方块生成机可生成产品列表（原始配置内容，用于物品 tooltip 展示）
+     */
     public static List<? extends String> getBlockGeneratorItems() {
         return Config.BLOCK_GENERATOR_ITEMS.get();
     }

@@ -8,8 +8,9 @@ import net.neoforged.fml.common.EventBusSubscriber;
 import net.neoforged.neoforge.client.event.EntityRenderersEvent;
 import net.neoforged.neoforge.client.event.RegisterMenuScreensEvent;
 
-/** 客户端初始化：注册 GUI 与方块实体渲染器 */
-@SuppressWarnings("removal")
+/**
+ * 客户端初始化：注册 GUI 与方块实体渲染器
+ */
 @EventBusSubscriber(value = Dist.CLIENT, modid = AutoResource.MODID)
 public class ClientSetup {
 
@@ -20,7 +21,9 @@ public class ClientSetup {
         event.register(ARRegistration.BLOCK_GENERATOR_MENU.get(), BlockGeneratorScreen::new);
     }
 
-    /** 注册方块生成机的方块实体渲染器（在四个侧面显示标记物品） */
+    /**
+     * 注册方块生成机的方块实体渲染器（在四个侧面显示标记物品）
+     */
     @SubscribeEvent
     public static void onRegisterRenderers(EntityRenderersEvent.RegisterRenderers event) {
         event.registerBlockEntityRenderer(ARRegistration.BLOCK_GENERATOR_ENTITY.get(), BlockGeneratorRenderer::new);

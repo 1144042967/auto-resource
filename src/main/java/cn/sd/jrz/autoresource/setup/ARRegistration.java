@@ -62,10 +62,10 @@ public class ARRegistration {
     }
 
     private static void initCapabilities(RegisterCapabilitiesEvent event) {
-        event.registerBlockEntity(Capabilities.Energy.BLOCK, ENERGY_GENERATOR_FE_ENTITY.get(), (entity, direction) -> new EnergyConnection(entity));
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_WATER_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
-        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_LAVA_ENTITY.get(), (entity, direction) -> new LiquidConnection(entity));
-        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_ENTITY.get(), (entity, direction) -> new BlockConnection(entity));
+        event.registerBlockEntity(Capabilities.Energy.BLOCK, ENERGY_GENERATOR_FE_ENTITY.get(), (entity, _) -> new EnergyConnection(entity));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_WATER_ENTITY.get(), (entity, _) -> new LiquidConnection(entity));
+        event.registerBlockEntity(Capabilities.Fluid.BLOCK, LIQUID_GENERATOR_LAVA_ENTITY.get(), (entity, _) -> new LiquidConnection(entity));
+        event.registerBlockEntity(Capabilities.Item.BLOCK, BLOCK_GENERATOR_ENTITY.get(), (entity, _) -> new BlockConnection(entity));
     }
 
     // DataComponentType

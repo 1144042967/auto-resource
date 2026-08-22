@@ -21,7 +21,9 @@ public class Tool {
         return value < 0 || value > Integer.MAX_VALUE ? Integer.MAX_VALUE : (int) value;
     }
 
-    /** 从逗号分隔数组按索引解析 long（越界或非法返回 0），并做防溢出裁剪 */
+    /**
+     * 从逗号分隔数组按索引解析 long（越界或非法返回 0），并做防溢出裁剪
+     */
     public static long parseLong(String[] dataArray, int index) {
         if (index >= dataArray.length) {
             return 0;
@@ -29,7 +31,9 @@ public class Tool {
         return suit(dataArray[index]);
     }
 
-    /** 从逗号分隔数组按索引解析 int（越界或非法返回 0） */
+    /**
+     * 从逗号分隔数组按索引解析 int（越界或非法返回 0）
+     */
     public static int parseInt(String[] dataArray, int index) {
         if (index >= dataArray.length) {
             return 0;
@@ -41,7 +45,9 @@ public class Tool {
         }
     }
 
-    /** 从逗号分隔数组按索引取字符串（越界或 null 返回空串） */
+    /**
+     * 从逗号分隔数组按索引取字符串（越界或 null 返回空串）
+     */
     public static String parseString(String[] dataArray, int index) {
         if (index >= dataArray.length) {
             return "";

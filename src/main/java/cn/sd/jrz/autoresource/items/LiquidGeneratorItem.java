@@ -28,9 +28,12 @@ public class LiquidGeneratorItem extends BlockItem {
         this.config = config;
     }
 
-    /** 物品名称使用机器主题色 */
+    /**
+     * 物品名称使用机器主题色
+     */
     @Override
-    public Component getName(ItemStack stack) {
+    @Nonnull
+    public Component getName(@Nonnull ItemStack stack) {
         return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 

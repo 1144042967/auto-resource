@@ -81,10 +81,8 @@ public class BlockConnection implements ResourceHandler<@NotNull ItemResource> {
             return 0;
         }
         int count = Math.min(maxOutput, amount);
-        if (count > 0) {
-            journal.updateSnapshots(transaction);
-            owner.block -= count * 1000L;
-        }
+        journal.updateSnapshots(transaction);
+        owner.block -= count * 1000L;
         return count;
     }
 

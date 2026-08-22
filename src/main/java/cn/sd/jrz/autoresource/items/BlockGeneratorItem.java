@@ -10,11 +10,7 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
-import net.minecraft.world.item.TooltipFlag;
+import net.minecraft.world.item.*;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.level.block.Block;
 
@@ -32,9 +28,13 @@ import java.util.function.Consumer;
  * tooltip 展示标记内容（兼容未标记/为空）+ 可生成产品列表（来自 {@link DataConfig#getBlockGeneratorItems()}，标签展开为实际物品）。
  */
 public class BlockGeneratorItem extends BlockItem {
-    /** tooltip 每行展示的方块数量 */
+    /**
+     * tooltip 每行展示的方块数量
+     */
     private static final int PER_ROW = 5;
-    /** tooltip 最多展示的方块数量，超过则在尾部提示总数量 */
+    /**
+     * tooltip 最多展示的方块数量，超过则在尾部提示总数量
+     */
     private static final int MAX_ITEMS = 100;
 
     private final DataConfig config;
@@ -44,9 +44,12 @@ public class BlockGeneratorItem extends BlockItem {
         this.config = config;
     }
 
-    /** 物品名称使用机器主题色 */
+    /**
+     * 物品名称使用机器主题色
+     */
     @Override
-    public Component getName(ItemStack stack) {
+    @Nonnull
+    public Component getName(@Nonnull ItemStack stack) {
         return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 
@@ -118,7 +121,9 @@ public class BlockGeneratorItem extends BlockItem {
         tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
-    /** 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序） */
+    /**
+     * 展开配置的方块生成机产品为实际物品集合（标签展开为标签下的所有物品，去重并保持配置顺序）
+     */
     private static Set<Item> getSupportedItems() {
         Set<Item> supported = new LinkedHashSet<>();
         for (String entry : DataConfig.getBlockGeneratorItems()) {

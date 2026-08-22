@@ -11,11 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
-import net.minecraft.world.level.block.Block;
-import net.minecraft.world.level.block.EntityBlock;
 import net.minecraft.world.level.block.entity.BlockEntity;
-import net.minecraft.world.level.block.entity.BlockEntityTicker;
-import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
@@ -23,7 +19,6 @@ import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 
 import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -33,28 +28,23 @@ import java.util.List;
  * 26.x 适配：tick 转发到 {@link LiquidGeneratorEntity#serverTick()}；右键打开 GUI；
  * 保留空桶右击直接提取一桶液体；破坏时掉落输入槽与输出槽中的物品。
  */
-public class LiquidGeneratorBlock extends Block implements EntityBlock {
-    private final DataConfig config;
+public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
 
     public LiquidGeneratorBlock(Properties properties, DataConfig config) {
-        super(properties);
-        this.config = config;
+        super(properties, config);
     }
 
     @Override
-    public BlockEntity newBlockEntity(@Nonnull BlockPos pos, @Nonnull BlockState state) {
+    protected BlockEntity createEntity(BlockPos pos, BlockState state) {
         return new LiquidGeneratorEntity(pos, state, config);
     }
 
-    @Nullable
     @Override
-    public <T extends BlockEntity> BlockEntityTicker<T> getTicker(@Nonnull Level level, @Nonnull BlockState state, @Nonnull BlockEntityType<T> type) {
-        return (l, _, _, tile) -> {
-            if (l.isClientSide() || !(tile instanceof LiquidGeneratorEntity generator)) {
-                return;
-            }
-            generator.serverTick();
-        };
+    protected void tickEntity(Level level, BlockEntity tile) {
+        if (level.isClientSide() || !(tile instanceof LiquidGeneratorEntity generator)) {
+            return;
+        }
+        generator.serverTick();
     }
 
     /**
@@ -102,8 +92,7 @@ public class LiquidGeneratorBlock extends Block implements EntityBlock {
             return true;
         }
         // 其他情况打开 GUI
-        player.openMenu(generator, pos);
-        return true;
+        return openGui(level, pos, player);
     }
 
     private boolean useBucket(Player player, LiquidGeneratorEntity generator) {

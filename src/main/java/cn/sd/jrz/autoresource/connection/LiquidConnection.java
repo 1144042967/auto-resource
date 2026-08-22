@@ -65,10 +65,8 @@ public class LiquidConnection implements ResourceHandler<@NotNull FluidResource>
             return 0;
         }
         int count = Math.min(maxOutput, amount);
-        if (count > 0) {
-            journal.updateSnapshots(transaction);
-            owner.liquid -= count;
-        }
+        journal.updateSnapshots(transaction);
+        owner.liquid -= count;
         return count;
     }
 

@@ -1,18 +1,18 @@
 package cn.sd.jrz.autoresource.entities;
 
+import cn.sd.jrz.autoresource.Config;
 import cn.sd.jrz.autoresource.DataConfig;
+import cn.sd.jrz.autoresource.compat.energybypass.EnergyBypass;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.LivingEntity;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,9 +29,10 @@ import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
 import net.neoforged.neoforge.items.ItemStackHandler;
-import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
+import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -41,16 +42,15 @@ import java.util.Map;
 /**
  * FE 发电机实体（26.x 适配）。
  * <p>
- * 新传输 API：使用 {@link EnergyHandler} 替代旧版 IEnergyStorage；物品能力通过 {@link ItemAccess}。<br>
- * 数据持久化：使用 26.x 的 {@link ValueInput}/{@link ValueOutput}。
+ * 负责：发电量自动增长、能量存储、上方实体（玩家/生物）全部槽位充电、
+ * 上方容器内物品充电、六面输电（可逐面禁用）、充电槽物品充电、
+ * 指定物品加速增长（增长量变为当前发电量的 1%）以及无线充电。
+ * 另含能量反射绕过：第三方 MOD 机器拒收时补满其内部能量（见 {@link EnergyBypass}）。
+ * <p>
+ * 26.x 适配：使用新传输 API（{@link EnergyHandler}）；数据持久化使用 {@link ValueInput}/{@link ValueOutput}。
  */
-public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
-    public final DataConfig config;
-
-    // 核心数据
-    public long output;
+public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     public long energy = 0;
-    public long tickCount = 0;
     /**
      * 下次增长的发电量（同时用于增长时实际增量）
      */
@@ -74,14 +74,6 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
      * 重复传电次数，对相邻输电和无线输电都生效
      */
     public int transferRepeat = 1;
-
-    // 六面输电开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 加速增长槽位（放入配置指定物品后增长量变为当前发电量的 1%），只能放 1 个
     public final ItemStackHandler starSlot = new ItemStackHandler(1) {
@@ -122,13 +114,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    // 六面输电轮询索引
-    private int findIndex = 0;
-
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -161,7 +148,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         if (wirelessOn) {
             wirelessTick();
         }
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -189,7 +176,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         }
         EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
         if (handler != null) {
-            chargeStack(stack, handler);
+            chargeStack(handler);
         }
     }
 
@@ -214,7 +201,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                 }
                 EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
                 if (handler != null) {
-                    chargeStack(stack, handler);
+                    chargeStack(handler);
                 }
             }
             // 玩家物品栏（物品栏/存储栏，与原 getAllSlots 覆盖范围一致）
@@ -230,7 +217,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     }
                     EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
                     if (handler != null) {
-                        chargeStack(stack, handler);
+                        chargeStack(handler);
                     }
                 }
             }
@@ -259,7 +246,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                 return;
             }
             ItemResource resource = handler.getResource(i);
-            if (resource == null || resource.isEmpty()) {
+            if (resource.isEmpty()) {
                 continue;
             }
             int amount = Tool.suitInt(handler.getAmountAsLong(i));
@@ -274,7 +261,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
             // 若用 ItemAccess.forStack(stack) 则只会修改 toStack 得到的副本，容器内物品不会变化。
             EnergyHandler energyHandler = ItemAccess.forHandlerIndex(handler, i).getCapability(Capabilities.Energy.ITEM);
             if (energyHandler != null) {
-                chargeStack(stack, energyHandler);
+                chargeStack(energyHandler);
                 // 修改了容器内物品的能量数据，标记容器已改变以便落盘/同步
                 blockEntity.setChanged();
             }
@@ -284,7 +271,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
     /**
      * 向可充电物品传入能量并扣减自身电量（26.x 传输 API）
      */
-    private void chargeStack(ItemStack stack, EnergyHandler handler) {
+    private void chargeStack(EnergyHandler handler) {
         if (energy <= 0) {
             return;
         }
@@ -292,7 +279,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         if (maxOutput <= 0) {
             return;
         }
-        try (net.neoforged.neoforge.transfer.transaction.Transaction tx = net.neoforged.neoforge.transfer.transaction.Transaction.open(null)) {
+        try (Transaction tx = Transaction.open(null)) {
             int result = handler.insert(maxOutput, tx);
             if (result < 0) {
                 result = 0;
@@ -306,7 +293,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * 六面输电（跳过被禁用的面），轮询索引实现负载均衡；重复传电次数生效
+     * 六面输电（跳过被禁用的面），轮询索引实现负载均衡；重复传电次数生效。
+     * 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量（能量绕过）。
      */
     private void outputToSides() {
         Level level = getLevel();
@@ -326,10 +314,17 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                 }
                 BlockPos pos = getBlockPos().relative(direction);
                 EnergyHandler handler = level.getCapability(Capabilities.Energy.BLOCK, pos, direction.getOpposite());
-                if (handler == null) {
-                    continue;
+                // 目标暴露能量能力且可接收时才标准注入；否则（如 Flux 拒收设备）交由反射绕过处理
+                if (handler != null) {
+                    chargeStack(handler);
                 }
-                chargeStack(ItemStack.EMPTY, handler);
+                // 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量
+                if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
+                    long consumed = EnergyBypass.tryRefill(level.getBlockEntity(pos), direction.getOpposite(), handler, energy);
+                    if (consumed > 0) {
+                        energy -= consumed;
+                    }
+                }
             }
         }
     }
@@ -399,11 +394,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     continue;
                 }
                 LevelChunk chunk = level.getChunk(cx, cz);
-                if (chunk == null) {
-                    continue;
-                }
-                for (Map.Entry<BlockPos, BlockEntity> entry : chunk.getBlockEntities().entrySet()) {
-                    BlockPos bp = entry.getKey();
+                for (BlockPos bp : chunk.getBlockEntities().keySet()) {
                     if (bp.equals(worldPosition)) {
                         continue;
                     }
@@ -411,7 +402,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     if (idx < from || idx >= to) {
                         continue;
                     }
-                    refreshWirelessTarget(bp, entry.getValue());
+                    refreshWirelessTarget(bp);
                 }
             }
         }
@@ -420,7 +411,7 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
     /**
      * 扫描目标的所有面，找到第一个可输入能量的面截止并缓存该面；没有可接收面则移除旧记录
      */
-    private void refreshWirelessTarget(BlockPos bp, BlockEntity target) {
+    private void refreshWirelessTarget(BlockPos bp) {
         Level level = getLevel();
         if (level == null) {
             return;
@@ -436,7 +427,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
     }
 
     /**
-     * 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量
+     * 每 tick 遍历已记录目标，按重复传电次数循环向其中输入电量。
+     * 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量（能量绕过）。
      */
     private void wirelessTransfer() {
         Level level = getLevel();
@@ -454,26 +446,18 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
                     continue;
                 }
                 EnergyHandler handler = level.getCapability(Capabilities.Energy.BLOCK, targetPos, entry.getValue());
-                if (handler == null) {
-                    continue;
+                // 标准注入后仍有多余能量（或目标拒收、容量受限）时，反射补满其内部能量
+                if (handler != null) {
+                    chargeStack(handler);
                 }
-                chargeStack(ItemStack.EMPTY, handler);
+                if (energy > 0 && Config.FE_BYPASS_ENABLED.get()) {
+                    long consumed = EnergyBypass.tryRefill(level.getBlockEntity(targetPos), entry.getValue(), handler, energy);
+                    if (consumed > 0) {
+                        energy -= consumed;
+                    }
+                }
             }
         }
-    }
-
-    /**
-     * 指定面是否允许输电
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
     }
 
     @Override
@@ -499,12 +483,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putInt("wirelessInterval", wirelessInterval);
         valueOutput.putInt("wirelessRange", wirelessRange);
         valueOutput.putInt("transferRepeat", transferRepeat);
-        valueOutput.putBoolean("transferDown", transferDown);
-        valueOutput.putBoolean("transferUp", transferUp);
-        valueOutput.putBoolean("transferNorth", transferNorth);
-        valueOutput.putBoolean("transferSouth", transferSouth);
-        valueOutput.putBoolean("transferWest", transferWest);
-        valueOutput.putBoolean("transferEast", transferEast);
+        saveTransferFaces(valueOutput);
+        saveOutputEnabled(valueOutput);
         starSlot.serialize(valueOutput.child("starSlot"));
         chargeSlot.serialize(valueOutput.child("chargeSlot"));
     }
@@ -521,12 +501,8 @@ public class EnergyGeneratorEntity extends BlockEntity implements MenuProvider {
         this.wirelessInterval = Math.max(1, valueInput.getIntOr("wirelessInterval", this.wirelessInterval));
         this.wirelessRange = Math.max(1, valueInput.getIntOr("wirelessRange", this.wirelessRange));
         this.transferRepeat = Math.max(1, valueInput.getIntOr("transferRepeat", this.transferRepeat));
-        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
-        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
-        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
-        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
-        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
-        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        loadTransferFaces(valueInput);
+        loadOutputEnabled(valueInput);
         starSlot.deserialize(valueInput.childOrEmpty("starSlot"));
         chargeSlot.deserialize(valueInput.childOrEmpty("chargeSlot"));
     }
