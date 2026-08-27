@@ -51,6 +51,21 @@ public final class CreateCompat {
     }
 
     /**
+     * 按类名反射调用客户端注册类 {@code cn.sd.jrz.autoresource.client.compat.create.CreateRegistrationClient}
+     * 的静态方法（屏幕与渲染器注册位于 client source set）。
+     * 同样以字符串形式加载，避免通用侧字节码引用 client 类与 Create 类。
+     */
+    public static void invokeClient(String method, Class<?>[] paramTypes, Object[] args) {
+        try {
+            Class.forName("cn.sd.jrz.autoresource.client.compat.create.CreateRegistrationClient")
+                    .getMethod(method, paramTypes)
+                    .invoke(null, args);
+        } catch (ReflectiveOperationException e) {
+            throw new RuntimeException("机械动力联动客户端初始化失败: " + method, e);
+        }
+    }
+
+    /**
      * create:water_wheel 物品（懒加载并缓存；Create 物品注册完成后调用才返回实际物品）
      */
     @Nullable

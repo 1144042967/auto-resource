@@ -1,5 +1,6 @@
 package cn.sd.jrz.autoresource;
 
+import cn.sd.jrz.autoresource.network.ConfigSync;
 import cn.sd.jrz.autoresource.setup.ItemManager;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.fabricmc.api.ModInitializer;
@@ -15,6 +16,8 @@ public class AutoResource implements ModInitializer {
         Config.load();
         Registration.init();
         ItemManager.init();
+        // 玩家登录时向客户端下发配置快照
+        ConfigSync.init();
     }
 
     public static String modId() {
