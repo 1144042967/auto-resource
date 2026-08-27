@@ -1,0 +1,93 @@
+plugins {
+	id 'net.fabricmc.fabric-loom-remap' version "${loom_version}"
+}
+
+repositories {
+	// Loom 已自动添加获取 Minecraft 与基础库所需仓库，仅当需要其他第三方 MOD 构件时才在此添加。
+}
+
+// Create 兼容层（可选依赖）：libs/ 下提供 create-fabric jar 时才参与编译，
+// 该 jar 可从 Modrinth 的 "Create Fabric" 项目下载（0.5.1j，MC 1.20.1）。
+def createJars = fileTree(dir: 'libs', include: 'create*.jar')
+def hasCreate = !createJars.empty
+
+loom {
+	splitEnvironmentSourceSets()
+
+	mods {
+		"autoresource" {
+			sourceSet sourceSets.main
+			sourceSet sourceSets.client
+		}
+	}
+}
+
+sourceSets {
+	main {
+		java {
+			if (!hasCreate) {
+				// 未提供 create-fabric jar 时跳过需要 Create API 的兼容类（CreateCompat 不引用 Create 类型，保留编译）
+				exclude 'cn/sd/jrz/autoresource/compat/create/CreateRegistration.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorBlock.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorEntity.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorItem.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorMenu.java'
+			}
+		}
+	}
+	client {
+		java {
+			if (!hasCreate) {
+				// 客户端兼容类整体位于独立包，可整目录排除
+				exclude 'cn/sd/jrz/autoresource/client/compat/create/**'
+			}
+		}
+	}
+}
+
+dependencies {
+	// To change the versions see the gradle.properties file
+	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	mappings loom.officialMojangMappings()
+	modImplementation "net.fabricmc:fabric-loader:${project.loader_version}"
+
+	// Fabric API. This is technically optional, but you probably want it anyway.
+	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
+
+	if (hasCreate) {
+		// modCompileOnly 会让 loom 把发布版 jar 重映射到开发映射表后再加入编译类路径
+		modCompileOnly createJars
+	}
+}
+
+processResources {
+	def version = project.version
+	inputs.property "version", version
+
+	filesMatching("fabric.mod.json") {
+		expand "version": version
+	}
+}
+
+tasks.withType(JavaCompile).configureEach {
+	it.options.release = 17
+}
+
+java {
+	// Loom will automatically attach sourcesJar to a RemapSourcesJar task and to the "build" task
+	// if it is present.
+	// If you remove this line, sources will not be generated.
+	withSourcesJar()
+
+	sourceCompatibility = JavaVersion.VERSION_17
+	targetCompatibility = JavaVersion.VERSION_17
+}
+
+jar {
+	def projectName = project.name
+	inputs.property "projectName", projectName
+
+	from("LICENSE") {
+		rename { "${it}_$projectName"}
+	}
+}

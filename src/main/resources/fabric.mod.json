@@ -1,0 +1,34 @@
+{
+	"schemaVersion": 1,
+	"id": "autoresource",
+	"version": "${version}",
+	"name": "Auto Resource",
+	"description": "Water, Lava, Blocks and FE Energy and more. Adds machines that auto-generate resources at ever-growing rates.",
+	"authors": [
+		"JRZ"
+	],
+	"contact": {
+		"homepage": "https://gitee.com/scrambled_egg_with_eek/auto-resource",
+		"issues": "https://gitee.com/scrambled_egg_with_eek/auto-resource/issues"
+	},
+	"license": "GNU LGPL v3",
+	"icon": "assets/autoresource/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"cn.sd.jrz.autoresource.AutoResource"
+		],
+		"client": [
+			"cn.sd.jrz.autoresource.client.AutoResourceClient"
+		]
+	},
+	"suggests": {
+		"create": ">=0.5.1"
+	},
+	"depends": {
+		"fabricloader": ">=0.19.3",
+		"minecraft": "~1.20.1",
+		"java": ">=17",
+		"fabric-api": "*"
+	}
+}
