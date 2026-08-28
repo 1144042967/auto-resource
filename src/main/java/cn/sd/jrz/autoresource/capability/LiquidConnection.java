@@ -6,7 +6,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 
 /**
@@ -57,9 +57,9 @@ public class LiquidConnection implements Storage<FluidVariant> {
         return true;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public Iterator<? extends StorageView<FluidVariant>> iterator(TransactionContext transaction) {
+    public Iterator<StorageView<FluidVariant>> iterator() {
         return java.util.List.<StorageView<FluidVariant>>of(new View()).iterator();
     }
 
@@ -95,7 +95,7 @@ public class LiquidConnection implements Storage<FluidVariant> {
             return owner.liquid <= 0;
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public FluidVariant getResource() {
             return currentVariant();

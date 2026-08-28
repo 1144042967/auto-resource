@@ -20,7 +20,7 @@ import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -48,14 +48,14 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
      */
     @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof LiquidGeneratorEntity entity) {
-            ItemStack input = entity.inputSlot.getStackInSlot(0);
+            ItemStack input = entity.inputSlot.getItem(0);
             if (!input.isEmpty()) {
                 drops.add(input);
             }
-            ItemStack output = entity.outputSlot.getStackInSlot(0);
+            ItemStack output = entity.outputSlot.getItem(0);
             if (!output.isEmpty()) {
                 drops.add(output);
             }
@@ -65,7 +65,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
 
     @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull InteractionResult use(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand handIn, @Nonnull BlockHitResult hit) {
+    public @NotNull InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

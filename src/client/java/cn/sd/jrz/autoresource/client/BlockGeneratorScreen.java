@@ -10,13 +10,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import org.lwjgl.glfw.GLFW;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 方块生成器 GUI：展示存量/产量/增长百分比与六个面开关、标记槽、输出展示槽（单击/Shift/空格提取）及"下方生成方块"开关；数值用单位缩写。
  */
 public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/block_generator_gui.png");
     /**
      * 输出展示槽在菜单中的槽位索引
      */
@@ -106,7 +106,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         renderBackground(guiGraphics);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
@@ -122,7 +122,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
-    protected void renderLabels(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         BlockGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();

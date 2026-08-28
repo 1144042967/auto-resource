@@ -27,8 +27,8 @@ import net.minecraft.world.phys.shapes.CollisionContext;
 import net.minecraft.world.phys.shapes.Shapes;
 import net.minecraft.world.phys.shapes.VoxelShape;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -56,7 +56,7 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
      */
     @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull VoxelShape getShape(@Nonnull BlockState state, @Nonnull BlockGetter worldIn, @Nonnull BlockPos pos, @Nonnull CollisionContext context) {
+    public @NotNull VoxelShape getShape(@NotNull BlockState state, @NotNull BlockGetter worldIn, @NotNull BlockPos pos, @NotNull CollisionContext context) {
         return Shapes.block();
     }
 
@@ -65,11 +65,11 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
      */
     @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
+    public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof WaterWheelMotorEntity entity) {
             for (int i = 0; i < entity.wheelSlots.getContainerSize(); i++) {
-                ItemStack stack = entity.wheelSlots.getStackInSlot(i);
+                ItemStack stack = entity.wheelSlots.getItem(i);
                 if (!stack.isEmpty()) {
                     drops.add(stack);
                 }
@@ -124,7 +124,7 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
 
     @SuppressWarnings("deprecation")
     @Override
-    public @Nonnull InteractionResult use(@Nonnull BlockState state, Level level, @Nonnull BlockPos pos, @Nonnull Player player, @Nonnull InteractionHand hand, @Nonnull BlockHitResult hit) {
+    public @NotNull InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {
             return InteractionResult.SUCCESS;
         }

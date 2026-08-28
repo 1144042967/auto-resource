@@ -16,7 +16,9 @@ public class MachineSlot extends Slot {
         super(container, index, x, y);
     }
 
-    @Override
+    /**
+     * 暴露 holder 容器（vanilla Slot 字段 {@code container} 在 Mojang 命名下仍为 public final）
+     */
     public MachineSlotStorage container() {
         return (MachineSlotStorage) this.container;
     }

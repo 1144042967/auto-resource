@@ -8,8 +8,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.List;
 
 /**
@@ -26,7 +26,7 @@ public class WaterWheelMotorItem extends BlockItem {
      * 物品名称使用水主题色（与水生成机一致）
      */
     @Override
-    public @Nonnull Component getName(@Nonnull ItemStack stack) {
+    public @NotNull Component getName(@NotNull ItemStack stack) {
         return super.getName(stack).copy().withStyle(ChatFormatting.AQUA);
     }
 
@@ -34,7 +34,7 @@ public class WaterWheelMotorItem extends BlockItem {
      * tooltip 仅在客户端渲染调用，且只使用 common 类，无需环境隔离注解
      */
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nullable Level worldIn, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flagIn) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
         tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.owner").withStyle(ChatFormatting.GRAY));
         tooltip.add(Component.translatable("item.autoresource.water_wheel_motor.tooltip.speed").withStyle(ChatFormatting.GRAY));

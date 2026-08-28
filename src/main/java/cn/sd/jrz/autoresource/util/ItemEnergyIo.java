@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 物品能量读写兼容层（替代 Forge 版对 ForgeCapabilities.ENERGY 的逐栈查询）。
@@ -31,16 +31,16 @@ public final class ItemEnergyIo {
     }
 
     /**
-     * 向位于给定槽位视图中的物品充能（上下文保证变更回写），返回实际充入量
+     * 向位于给定单槽存储视图中的物品充能（上下文保证变更回写），返回实际充入量
      *
-     * @param slotView 持有该物品的单槽存储视图（如 {@code InventoryStorage.of(container,null).getSlot(i)}）
+     * @param slot 物品所在的单槽存储视图（如 {@code InventoryStorage.of(container,null).getSlot(i)}）
      */
-    public static long receive(net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage<?> slotView, long maxAmount) {
+    public static long receive(net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage<net.fabricmc.fabric.api.transfer.v1.item.ItemVariant> slot, long maxAmount) {
         if (maxAmount <= 0) {
             return 0;
         }
-        ContainerItemContext context = ContainerItemContext.forSlot(slotView);
-        EnergyStorage storage = EnergyStorage.ITEM.find(context.getItemVariant(), context);
+        ContainerItemContext context = ContainerItemContext.ofSingleSlot(slot);
+        EnergyStorage storage = context.find(EnergyStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) {
             return 0;
         }
@@ -57,13 +57,14 @@ public final class ItemEnergyIo {
      * 一次性上下文向独立物品充能，返回 [充入量, 结果堆栈]；用于没有对应存储视图的场景（如装备槽），
      * 调用方负责将结果堆栈写回原位置；不可充电时返回 null。
      */
+    @SuppressWarnings("removal")
     @Nullable
     public static Result receiveStandalone(ItemStack stack, long maxAmount) {
         if (stack.isEmpty() || maxAmount <= 0) {
             return null;
         }
-        ContainerItemContext context = ContainerItemContext.withInitial(stack);
-        EnergyStorage storage = EnergyStorage.ITEM.find(context.getItemVariant(), context);
+        ContainerItemContext context = ContainerItemContext.withInitial(net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(stack), stack.getCount());
+        EnergyStorage storage = context.find(EnergyStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) {
             return null;
         }
@@ -80,9 +81,10 @@ public final class ItemEnergyIo {
         }
     }
 
+    @SuppressWarnings("removal")
     private static EnergyStorage findWithInitial(ItemStack stack) {
-        ContainerItemContext context = ContainerItemContext.withInitial(stack);
-        return EnergyStorage.ITEM.find(context.getItemVariant(), context);
+        ContainerItemContext context = ContainerItemContext.withInitial(net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(stack), stack.getCount());
+        return context.find(EnergyStorage.ITEM);
     }
 
     /**

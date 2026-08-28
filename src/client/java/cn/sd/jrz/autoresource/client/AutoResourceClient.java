@@ -6,7 +6,7 @@ import cn.sd.jrz.autoresource.network.ConfigSync;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.fabricmc.api.ClientModInitializer;
 import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.gui.screens.MenuScreens;
 
 /**
@@ -23,7 +23,7 @@ public class AutoResourceClient implements ClientModInitializer {
         MenuScreens.register(Registration.BLOCK_GENERATOR_MENU, BlockGeneratorScreen::new);
 
         // 方块生成机的标记物品四侧渲染
-        EntityRendererRegistry.register(Registration.BLOCK_GENERATOR_ENTITY, BlockGeneratorRenderer::new);
+        BlockEntityRendererRegistry.register(Registration.BLOCK_GENERATOR_ENTITY, BlockGeneratorRenderer::new);
 
         // Create 联动：仅当 Create 加载时经反射注册屏幕与渲染器（避免字节码引用 Create 依赖类）
         if (CreateCompat.isCreateLoaded()) {

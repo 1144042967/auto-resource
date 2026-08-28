@@ -3,13 +3,17 @@ plugins {
 }
 
 repositories {
-	// Loom 已自动添加获取 Minecraft 与基础库所需仓库，仅当需要其他第三方 MOD 构件时才在此添加。
+	// Loom 已自动添加获取 Minecraft 与基础库所需仓库（镜像见 settings.gradle），仅当需要其他第三方 MOD 构件时才在此添加。
 }
 
-// Create 兼容层（可选依赖）：libs/ 下提供 create-fabric jar 时才参与编译，
-// 该 jar 可从 Modrinth 的 "Create Fabric" 项目下载（0.5.1j，MC 1.20.1）。
+// Create 兼容层（可选依赖）：libs/ 下提供 create-fabric jar 与预先合并的 porting-lib 单 jar 时才参与编译。
+// 两 jar 都从 Modrinth 下载（"Create Fabric" 0.5.1j 系列；"Porting Lib" 2.x 与 create 同 MC 1.20.1 线）。
+// 注：porting-lib 的官方发布包是 jar-in-jar bundle，loom 的 modCompileOnly 不会自动解包 META-INF/jars，
+// 因此需先把 bundle 拆包合并成单 jar（合并脚本见项目根目录的 scripts/merge_porting_lib.sh，
+// 或手动 unzip META-INF/jars/*.jar 后重打 zip）。libs/ 下的 porting_lib_merged-*.jar 名字匹配 "porting*"。
 def createJars = fileTree(dir: 'libs', include: 'create*.jar')
-def hasCreate = !createJars.empty
+def portingJars = fileTree(dir: 'libs', include: 'porting*.jar')
+def hasCreate = !createJars.empty && !portingJars.empty
 
 loom {
 	splitEnvironmentSourceSets()
@@ -54,9 +58,18 @@ dependencies {
 	// Fabric API. This is technically optional, but you probably want it anyway.
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
+	// TechReborn 提供的 FE 能量 API（Fabric 1.20.1 自带 fabric-transfer-api 没有 EnergyStorage；3.x 对应 MC 1.19.4–1.20.4）
+	modImplementation "teamreborn:energy:3.0.0"
+
+	// JetBrains @NotNull/@Nullable 注解（Fabric/Loom 不再随附 javax.annotation；全源码已迁到 org.jetbrains.annotations.*）
+	modImplementation "org.jetbrains:annotations:24.1.0"
+
 	if (hasCreate) {
 		// modCompileOnly 会让 loom 把发布版 jar 重映射到开发映射表后再加入编译类路径
+		// porting_lib_merged-*.jar 是已经合并好的单 jar（见上述说明），否则只对原 bundle 跑 modCompileOnly
+		// 找不到嵌套 jar 里的类，编译失败。
 		modCompileOnly createJars
+		modCompileOnly portingJars
 	}
 }
 

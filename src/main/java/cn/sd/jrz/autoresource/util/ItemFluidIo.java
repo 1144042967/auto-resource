@@ -1,13 +1,15 @@
 package cn.sd.jrz.autoresource.util;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
+import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 物品流体温养读写兼容层（替代 Forge 版对 ForgeCapabilities.FLUID_HANDLER_ITEM 的逐栈查询），
@@ -37,7 +39,7 @@ public final class ItemFluidIo {
             long currentlyHeld = 0;
             boolean hasCompatibleTank = false;
             // 遍历现有视图：任何空仓/已含同流体且有容量的视图均可视为可容纳
-            for (var view : storage.iterable(txn)) {
+            for (var view : storage) {
                 if (view.isResourceBlank()) {
                     hasCompatibleTank = view.getCapacity() > 0;
                 } else if (view.getResource().equals(variant)) {
@@ -48,33 +50,33 @@ public final class ItemFluidIo {
                     break;
                 }
             }
-            return hasCompatibleTank || currentlyHeld == 0 && anyCapacity(storage, txn, variant);
+            return hasCompatibleTank || currentlyHeld == 0 && anyCapacity(storage, variant);
         }
     }
 
     /**
      * 全部视图均为空时检查是否存在正容量（empty-combined-storage 场景兜底）
      */
-    private static boolean anyCapacity(Storage<FluidVariant> storage, Transaction txn, FluidVariant variant) {
-        long simulated = 0;
-        try {
-            simulated = storage.insert(variant, 1, txn);
+    private static boolean anyCapacity(Storage<FluidVariant> storage, FluidVariant variant) {
+        try (Transaction txn = Transaction.openOuter()) {
+            return storage.insert(variant, 1, txn) > 0;
         } catch (Exception ignored) {
+            return false;
         }
-        return simulated > 0;
     }
 
     /**
      * 向独立物品灌入流体，最多灌入 {@code maxMillibuckets} mB，返回 [实际灌入 mB, 变换后的物品堆栈]；
      * 不能灌入（无能力/不接受该流体）时返回 null。调用方决定结果堆栈的去处（回写输入槽/转入输出槽）。
      */
+    @SuppressWarnings("removal")
     @Nullable
     public static FillResult fill(ItemStack stack, Fluid fluid, long maxMillibuckets) {
         if (stack.isEmpty() || maxMillibuckets <= 0) {
             return null;
         }
-        ContainerItemContext context = ContainerItemContext.withInitial(stack);
-        Storage<FluidVariant> storage = FluidStorage.ITEM.find(context.getItemVariant(), context);
+        ContainerItemContext context = ContainerItemContext.withInitial(ItemVariant.of(stack), stack.getCount());
+        Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) {
             return null;
         }
@@ -126,9 +128,10 @@ public final class ItemFluidIo {
         }
     }
 
+    @SuppressWarnings("removal")
     private static Storage<FluidVariant> findWithInitial(ItemStack stack) {
-        ContainerItemContext context = ContainerItemContext.withInitial(stack);
-        return FluidStorage.ITEM.find(context.getItemVariant(), context);
+        ContainerItemContext context = ContainerItemContext.withInitial(ItemVariant.of(stack), stack.getCount());
+        return context.find(FluidStorage.ITEM);
     }
 
     /**

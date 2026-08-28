@@ -8,7 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.world.entity.player.Inventory;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 机器 GUI 基类：共享按钮点击发送、增长百分比计算、渲染循环与开关/通用小按钮；子类负责槽位布局、进度条配色与开关初始化。
@@ -42,7 +42,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         // 渲染鼠标悬浮物品信息提示窗（render 不会自动调用）
         super.renderTooltip(guiGraphics, mouseX, mouseY);
@@ -71,7 +71,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
         }
 
         @Override
-        protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
         }
     }

@@ -10,13 +10,13 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 流体生成器 GUI：展示流体量/产量/下次增长/增长百分比，并提供六个传输面开关与输入/输出槽；数值用单位缩写。
  */
 public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/liquid_generator_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/liquid_generator_gui.png");
 
     private StateButton faceDown;
     private StateButton faceUp;
@@ -59,7 +59,7 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         renderBackground(guiGraphics);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
@@ -89,7 +89,7 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
     }
 
     @Override
-    protected void renderLabels(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         LiquidGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();

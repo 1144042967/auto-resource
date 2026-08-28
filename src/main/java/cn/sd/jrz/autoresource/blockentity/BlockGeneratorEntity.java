@@ -23,8 +23,8 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 方块生成器实体：产量自动增长、标记槽（放入合法产品后锁定，决定输出方块种类）、
@@ -91,7 +91,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
      * 标记槽中的物品（未标记时返回空）
      */
     public ItemStack getMarkedItem() {
-        return markerSlot.getStackInSlot(0);
+        return markerSlot.getItem(0);
     }
 
     /**
@@ -178,7 +178,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Component getDisplayName() {
         BlockState state = getLevel() != null ? getLevel().getBlockState(getBlockPos()) : null;
         if (state != null && !state.isAir()) {
@@ -189,12 +189,12 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, @Nonnull Inventory inv, @Nonnull Player player) {
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new BlockGeneratorMenu(id, inv, getBlockPos());
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag nbt) {
+    public void saveAdditional(@NotNull CompoundTag nbt) {
         super.saveAdditional(nbt);
         nbt.putLong("output", output);
         nbt.putLong("block", block);
@@ -209,7 +209,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
      * 初始同步到客户端的数据（含标记槽），保证进游戏后方块机即显示标记物品
      */
     @Override
-    @Nonnull
+    @NotNull
     public CompoundTag getUpdateTag() {
         return saveWithoutMetadata();
     }
@@ -218,13 +218,13 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
      * 数据变化时发送给客户端的更新包（标记槽变化后强制刷新渲染）
      */
     @Override
-    @Nonnull
+    @NotNull
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
+    public void load(@NotNull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));

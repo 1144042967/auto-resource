@@ -17,7 +17,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import org.joml.Matrix4f;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 方块生成机的方块实体渲染器：标记槽有物品时，在四个侧面（北/南/东/西）各画一个标记方块贴图矩形。
@@ -46,7 +46,7 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
 
     @SuppressWarnings("deprecation")
     @Override
-    public void render(@Nonnull BlockGeneratorEntity entity, float partialTick, @Nonnull PoseStack poseStack, @Nonnull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
+    public void render(@NotNull BlockGeneratorEntity entity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         ItemStack marked = entity.getMarkedItem();
         if (marked.isEmpty() || !(marked.getItem() instanceof BlockItem blockItem)) {
             return;

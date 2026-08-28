@@ -7,7 +7,8 @@ import cn.sd.jrz.autoresource.storage.MachineSlotStorage;
 import cn.sd.jrz.autoresource.util.ItemEnergyIo;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
-import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -27,8 +28,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -69,7 +70,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     // 加速增长槽位（放入配置指定物品后增长量变为当前发电量的 1%），只能放 1 个
     public final MachineSlotStorage starSlot = new MachineSlotStorage(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
             return stack.is(config.getStarItem());
         }
     }.setSlotLimit(0, 1);
@@ -128,7 +129,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
      */
     private void updateNextIncrease() {
         long increase = config.getStep();
-        if (!starSlot.getStackInSlot(0).isEmpty()) {
+        if (!starSlot.getItem(0).isEmpty()) {
             increase = Math.max(1, output / 100);
         }
         nextIncrease = increase;
@@ -141,11 +142,11 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (energy <= 0) {
             return;
         }
-        ItemStack stack = chargeSlot.getStackInSlot(0);
+        ItemStack stack = chargeSlot.getItem(0);
         if (stack.isEmpty()) {
             return;
         }
-        SlottedStorage<?> slotView = InventoryStorage.of(chargeSlot, null).getSlot(0);
+        SingleSlotStorage<ItemVariant> slotView = InventoryStorage.of(chargeSlot, null).getSlot(0);
         long received = ItemEnergyIo.receive(slotView, Tool.suitInt(energy));
         if (received > 0) {
             energy -= received;
@@ -433,19 +434,19 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Component getDisplayName() {
         return Component.translatable("block.autoresource.energy_generator_fe");
     }
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, @Nonnull Inventory inv, @Nonnull Player player) {
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new EnergyGeneratorMenu(id, inv, getBlockPos());
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag nbt) {
+    public void saveAdditional(@NotNull CompoundTag nbt) {
         super.saveAdditional(nbt);
         nbt.putLong("output", output);
         nbt.putLong("energy", energy);
@@ -461,7 +462,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
+    public void load(@NotNull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));

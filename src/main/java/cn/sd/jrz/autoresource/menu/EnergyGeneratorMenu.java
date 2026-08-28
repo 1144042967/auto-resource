@@ -12,8 +12,8 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * FE 发电机容器：加速槽（0）、充电槽（1）与玩家背包；数据槽同步 GUI，按钮（clickMenuButton）修改逐台独立配置。
@@ -146,7 +146,7 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
      * 处理 GUI 按钮点击（按钮 ID 由客户端发送）
      */
     @Override
-    public boolean clickMenuButton(@Nonnull Player player, int id) {
+    public boolean clickMenuButton(@NotNull Player player, int id) {
         //noinspection resource
         if (entity == null || player.level().isClientSide) {
             return false;
@@ -187,8 +187,8 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
      * 快速转移物品
      */
     @Override
-    @Nonnull
-    public ItemStack quickMoveStack(@Nonnull Player player, int index) {
+    @NotNull
+    public ItemStack quickMoveStack(@NotNull Player player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasItem()) {

@@ -12,7 +12,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 流体生成器容器：输入槽（0，空桶/可容纳流体物品）、输出槽（1，已填满桶）与玩家背包；数据槽同步 GUI，按钮修改六面开关。
@@ -141,7 +141,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
      * 处理 GUI 按钮点击（六面传输开关）
      */
     @Override
-    public boolean clickMenuButton(@Nonnull Player player, int id) {
+    public boolean clickMenuButton(@NotNull Player player, int id) {
         //noinspection resource
         if (entity == null || player.level().isClientSide) {
             return false;
@@ -167,8 +167,8 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
      * 快速转移物品
      */
     @Override
-    @Nonnull
-    public ItemStack quickMoveStack(@Nonnull Player player, int index) {
+    @NotNull
+    public ItemStack quickMoveStack(@NotNull Player player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasItem()) {

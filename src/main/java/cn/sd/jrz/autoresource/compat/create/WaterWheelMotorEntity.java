@@ -18,8 +18,8 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 水车马达实体（仅 Create 加载时使用）。Create 动力源：转速 = 水车数量 × 单件转速
@@ -135,7 +135,7 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
      * 当前转速：由机内水车数量决定（每个小水车 +1、每个大水车 +4）
      */
     public int currentSpeed() {
-        ItemStack stack = wheelSlots.getStackInSlot(0);
+        ItemStack stack = wheelSlots.getItem(0);
         if (stack.isEmpty()) {
             return 0;
         }
@@ -165,7 +165,7 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
      * 水车槽内所有水车/大水车累加的应力容量（按数量 × 单件 SU）
      */
     public float totalCapacity() {
-        ItemStack stack = wheelSlots.getStackInSlot(0);
+        ItemStack stack = wheelSlots.getItem(0);
         if (stack.isEmpty()) {
             return 0;
         }
@@ -224,14 +224,14 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Component getDisplayName() {
         return Component.translatable("block.autoresource.water_wheel_motor");
     }
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, @Nonnull Inventory inv, @Nonnull Player player) {
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new WaterWheelMotorMenu(id, inv, getBlockPos());
     }
 }

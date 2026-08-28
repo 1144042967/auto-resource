@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 水车马达方块实体渲染器（仅 Create 加载时使用）。在垂直于输出方向的四面侧
@@ -41,7 +41,7 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
     }
 
     @Override
-    public void render(@Nonnull WaterWheelMotorEntity entity, float partialTick, @Nonnull PoseStack poseStack, @Nonnull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
+    public void render(@NotNull WaterWheelMotorEntity entity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
         int speed = entity.currentSpeed();
         Component text = Component.translatable("screen.autoresource.water_wheel_motor.block_speed", String.format("%03d", speed));
         // 强制至少 15 级方块光照，保留环境天空光

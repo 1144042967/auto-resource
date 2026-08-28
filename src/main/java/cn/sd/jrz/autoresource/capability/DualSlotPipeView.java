@@ -8,7 +8,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.CombinedStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.List;
 
 /**
@@ -34,14 +34,14 @@ public class DualSlotPipeView extends CombinedStorage<ItemVariant, Storage<ItemV
         }
 
         @Override
-        @Nonnull
+        @NotNull
         protected ItemStack getStack() {
-            return owner.inputSlot.getStackInSlot(0);
+            return owner.inputSlot.getItem(0);
         }
 
         @Override
-        protected void setStack(@Nonnull ItemStack stack) {
-            owner.inputSlot.setStackInSlot(0, stack);
+        protected void setStack(@NotNull ItemStack stack) {
+            owner.inputSlot.setItem(0, stack);
         }
 
         /**
@@ -66,6 +66,7 @@ public class DualSlotPipeView extends CombinedStorage<ItemVariant, Storage<ItemV
         public long extract(ItemVariant resource, long maxAmount, TransactionContext transaction) {
             return 0;
         }
+    }
 
     /**
      * 输出槽视图：仅可抽取机器放入的成品（流体桶/已灌装容器），禁止外部插入
@@ -78,14 +79,14 @@ public class DualSlotPipeView extends CombinedStorage<ItemVariant, Storage<ItemV
         }
 
         @Override
-        @Nonnull
+        @NotNull
         protected ItemStack getStack() {
-            return owner.outputSlot.getStackInSlot(0);
+            return owner.outputSlot.getItem(0);
         }
 
         @Override
-        protected void setStack(@Nonnull ItemStack stack) {
-            owner.outputSlot.setStackInSlot(0, stack);
+        protected void setStack(@NotNull ItemStack stack) {
+            owner.outputSlot.setItem(0, stack);
         }
 
         /**

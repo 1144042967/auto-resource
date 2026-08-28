@@ -8,10 +8,11 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
+import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -88,7 +89,7 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
      * 处理 GUI 按钮点击
      */
     @Override
-    public boolean clickMenuButton(@Nonnull Player player, int id) {
+    public boolean clickMenuButton(@NotNull Player player, int id) {
         if (entity == null || player.level().isClientSide) {
             return false;
         }
@@ -109,7 +110,7 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     }
 
     @Override
-    public boolean stillValid(@Nonnull Player player) {
+    public boolean stillValid(@NotNull Player player) {
         if (entity == null) {
             return false;
         }
@@ -120,8 +121,8 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
      * 快速转移物品：水车槽位与玩家背包互移（水车槽每格限 1 个）
      */
     @Override
-    @Nonnull
-    public ItemStack quickMoveStack(@Nonnull Player player, int index) {
+    @NotNull
+    public ItemStack quickMoveStack(@NotNull Player player, int index) {
         ItemStack itemStack = ItemStack.EMPTY;
         Slot slot = this.slots.get(index);
         if (slot.hasItem()) {

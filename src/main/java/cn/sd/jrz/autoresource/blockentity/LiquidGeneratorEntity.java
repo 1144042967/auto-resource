@@ -1,5 +1,6 @@
 package cn.sd.jrz.autoresource.blockentity;
 
+import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.capability.DualSlotPipeView;
 import cn.sd.jrz.autoresource.capability.LiquidConnection;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
@@ -11,7 +12,7 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.SlottedStorage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
@@ -32,8 +33,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 流体生成器实体（水源机/岩浆机）：产量自动增长、输入槽填充/转移输出、上方容器充液、
@@ -52,7 +53,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     // 输入槽：空桶或可容纳本机流体的物品，组大小由物品自身堆叠上限决定
     public final MachineSlotStorage inputSlot = new MachineSlotStorage(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isItemValid(int slot, @NotNull ItemStack stack) {
             // 空桶特判（vanilla 桶不在 Transfer API 物品流体查找之列）
             if (stack.is(Items.BUCKET)) {
                 return true;
@@ -117,7 +118,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         if (liquid <= 0) {
             return;
         }
-        ItemStack input = inputSlot.getStackInSlot(0);
+        ItemStack input = inputSlot.getItem(0);
         if (input.isEmpty()) {
             return;
         }
@@ -159,7 +160,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
             // 输出槽满：回退（填入结果丢弃、液体不扣），等待输出槽腾出
         } else if (input.getCount() == 1) {
             // 单件未满 → 写回输入槽继续填充
-            inputSlot.setStackInSlot(0, result);
+            inputSlot.setItem(0, result);
             liquid -= filled;
         } else {
             // 堆叠物品无法干净放回部分填充的单件：结果丢弃、液体不扣
@@ -187,7 +188,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
             if (stack.isEmpty()) {
                 continue;
             }
-            SlottedStorage<?> slotView = storageView.getSlot(i);
+            SingleSlotStorage<ItemVariant> slotView = storageView.getSlot(i);
             // 空桶特判：同一事务内取出空桶、放入流体桶
             if (stack.is(Items.BUCKET)) {
                 if (liquid >= 1000 && fillBucketInAboveContainer(blockEntity, slotView)) {
@@ -197,8 +198,8 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
                 continue;
             }
             // 可容纳流体的物品：经槽位上下文填充（变更自动回写原槽位）
-            ContainerItemContext context = ContainerItemContext.forSlot(slotView);
-            Storage<FluidVariant> storage = FluidStorage.ITEM.find(context.getItemVariant(), context);
+            ContainerItemContext context = ContainerItemContext.ofSingleSlot(slotView);
+            Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsInsertion()) {
                 continue;
             }
@@ -226,7 +227,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     /**
      * 上方容器槽位内的桶替换：取 1 个空桶放入同数量的对应流体桶（同槽有剩余空桶时会因容量不足失败回滚）
      */
-    private boolean fillBucketInAboveContainer(BlockEntity blockEntity, SlottedStorage<?> slotView) {
+    private boolean fillBucketInAboveContainer(BlockEntity blockEntity, SingleSlotStorage<ItemVariant> slotView) {
         Item filledBucket = getFilledBucketItem();
         try (var txn = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
             long taken = slotView.extract(ItemVariant.of(Items.BUCKET), 1, txn);
@@ -303,7 +304,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      * 输入槽是否有等待填充的空桶（此时保留液体、暂不向六面输出）
      */
     private boolean isBucketPending() {
-        ItemStack input = inputSlot.getStackInSlot(0);
+        ItemStack input = inputSlot.getItem(0);
         if (!input.is(Items.BUCKET)) {
             return false;
         }
@@ -325,7 +326,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      * 输出槽能否放入该物品（空槽或同种且未达堆叠上限）
      */
     private boolean canInsertOutput(ItemStack stack) {
-        ItemStack out = outputSlot.getStackInSlot(0);
+        ItemStack out = outputSlot.getItem(0);
         if (out.isEmpty()) {
             return true;
         }
@@ -336,12 +337,12 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      * 把一个物品放入输出槽（调用前需先通过 canInsertOutput 校验）
      */
     private void insertOutput(ItemStack stack) {
-        ItemStack out = outputSlot.getStackInSlot(0);
+        ItemStack out = outputSlot.getItem(0);
         if (out.isEmpty()) {
-            outputSlot.setStackInSlot(0, stack.copy());
+            outputSlot.setItem(0, stack.copy());
         } else {
             out.grow(stack.getCount());
-            outputSlot.setStackInSlot(0, out);
+            outputSlot.setItem(0, out);
         }
     }
 
@@ -350,11 +351,11 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      */
     private void consumeOne(ItemStack input) {
         input.shrink(1);
-        inputSlot.setStackInSlot(0, input.isEmpty() ? ItemStack.EMPTY : input);
+        inputSlot.setItem(0, input.isEmpty() ? ItemStack.EMPTY : input);
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public Component getDisplayName() {
         BlockState state = getLevel() != null ? getLevel().getBlockState(getBlockPos()) : null;
         if (state != null && !state.isAir()) {
@@ -365,12 +366,12 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
 
     @Nullable
     @Override
-    public AbstractContainerMenu createMenu(int id, @Nonnull Inventory inv, @Nonnull Player player) {
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new LiquidGeneratorMenu(id, inv, getBlockPos());
     }
 
     @Override
-    public void saveAdditional(@Nonnull CompoundTag nbt) {
+    public void saveAdditional(@NotNull CompoundTag nbt) {
         super.saveAdditional(nbt);
         nbt.putLong("output", output);
         nbt.putLong("liquid", liquid);
@@ -383,7 +384,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    public void load(@Nonnull CompoundTag nbt) {
+    public void load(@NotNull CompoundTag nbt) {
         super.load(nbt);
         if (nbt.contains("output", Tag.TAG_LONG)) {
             output = Tool.suit(nbt.getLong("output"));

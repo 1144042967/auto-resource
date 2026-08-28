@@ -9,7 +9,7 @@ import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -58,7 +58,7 @@ public abstract class AbstractGeneratorMenu<T extends BlockEntity> extends Abstr
     }
 
     @Override
-    public boolean stillValid(@Nonnull Player player) {
+    public boolean stillValid(@NotNull Player player) {
         if (entity == null) {
             return false;
         }

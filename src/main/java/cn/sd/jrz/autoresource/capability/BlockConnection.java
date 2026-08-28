@@ -7,7 +7,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 import java.util.Iterator;
 
 /**
@@ -65,9 +65,9 @@ public class BlockConnection implements Storage<ItemVariant> {
         return true;
     }
 
-    @Nonnull
+    @NotNull
     @Override
-    public Iterator<? extends StorageView<ItemVariant>> iterator(TransactionContext transaction) {
+    public Iterator<StorageView<ItemVariant>> iterator() {
         return java.util.List.<StorageView<ItemVariant>>of(new View()).iterator();
     }
 
@@ -85,7 +85,7 @@ public class BlockConnection implements Storage<ItemVariant> {
             return owner.getMarkedItem().isEmpty();
         }
 
-        @Nonnull
+        @NotNull
         @Override
         public ItemVariant getResource() {
             return ItemVariant.of(owner.getMarkedItem());

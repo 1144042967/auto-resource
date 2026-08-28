@@ -16,8 +16,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
@@ -140,10 +140,10 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     }
 
     @Override
-    @Nonnull
+    @NotNull
     public abstract Component getDisplayName();
 
     @Nullable
     @Override
-    public abstract AbstractContainerMenu createMenu(int id, @Nonnull Inventory inv, @Nonnull Player player);
+    public abstract AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player);
 }

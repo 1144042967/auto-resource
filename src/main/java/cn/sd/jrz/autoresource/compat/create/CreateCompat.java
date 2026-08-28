@@ -6,7 +6,7 @@ import net.minecraft.world.item.Item;
 import net.minecraft.world.item.Items;
 import net.fabricmc.loader.api.FabricLoader;
 
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.Nullable;
 
 /**
  * Create 联动入口：判断 Create 是否加载、懒加载并缓存水车/大水车物品引用。
@@ -91,7 +91,7 @@ public final class CreateCompat {
 
     @Nullable
     private static Item lookup(String namespace, String path) {
-        ResourceLocation loc = ResourceLocation.fromNamespaceAndPath(namespace, path);
+        ResourceLocation loc = new ResourceLocation(namespace, path);
         Item item = BuiltInRegistries.ITEM.get(loc);
         // Fabric 注册表查不到时返回 AIR 而非 null，此处归一化为 null
         return item == Items.AIR ? null : item;

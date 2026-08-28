@@ -9,13 +9,13 @@ import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * FE 发电机 GUI：展示发电量/电量/下次增长/增长百分比，并提供无线充电开关、扫描间隔、区块范围、重复传电次数与六个输电面开关；数值用单位缩写。
  */
 public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/energy_generator_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/energy_generator_gui.png");
 
     private StateButton wirelessButton;
     private StateButton faceDown;
@@ -63,7 +63,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         renderBackground(guiGraphics);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
@@ -79,7 +79,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
     }
 
     @Override
-    protected void renderLabels(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
@@ -129,7 +129,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         }
 
         @Override
-        protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, 0xFF808080);
         }
     }

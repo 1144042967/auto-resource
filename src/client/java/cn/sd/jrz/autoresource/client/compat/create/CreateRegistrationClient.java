@@ -2,7 +2,7 @@ package cn.sd.jrz.autoresource.client.compat.create;
 
 import cn.sd.jrz.autoresource.compat.create.WaterWheelMotorEntity;
 import cn.sd.jrz.autoresource.setup.Registration;
-import net.fabricmc.fabric.api.client.rendering.v1.EntityRendererRegistry;
+import net.fabricmc.fabric.api.client.rendering.v1.BlockEntityRendererRegistry;
 import net.minecraft.client.gui.screens.MenuScreens;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.level.block.entity.BlockEntityType;
@@ -37,7 +37,7 @@ public final class CreateRegistrationClient {
         if (Registration.WATER_WHEEL_MOTOR_ENTITY != null) {
             BlockEntityType<WaterWheelMotorEntity> entityType =
                     (BlockEntityType<WaterWheelMotorEntity>) Registration.WATER_WHEEL_MOTOR_ENTITY;
-            EntityRendererRegistry.register(entityType, WaterWheelMotorRenderer::new);
+            BlockEntityRendererRegistry.register(entityType, WaterWheelMotorRenderer::new);
         }
     }
 }

@@ -10,14 +10,14 @@ import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 水车马达 GUI。布局：上部大框放六面输出方向按钮；中部左侧水车槽位、右侧旋转方向开关；
  * 下部物品栏名称 + 当前转速（3 位补零）。
  */
 public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMotorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/water_wheel_motor_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/water_wheel_motor_gui.png");
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
 
     private StateButton directionButton;
@@ -73,14 +73,14 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     }
 
     @Override
-    protected void renderBg(@Nonnull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
+    protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         renderBackground(guiGraphics);
         // 面板与槽位背景已烘焙进纹理（water_wheel_motor_gui.png），可用 PS 直接修改
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
     }
 
     @Override
-    protected void renderLabels(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY) {
+    protected void renderLabels(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY) {
         super.renderLabels(guiGraphics, mouseX, mouseY);
         WaterWheelMotorMenu menu = this.menu;
         // 水车槽位提示（槽位右侧）
@@ -91,7 +91,7 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     }
 
     @Override
-    public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+    public void render(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
         super.renderTooltip(guiGraphics, mouseX, mouseY);
         refreshButtonStates();
@@ -130,7 +130,7 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         }
 
         @Override
-        protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
         }
     }

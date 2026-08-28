@@ -4,7 +4,7 @@ import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import team.reborn.energy.api.EnergyStorage;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * FE 发电机对外能量连接：只出不进。

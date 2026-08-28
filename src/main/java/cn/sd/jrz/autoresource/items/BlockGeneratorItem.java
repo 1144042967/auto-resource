@@ -18,8 +18,8 @@ import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -46,7 +46,7 @@ public class BlockGeneratorItem extends BlockItem {
      * 物品名称使用机器主题色
      */
     @Override
-    public @Nonnull Component getName(@Nonnull ItemStack stack) {
+    public @NotNull Component getName(@NotNull ItemStack stack) {
         return super.getName(stack).copy().withStyle(config.getThemeColor());
     }
 
@@ -54,7 +54,7 @@ public class BlockGeneratorItem extends BlockItem {
      * tooltip 仅在客户端渲染调用，且只使用 common 类，无需环境隔离注解
      */
     @Override
-    public void appendHoverText(@Nonnull ItemStack stack, @Nullable Level worldIn, @Nonnull List<Component> tooltip, @Nonnull TooltipFlag flagIn) {
+    public void appendHoverText(@NotNull ItemStack stack, @Nullable Level worldIn, @NotNull List<Component> tooltip, @NotNull TooltipFlag flagIn) {
         super.appendHoverText(stack, worldIn, tooltip, flagIn);
         double output = config.getMin() / 1000D;
         long block = 0;
@@ -86,7 +86,7 @@ public class BlockGeneratorItem extends BlockItem {
         // 标记槽内容物描述（兼容未标记/为空的情况）
         if (tag != null && tag.contains("markerSlot", Tag.TAG_COMPOUND)) {
             MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(tag.getCompound("markerSlot"));
-            ItemStack marked = marker.getStackInSlot(0);
+            ItemStack marked = marker.getItem(0);
             if (!marked.isEmpty()) {
                 tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.marked", marked.getHoverName()).withStyle(ChatFormatting.GOLD));
             } else {

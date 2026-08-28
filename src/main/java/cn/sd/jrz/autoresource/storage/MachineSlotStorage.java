@@ -8,8 +8,8 @@ import net.minecraft.world.ContainerHelper;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
-import javax.annotation.Nullable;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.function.Predicate;
@@ -58,7 +58,7 @@ public class MachineSlotStorage implements Container {
         return this;
     }
 
-    public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+    public boolean isItemValid(int slot, @NotNull ItemStack stack) {
         return validator == null || validator.test(stack);
     }
 
@@ -74,8 +74,8 @@ public class MachineSlotStorage implements Container {
     /**
      * 向指定槽插入物品并返回剩余部分；simulate 为 true 时只计算不入账
      */
-    @Nonnull
-    public ItemStack insertItem(int slot, @Nonnull ItemStack stack, boolean simulate) {
+    @NotNull
+    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
         if (stack.isEmpty()) {
             return ItemStack.EMPTY;
         }
@@ -113,7 +113,7 @@ public class MachineSlotStorage implements Container {
     /**
      * 从指定槽提取至多 amount 个物品；simulate 为 true 时只计算不入账
      */
-    @Nonnull
+    @NotNull
     public ItemStack extractItem(int slot, int amount, boolean simulate) {
         if (amount == 0) {
             return ItemStack.EMPTY;
@@ -138,7 +138,7 @@ public class MachineSlotStorage implements Container {
     /**
      * 单槽实际可容纳数量（受独立上限与物品自身堆叠上限双重约束）
      */
-    public int getStackLimit(int slot, @Nonnull ItemStack stack) {
+    public int getStackLimit(int slot, @NotNull ItemStack stack) {
         return Math.min(getSlotLimit(slot), stack.getMaxStackSize());
     }
 
@@ -204,14 +204,14 @@ public class MachineSlotStorage implements Container {
         return true;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ItemStack getItem(int slot) {
         validateIndex(slot);
         return stacks.get(slot);
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ItemStack removeItem(int slot, int amount) {
         ItemStack removed = ContainerHelper.removeItem(stacks, slot, amount);
@@ -221,14 +221,14 @@ public class MachineSlotStorage implements Container {
         return removed;
     }
 
-    @Nonnull
+    @NotNull
     @Override
     public ItemStack removeItemNoUpdate(int slot) {
         return ContainerHelper.takeItem(stacks, slot);
     }
 
     @Override
-    public void setItem(int slot, @Nonnull ItemStack stack) {
+    public void setItem(int slot, @NotNull ItemStack stack) {
         validateIndex(slot);
         stacks.set(slot, stack);
         // 超出槽限制的部分截断

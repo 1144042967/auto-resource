@@ -11,7 +11,7 @@ import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.ItemStack;
 
-import javax.annotation.Nonnull;
+import org.jetbrains.annotations.NotNull;
 
 /**
  * 方块生成器容器：标记槽（0，锁定决定输出种类）、输出展示槽（1，单击提取）与玩家背包；数据槽同步 GUI，按钮修改开关/提取。
@@ -51,7 +51,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
         // 机器槽位：0=标记槽（锁定），1=输出展示槽（单击提取）
         addSlot(new MachineSlot(entity.markerSlot, 0, 8, 113) {
             @Override
-            public boolean mayPickup(@Nonnull Player player) {
+            public boolean mayPickup(@NotNull Player player) {
                 // 一旦放入物品不允许取出/更换
                 return false;
             }
@@ -63,28 +63,28 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
             }
 
             @Override
-            @Nonnull
+            @NotNull
             public ItemStack getItem() {
                 ItemStack marked = entity != null ? entity.getMarkedItem() : ItemStack.EMPTY;
                 return marked.isEmpty() ? ItemStack.EMPTY : marked.copy();
             }
 
             @Override
-            public boolean mayPlace(@Nonnull ItemStack stack) {
+            public boolean mayPlace(@NotNull ItemStack stack) {
                 return false;
             }
 
             @Override
-            public boolean mayPickup(@Nonnull Player player) {
+            public boolean mayPickup(@NotNull Player player) {
                 return false;
             }
 
             @Override
-            public void set(@Nonnull ItemStack stack) {
+            public void set(@NotNull ItemStack stack) {
             }
 
             @Override
-            @Nonnull
+            @NotNull
             public ItemStack remove(int amount) {
                 return ItemStack.EMPTY;
             }
@@ -174,7 +174,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
      * 处理 GUI 按钮点击（六面开关、下方生成方块、输出槽提取）
      */
     @Override
-    public boolean clickMenuButton(@Nonnull Player player, int id) {
+    public boolean clickMenuButton(@NotNull Player player, int id) {
         //noinspection resource
         if (entity == null || player.level().isClientSide) {
             return false;
@@ -236,8 +236,8 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
      * 快速转移物品：标记槽不可取出，输出槽无实际物品；玩家背包只可移入标记槽
      */
     @Override
-    @Nonnull
-    public ItemStack quickMoveStack(@Nonnull Player player, int index) {
+    @NotNull
+    public ItemStack quickMoveStack(@NotNull Player player, int index) {
         if (index == 0 || index == 1) {
             // 标记槽锁定、输出展示槽不可操作
             return ItemStack.EMPTY;
