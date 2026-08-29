@@ -8,9 +8,8 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import org.lwjgl.glfw.GLFW;
-
 import org.jetbrains.annotations.NotNull;
+import org.lwjgl.glfw.GLFW;
 
 /**
  * 方块生成器 GUI：展示存量/产量/增长百分比与六个面开关、标记槽、输出展示槽（单击/Shift/空格提取）及"下方生成方块"开关；数值用单位缩写。

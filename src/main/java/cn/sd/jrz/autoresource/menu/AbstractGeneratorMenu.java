@@ -10,6 +10,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 

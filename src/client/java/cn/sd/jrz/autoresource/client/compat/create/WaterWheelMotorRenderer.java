@@ -8,10 +8,9 @@ import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
+import org.jetbrains.annotations.NotNull;
 import org.joml.Quaternionf;
 import org.joml.Vector3f;
-
-import org.jetbrains.annotations.NotNull;
 
 /**
  * 水车马达方块实体渲染器（仅 Create 加载时使用）。在垂直于输出方向的四面侧

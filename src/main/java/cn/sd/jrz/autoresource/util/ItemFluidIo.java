@@ -14,13 +14,15 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 物品流体温养读写兼容层（替代 Forge 版对 ForgeCapabilities.FLUID_HANDLER_ITEM 的逐栈查询），
  * 经由 Fabric Transfer API 的 {@code FluidStorage.ITEM} 查找；vanilla 空桶不在其列（由调用方特判）。
- *
+ * <p>
  * 单位换算：Fabric Transfer API 流体数量为 droplets，官方规定 1 mB = 81 droplets、1 桶 = 81000 droplets；
  * 本机内部存储单位即 mB（输出显示除以 1000 折算为桶）。
  */
 public final class ItemFluidIo {
 
-    /** 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000） */
+    /**
+     * 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000）
+     */
     public static final long DROPLETS_PER_MB = 81L;
 
     private ItemFluidIo() {

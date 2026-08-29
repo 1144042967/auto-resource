@@ -2,12 +2,12 @@ package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
-import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
-import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
@@ -18,7 +18,6 @@ import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
@@ -27,7 +26,6 @@ import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
-
 import org.jetbrains.annotations.Nullable;
 
 /**

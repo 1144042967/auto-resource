@@ -2,10 +2,9 @@ package cn.sd.jrz.autoresource.util;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.world.item.ItemStack;
-
 import org.jetbrains.annotations.Nullable;
+import team.reborn.energy.api.EnergyStorage;
 
 /**
  * 物品能量读写兼容层（替代 Forge 版对 ForgeCapabilities.ENERGY 的逐栈查询）。
