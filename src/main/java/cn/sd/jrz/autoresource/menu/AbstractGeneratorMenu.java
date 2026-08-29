@@ -13,8 +13,6 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -114,7 +112,7 @@ public abstract class AbstractGeneratorMenu<T extends BlockEntity> extends Abstr
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      * （默认返回空，由子类按需覆写以提供具体实现）
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         return ItemStack.EMPTY;
     }

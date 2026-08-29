@@ -17,8 +17,6 @@ import net.minecraft.world.item.Items;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-
 /**
  * FE 发电机容器：加速槽（0）、充电槽（1）与玩家背包；数据槽同步 GUI，按钮（clickMenuButton）修改逐台独立配置。
  */
@@ -295,7 +293,7 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
     /**
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         int id;
         if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {

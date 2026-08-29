@@ -24,8 +24,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-
 /**
  * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
  * 六面传输开关与轮询索引（findIndex），提供面的开关判断、六面开关 NBT 读写与 setChanged 节流。
@@ -169,7 +167,7 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     /**
      * 指定方向相邻方块的物品栈（数量 1）。无方块或方块无对应物品时返回空。用于 GUI 方向按钮显示相邻方块图标。
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         //noinspection deprecation
         Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();

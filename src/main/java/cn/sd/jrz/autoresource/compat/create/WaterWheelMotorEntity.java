@@ -25,8 +25,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
-import javax.annotation.Nonnull;
-
 /**
  * 水车马达实体（仅 Create 加载时使用）。Create 动力源：转速 = 水车数量 × 单件转速
  * （水车 1 / 大水车 4），应力容量 = 数量 × 单件 SU（256/512）；未放水车不产生转速。
@@ -256,7 +254,7 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
     /**
      * 指定方向相邻方块的物品栈（数量 1）。无方块或方块无对应物品时返回空。用于 GUI 方向按钮显示相邻方块图标。
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         //noinspection deprecation
         Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();

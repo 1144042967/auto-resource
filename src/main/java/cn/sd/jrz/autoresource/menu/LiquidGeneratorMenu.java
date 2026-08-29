@@ -17,8 +17,6 @@ import net.minecraft.world.level.material.Fluids;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
 /**
  * 流体生成器容器：输入槽（0，空桶/可容纳流体物品）、输出槽（1，已填满桶）与玩家背包；数据槽同步 GUI，按钮修改六面开关。
  */
@@ -212,7 +210,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     /**
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         int id;
         if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {

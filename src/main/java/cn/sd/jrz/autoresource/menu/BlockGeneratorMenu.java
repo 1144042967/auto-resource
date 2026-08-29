@@ -16,8 +16,6 @@ import net.minecraft.world.item.Items;
 
 import org.jetbrains.annotations.NotNull;
 
-import javax.annotation.Nonnull;
-
 /**
  * 方块生成器容器：标记槽（0，锁定决定输出种类）、输出展示槽（1，单击提取）与玩家背包；数据槽同步 GUI，按钮修改开关/提取。
  */
@@ -318,7 +316,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     /**
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      */
-    @Nonnull
+    @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         int id;
         if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
