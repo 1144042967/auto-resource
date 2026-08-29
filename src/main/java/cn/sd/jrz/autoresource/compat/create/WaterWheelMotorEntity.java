@@ -6,6 +6,7 @@ import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
 import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
@@ -14,12 +15,17 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
+import javax.annotation.Nonnull;
 
 /**
  * 水车马达实体（仅 Create 加载时使用）。Create 动力源：转速 = 水车数量 × 单件转速
@@ -233,5 +239,27 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
     @Override
     public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
         return new WaterWheelMotorMenu(id, inv, getBlockPos());
+    }
+
+    /**
+     * 指定方向的相邻方块注册 id（用于 GUI 展示实际相邻方块的物品图标）。无世界或方块无物品时返回 0。
+     */
+    public int getNeighborBlockId(Direction direction) {
+        Level level = getLevel();
+        if (level == null) {
+            return 0;
+        }
+        //noinspection deprecation
+        return BuiltInRegistries.BLOCK.getId(level.getBlockState(worldPosition.relative(direction)).getBlock());
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1）。无方块或方块无对应物品时返回空。用于 GUI 方向按钮显示相邻方块图标。
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }
