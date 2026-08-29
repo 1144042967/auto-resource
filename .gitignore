@@ -27,6 +27,3 @@ forge*changelog.txt
 
 # local dev tools
 .claude-gen
-
-# 本地编译期依赖（Create 0.5.1 jar，可从 Modrinth 重新下载）
-libs
