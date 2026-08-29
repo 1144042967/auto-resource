@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.entities;
 import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
@@ -10,6 +11,10 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
+import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 
@@ -63,6 +68,28 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
             case WEST -> transferWest;
             case EAST -> transferEast;
         };
+    }
+
+    /**
+     * 指定方向的相邻方块注册 id（用于 GUI 展示实际相邻方块的物品图标）。无世界或方块无物品时返回 0。
+     */
+    public int getNeighborBlockId(Direction direction) {
+        Level level = getLevel();
+        if (level == null) {
+            return 0;
+        }
+        //noinspection deprecation
+        return BuiltInRegistries.BLOCK.getId(level.getBlockState(worldPosition.relative(direction)).getBlock());
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1）。无方块或方块无对应物品时返回空。用于 GUI 方向按钮显示相邻方块图标。
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     /**
