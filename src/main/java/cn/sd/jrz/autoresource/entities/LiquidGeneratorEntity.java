@@ -9,7 +9,6 @@ import net.minecraft.core.Direction;
 import net.minecraft.core.component.DataComponentGetter;
 import net.minecraft.core.component.DataComponentMap;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -46,21 +45,9 @@ import javax.annotation.Nullable;
  *     <li>数据持久化使用 26.x 的 {@link ValueInput}/{@link ValueOutput}</li>
  * </ul>
  */
-public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
-    public final DataConfig config;
-
+public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     // 核心数据（流体数量单位为 mB/1000，即 B；output 单位同样为 mB/1000）
-    public long output;
     public long liquid = 0;
-    public long tickCount = 0;
-
-    // 六面流体传输开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 是否在下方空气方块放置对应流体（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
     public boolean placeFluidBelow = false;
@@ -126,13 +113,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    // 六面流体传输轮询索引
-    private int findIndex = 0;
-
     public LiquidGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -152,11 +134,12 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
 
         fillInputSlot();
         fillContainersAbove();
-        if (!isBucketPending()) {
+        // 六面传输（有待填充的铁桶时保留液体，优先积累液体填桶；关闭主动输出总开关时不传输）
+        if (!isBucketPending() && outputEnabled) {
             outputToSides();
         }
         placeFluidBelow();
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -200,16 +183,15 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         }
         liquid -= filled;
         // 填充后 copy 的组件已更新（forStack 直接修改栈），结果物品就是 copy
-        ItemStack result = copy;
-        if (isFull(result)) {
-            if (canInsertOutput(result)) {
-                insertOutput(result);
+        if (isFull(copy)) {
+            if (canInsertOutput(copy)) {
+                insertOutput(copy);
                 consumeOne(input);
             } else {
                 liquid += filled;
             }
         } else if (input.getCount() == 1) {
-            inputSlot.setStackInSlot(0, result);
+            inputSlot.setStackInSlot(0, copy);
         } else {
             liquid += filled;
         }
@@ -236,7 +218,7 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
                 return;
             }
             ItemResource resource = handler.getResource(i);
-            if (resource == null || resource.isEmpty()) {
+            if (resource.isEmpty()) {
                 continue;
             }
             int amount = Tool.suitInt(handler.getAmountAsLong(i));
@@ -405,20 +387,6 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         inputSlot.setStackInSlot(0, input.isEmpty() ? ItemStack.EMPTY : input);
     }
 
-    /**
-     * 指定面是否允许流体传输
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
-    }
-
     @Override
     @Nonnull
     public Component getDisplayName() {
@@ -441,12 +409,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putLong("output", output);
         valueOutput.putLong("liquid", liquid);
         valueOutput.putLong("tickCount", tickCount);
-        valueOutput.putBoolean("transferDown", transferDown);
-        valueOutput.putBoolean("transferUp", transferUp);
-        valueOutput.putBoolean("transferNorth", transferNorth);
-        valueOutput.putBoolean("transferSouth", transferSouth);
-        valueOutput.putBoolean("transferWest", transferWest);
-        valueOutput.putBoolean("transferEast", transferEast);
+        saveTransferFaces(valueOutput);
+        saveOutputEnabled(valueOutput);
         valueOutput.putBoolean("placeFluidBelow", placeFluidBelow);
         inputSlot.serialize(valueOutput.child("inputSlot"));
         outputSlot.serialize(valueOutput.child("outputSlot"));
@@ -458,12 +422,8 @@ public class LiquidGeneratorEntity extends BlockEntity implements MenuProvider {
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("liquid").ifPresent(it -> this.liquid = Tool.suit(it));
         valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
-        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
-        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
-        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
-        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
-        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        loadTransferFaces(valueInput);
+        loadOutputEnabled(valueInput);
         this.placeFluidBelow = valueInput.getBooleanOr("placeFluidBelow", this.placeFluidBelow);
         inputSlot.deserialize(valueInput.childOrEmpty("inputSlot"));
         outputSlot.deserialize(valueInput.childOrEmpty("outputSlot"));

@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.items;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -27,6 +28,15 @@ public class LiquidGeneratorItem extends BlockItem {
         this.config = config;
     }
 
+    /**
+     * 物品名称使用机器主题色
+     */
+    @Override
+    @Nonnull
+    public Component getName(@Nonnull ItemStack stack) {
+        return super.getName(stack).copy().withStyle(config.getThemeColor());
+    }
+
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay tooltipDisplay, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag flagIn) {
         super.appendHoverText(stack, context, tooltipDisplay, tooltip, flagIn);
@@ -43,15 +53,16 @@ public class LiquidGeneratorItem extends BlockItem {
             tickCount = Tool.parseLong(dataArray, 2);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000D) / 100.00D;
-        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid));
-        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output));
+        // 数值行使用机器主题色
+        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.liquid", liquid).withStyle(config.getThemeColor()));
+        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output < config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.growth", percent));
+            tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.growth_max"));
+            tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D));
-        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block"));
-        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.tip"));
+        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.set_block").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("item.autoresource.liquid_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

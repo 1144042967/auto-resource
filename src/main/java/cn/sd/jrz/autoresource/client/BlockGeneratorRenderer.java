@@ -23,6 +23,8 @@ import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
 import org.joml.Quaternionf;
 
+import javax.annotation.Nonnull;
+
 /**
  * 方块生成机的方块实体渲染器（26.x 适配）。
  * <p>
@@ -39,38 +41,35 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
     private static final Direction[] SIDES = {Direction.NORTH, Direction.SOUTH, Direction.EAST, Direction.WEST};
     private static final float INSET = 0.275f;
     private static final int MIN_BLOCK_LIGHT = 15 << 4;
-    /** 使用方块图集的 cutout 渲染类型（与方块本体共用方块图集） */
+    /**
+     * 使用方块图集的 cutout 渲染类型（与方块本体共用方块图集）
+     */
     private static final RenderType RENDER_TYPE = RenderTypes.cutoutMovingBlock();
 
-    public BlockGeneratorRenderer(BlockEntityRendererProvider.Context context) {
+    public BlockGeneratorRenderer(BlockEntityRendererProvider.Context ignored) {
     }
 
     @Override
+    @Nonnull
     public BlockGeneratorRenderState createRenderState() {
         return new BlockGeneratorRenderState();
     }
 
     @Override
-    public void extractRenderState(BlockGeneratorEntity entity, BlockGeneratorRenderState state, float partialTick, Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+    public void extractRenderState(@Nonnull BlockGeneratorEntity entity, @Nonnull BlockGeneratorRenderState state, float partialTick, @Nonnull Vec3 cameraPos, ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
         BlockEntityRenderState.extractBase(entity, state, crumblingOverlay);
         state.markedItem = entity.getMarkedItem().copy();
     }
 
     @Override
-    public void submit(BlockGeneratorRenderState state, PoseStack poseStack, SubmitNodeCollector collector, CameraRenderState cameraRenderState) {
+    public void submit(BlockGeneratorRenderState state, @Nonnull PoseStack poseStack, @Nonnull SubmitNodeCollector collector, @Nonnull CameraRenderState cameraRenderState) {
         ItemStack marked = state.markedItem;
         if (marked.isEmpty() || !(marked.getItem() instanceof BlockItem blockItem)) {
             return;
         }
         BlockState blockState = blockItem.getBlock().defaultBlockState();
         Material.Baked particle = Minecraft.getInstance().getModelManager().getBlockStateModelSet().getParticleMaterial(blockState);
-        if (particle == null) {
-            return;
-        }
         TextureAtlasSprite sprite = particle.sprite();
-        if (sprite == null) {
-            return;
-        }
         // 强制至少 15 级方块光照，保留环境天空光
         int blockLight = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT);
         int light = (state.lightCoords & 0xFFFF0000) | blockLight;

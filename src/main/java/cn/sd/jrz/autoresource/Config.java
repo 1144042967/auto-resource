@@ -12,8 +12,14 @@ public class Config {
     public static ModConfigSpec.LongValue FE_MAX;
     public static ModConfigSpec.LongValue FE_SECOND;
     public static ModConfigSpec.LongValue FE_STEP;
-    /** 加速增长所需物品（放入加速槽后增长量变为当前发电量的 1%） */
+    /**
+     * 加速增长所需物品（放入加速槽后增长量变为当前发电量的 1%）
+     */
     public static ModConfigSpec.ConfigValue<String> FE_STAR_ITEM;
+    /**
+     * 反射能量绕过开关：第三方 MOD 机器因容量/接收速率限制拒收时，反射把其内部能量补满到容量（默认开启）
+     */
+    public static ModConfigSpec.BooleanValue FE_BYPASS_ENABLED;
 
     public static ModConfigSpec.LongValue WATER_MIN;
     public static ModConfigSpec.LongValue WATER_MAX;
@@ -29,7 +35,9 @@ public class Config {
     public static ModConfigSpec.LongValue BLOCK_MAX;
     public static ModConfigSpec.LongValue BLOCK_SECOND;
     public static ModConfigSpec.LongValue BLOCK_STEP;
-    /** 方块生成机可生成的产品列表：支持物品 ID（如 minecraft:dirt）或物品标签（以 # 开头，如 #minecraft:planks） */
+    /**
+     * 方块生成机可生成的产品列表：支持物品 ID（如 minecraft:dirt）或物品标签（以 # 开头，如 #minecraft:planks）
+     */
     public static ModConfigSpec.ConfigValue<List<? extends String>> BLOCK_GENERATOR_ITEMS;
 
     public static ModConfigSpec SERVER_CONFIG;
@@ -45,6 +53,7 @@ public class Config {
         FE_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 1, 1, Long.MAX_VALUE);
         FE_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.").defineInRange("step", 1, 0, Long.MAX_VALUE);
         FE_STAR_ITEM = SERVER_BUILDER.comment("The item that boosts the growth rate. When placed in the boost slot, each increase becomes 1% of the current output. Use item registry name, e.g. minecraft:nether_star.").define("star_item", "minecraft:nether_star");
+        FE_BYPASS_ENABLED = SERVER_BUILDER.comment("Bypass the energy capacity/receive limits of third-party machines (e.g. Mekanism, Thermal, Draconic Evolution) by directly refilling their internal energy to full when they reject the FE. Default: true.").define("bypass_enabled", true);
         SERVER_BUILDER.pop();
 
         SERVER_BUILDER.pop();
@@ -75,7 +84,7 @@ public class Config {
         BLOCK_SECOND = SERVER_BUILDER.comment("Control the number of seconds it takes to increase production each time.").defineInRange("second", 10, 1, Long.MAX_VALUE);
         BLOCK_STEP = SERVER_BUILDER.comment("Control the numerical increase in production each time.The actual data needs to be divided by 1000.").defineInRange("step", 50, 0, Long.MAX_VALUE);
         BLOCK_GENERATOR_ITEMS = SERVER_BUILDER.comment(
-                "List of items (registry names like minecraft:dirt) or item tags (prefixed with # like #minecraft:stone_bricks) that the block generator can produce. The marker slot accepts items matching any entry.")
+                        "List of items (registry names like minecraft:dirt) or item tags (prefixed with # like #minecraft:stone_bricks) that the block generator can produce. The marker slot accepts items matching any entry.")
                 .defineList("items",
                         List.of(
                                 // 主世界 — 自然生成/基础方块（按常见程度排序）

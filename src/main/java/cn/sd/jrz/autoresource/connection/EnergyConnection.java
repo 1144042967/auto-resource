@@ -45,10 +45,8 @@ public class EnergyConnection implements EnergyHandler {
             return 0;
         }
         int ret = Math.min(maxOutput, amount);
-        if (ret > 0) {
-            journal.updateSnapshots(transaction);
-            owner.energy -= ret;
-        }
+        journal.updateSnapshots(transaction);
+        owner.energy -= ret;
         return ret;
     }
 

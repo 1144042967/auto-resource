@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.items;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.setup.ARRegistration;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.minecraft.ChatFormatting;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
@@ -27,6 +28,15 @@ public class EnergyGeneratorItem extends BlockItem {
         this.config = config;
     }
 
+    /**
+     * 物品名称使用机器主题色
+     */
+    @Override
+    @Nonnull
+    public Component getName(@Nonnull ItemStack stack) {
+        return super.getName(stack).copy().withStyle(config.getThemeColor());
+    }
+
     @Override
     public void appendHoverText(@Nonnull ItemStack stack, @Nonnull Item.TooltipContext context, @Nonnull TooltipDisplay tooltipDisplay, @Nonnull Consumer<Component> tooltip, @Nonnull TooltipFlag flagIn) {
         super.appendHoverText(stack, context, tooltipDisplay, tooltip, flagIn);
@@ -47,21 +57,23 @@ public class EnergyGeneratorItem extends BlockItem {
             wirelessOn = Tool.parseInt(dataArray, 4) == 1;
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.output", output));
+        // 数值行使用机器主题色
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy).withStyle(config.getThemeColor()));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output >= config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next_max"));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next_max").withStyle(ChatFormatting.GOLD));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease).withStyle(config.getThemeColor()));
         }
         if (output < config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max"));
+            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step));
-        tooltip.accept(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off"));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster"));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.tip"));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step).withStyle(ChatFormatting.GRAY));
+        tooltip.accept(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off")
+                .withStyle(wirelessOn ? ChatFormatting.GREEN : ChatFormatting.RED));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster").withStyle(ChatFormatting.DARK_GRAY));
+        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

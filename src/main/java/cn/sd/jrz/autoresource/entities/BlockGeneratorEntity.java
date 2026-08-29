@@ -14,7 +14,6 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.resources.Identifier;
-import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
@@ -22,7 +21,6 @@ import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
-import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -42,21 +40,9 @@ import javax.annotation.Nullable;
  * 六面方块传输（可逐面禁用）以及"下方生成方块"。
  * 自动生成会一直计算，但未标记时无法取出/传输/放置；标记后不可更换。
  */
-public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
-    public final DataConfig config;
-
+public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     // 核心数据（方块数量单位为 Block/1000，即块）
-    public long output;
     public long block = 0;
-    public long tickCount = 0;
-
-    // 六面方块传输开关（逐台保存，可在 GUI 修改，默认全启用）
-    public boolean transferDown = true;
-    public boolean transferUp = true;
-    public boolean transferNorth = true;
-    public boolean transferSouth = true;
-    public boolean transferWest = true;
-    public boolean transferEast = true;
 
     // 是否在下方空气方块放置对应方块（由 GUI 按钮控制，替代原红石激活判断，默认关闭）
     public boolean placeBlockBelow = false;
@@ -84,13 +70,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         }
     };
 
-    // 六面传输轮询索引
-    private int findIndex = 0;
-
     public BlockGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
-        super(config.getEntityType(), pos, state);
-        this.config = config;
-        this.output = config.getMin();
+        super(pos, state, config);
     }
 
     /**
@@ -110,10 +91,14 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
 
         ItemStack marked = getMarkedItem();
         if (!marked.isEmpty()) {
-            outputToSides(marked);
+            // 标记后才向六面传输方块（关闭主动输出总开关时不传输）
+            if (outputEnabled) {
+                outputToSides(marked);
+            }
+            // 开启"下方生成方块"时，向下方空气方块放置方块
             placeBlockBelow(marked);
         }
-        setChanged();
+        markDirtyTick();
     }
 
     /**
@@ -204,20 +189,6 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         return toExtract;
     }
 
-    /**
-     * 指定面是否允许方块传输
-     */
-    public boolean isTransferEnabled(Direction direction) {
-        return switch (direction) {
-            case DOWN -> transferDown;
-            case UP -> transferUp;
-            case NORTH -> transferNorth;
-            case SOUTH -> transferSouth;
-            case WEST -> transferWest;
-            case EAST -> transferEast;
-        };
-    }
-
     @Override
     @Nonnull
     public Component getDisplayName() {
@@ -258,12 +229,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         valueOutput.putLong("output", output);
         valueOutput.putLong("block", block);
         valueOutput.putLong("tickCount", tickCount);
-        valueOutput.putBoolean("transferDown", transferDown);
-        valueOutput.putBoolean("transferUp", transferUp);
-        valueOutput.putBoolean("transferNorth", transferNorth);
-        valueOutput.putBoolean("transferSouth", transferSouth);
-        valueOutput.putBoolean("transferWest", transferWest);
-        valueOutput.putBoolean("transferEast", transferEast);
+        saveTransferFaces(valueOutput);
+        saveOutputEnabled(valueOutput);
         valueOutput.putBoolean("placeBlockBelow", placeBlockBelow);
         markerSlot.serialize(valueOutput.child("markerSlot"));
     }
@@ -274,12 +241,8 @@ public class BlockGeneratorEntity extends BlockEntity implements MenuProvider {
         valueInput.getLong("output").ifPresent(it -> this.output = Tool.suit(it));
         valueInput.getLong("block").ifPresent(it -> this.block = Tool.suit(it));
         valueInput.getLong("tickCount").ifPresent(it -> this.tickCount = Tool.suit(it));
-        this.transferDown = valueInput.getBooleanOr("transferDown", this.transferDown);
-        this.transferUp = valueInput.getBooleanOr("transferUp", this.transferUp);
-        this.transferNorth = valueInput.getBooleanOr("transferNorth", this.transferNorth);
-        this.transferSouth = valueInput.getBooleanOr("transferSouth", this.transferSouth);
-        this.transferWest = valueInput.getBooleanOr("transferWest", this.transferWest);
-        this.transferEast = valueInput.getBooleanOr("transferEast", this.transferEast);
+        loadTransferFaces(valueInput);
+        loadOutputEnabled(valueInput);
         this.placeBlockBelow = valueInput.getBooleanOr("placeBlockBelow", this.placeBlockBelow);
         markerSlot.deserialize(valueInput.childOrEmpty("markerSlot"));
     }
