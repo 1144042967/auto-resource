@@ -1,0 +1,10 @@
+{
+  "pack": {
+    "description": {
+      "text": "AutoResource resources"
+    },
+    "pack_format": 64,
+    "min_format": 55,
+    "max_format": 64
+  }
+}
