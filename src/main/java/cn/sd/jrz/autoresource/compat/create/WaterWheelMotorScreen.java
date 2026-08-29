@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -23,12 +24,12 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
 
     private StateButton directionButton;
-    private StateButton faceDown;
-    private StateButton faceUp;
-    private StateButton faceNorth;
-    private StateButton faceSouth;
-    private StateButton faceWest;
-    private StateButton faceEast;
+    private FaceButton faceDown;
+    private FaceButton faceUp;
+    private FaceButton faceNorth;
+    private FaceButton faceSouth;
+    private FaceButton faceWest;
+    private FaceButton faceEast;
 
     public WaterWheelMotorScreen(WaterWheelMotorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -43,13 +44,13 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         // 旋转方向开关（水车槽同一行右侧，无标签）
         this.directionButton = new StateButton(this.leftPos + 112, this.topPos + 58, 56, 12, this.menu.isCounterClockwise(), Component.empty(), button -> sendButton(WaterWheelMotorMenu.BUTTON_DIRECTION));
         this.addRenderableWidget(this.directionButton);
-        // 六面输出方向：位于上部大框正中（两行三列，框 y=16~51）
-        this.faceDown = new StateButton(this.leftPos + 14, this.topPos + 20, 44, 12, this.menu.getFace() == Direction.DOWN, faceLabel(Direction.DOWN), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_DOWN));
-        this.faceUp = new StateButton(this.leftPos + 66, this.topPos + 20, 44, 12, this.menu.getFace() == Direction.UP, faceLabel(Direction.UP), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_UP));
-        this.faceNorth = new StateButton(this.leftPos + 118, this.topPos + 20, 44, 12, this.menu.getFace() == Direction.NORTH, faceLabel(Direction.NORTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_NORTH));
-        this.faceSouth = new StateButton(this.leftPos + 14, this.topPos + 36, 44, 12, this.menu.getFace() == Direction.SOUTH, faceLabel(Direction.SOUTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_SOUTH));
-        this.faceWest = new StateButton(this.leftPos + 66, this.topPos + 36, 44, 12, this.menu.getFace() == Direction.WEST, faceLabel(Direction.WEST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_WEST));
-        this.faceEast = new StateButton(this.leftPos + 118, this.topPos + 36, 44, 12, this.menu.getFace() == Direction.EAST, faceLabel(Direction.EAST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_EAST));
+        // 六面输出方向：位于上部大框正中（两行三列，框 y=16~51）；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名
+        this.faceDown = new FaceButton(this.leftPos + 14, this.topPos + 20, 44, 12, Direction.DOWN, this.menu.getFace() == Direction.DOWN, faceLabel(Direction.DOWN), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_DOWN));
+        this.faceUp = new FaceButton(this.leftPos + 66, this.topPos + 20, 44, 12, Direction.UP, this.menu.getFace() == Direction.UP, faceLabel(Direction.UP), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_UP));
+        this.faceNorth = new FaceButton(this.leftPos + 118, this.topPos + 20, 44, 12, Direction.NORTH, this.menu.getFace() == Direction.NORTH, faceLabel(Direction.NORTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_NORTH));
+        this.faceSouth = new FaceButton(this.leftPos + 14, this.topPos + 36, 44, 12, Direction.SOUTH, this.menu.getFace() == Direction.SOUTH, faceLabel(Direction.SOUTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_SOUTH));
+        this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 36, 44, 12, Direction.WEST, this.menu.getFace() == Direction.WEST, faceLabel(Direction.WEST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_WEST));
+        this.faceEast = new FaceButton(this.leftPos + 118, this.topPos + 36, 44, 12, Direction.EAST, this.menu.getFace() == Direction.EAST, faceLabel(Direction.EAST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_EAST));
         this.addRenderableWidget(this.faceDown);
         this.addRenderableWidget(this.faceUp);
         this.addRenderableWidget(this.faceNorth);
@@ -138,6 +139,39 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     }
 
     /**
+     * 六方向按钮：该方向有相邻方块时只显示物品图标（居中）；无相邻方块时显示方向名（居中）。绿=生效/红=禁用
+     */
+    private class FaceButton extends SimpleButton {
+        private final Direction direction;
+        private boolean state;
+
+        FaceButton(int x, int y, int width, int height, Direction direction, boolean initial, Component label, OnPress onPress) {
+            super(x, y, width, height, label, onPress);
+            this.direction = direction;
+            this.state = initial;
+        }
+
+        void setState(boolean state) {
+            this.state = state;
+        }
+
+        @Override
+        protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            renderButtonBg(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
+            ItemStack neighbor = WaterWheelMotorScreen.this.menu.getNeighborStack(this.direction);
+            if (!neighbor.isEmpty()) {
+                // 有相邻方块：只显示物品图标，整体居中
+                int iconX = this.getX() + (this.getWidth() - 16) / 2;
+                int iconY = this.getY() + (this.getHeight() - 16) / 2;
+                guiGraphics.renderItem(neighbor, iconX, iconY);
+            } else {
+                // 无相邻方块：显示方向名，居中
+                guiGraphics.drawCenteredString(WaterWheelMotorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
+            }
+        }
+    }
+
+    /**
      * 带边框与居中文字的通用按钮
      */
     private abstract class SimpleButton extends Button {
@@ -145,7 +179,10 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
             super(x, y, width, height, label, onPress, DEFAULT_NARRATION);
         }
 
-        protected void renderButton(GuiGraphics guiGraphics, int color) {
+        /**
+         * 仅绘制按钮背景与边框，不含居中文字（子类自行决定文字或图标）
+         */
+        protected void renderButtonBg(GuiGraphics guiGraphics, int color) {
             guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
             // 1px 边框（鼠标悬浮时边框变亮）
             int borderColor = this.isHovered() ? 0xFFFFFF00 : 0xFF000000;
@@ -153,6 +190,13 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
             guiGraphics.fill(this.getX() - 1, this.getY() + this.getHeight(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1, borderColor);
             guiGraphics.fill(this.getX() - 1, this.getY(), this.getX(), this.getY() + this.getHeight(), borderColor);
             guiGraphics.fill(this.getX() + this.getWidth(), this.getY(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(), borderColor);
+        }
+
+        /**
+         * 绘制按钮背景+边框+居中文字
+         */
+        protected void renderButton(GuiGraphics guiGraphics, int color) {
+            renderButtonBg(guiGraphics, color);
             guiGraphics.drawCenteredString(WaterWheelMotorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
         }
     }

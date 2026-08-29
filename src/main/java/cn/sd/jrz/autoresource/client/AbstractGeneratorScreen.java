@@ -4,9 +4,11 @@ import cn.sd.jrz.autoresource.menu.AbstractGeneratorMenu;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
+import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ServerboundContainerButtonClickPacket;
 import net.minecraft.world.entity.player.Inventory;
+import net.minecraft.world.item.ItemStack;
 import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
@@ -80,6 +82,39 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
     }
 
     /**
+     * 六方向按钮：该方向有相邻方块时只显示物品图标（居中）；无相邻方块时显示方向名（居中）。绿=生效/红=禁用
+     */
+    protected class FaceButton extends SimpleButton {
+        private final Direction direction;
+        private boolean state;
+
+        FaceButton(int x, int y, int width, int height, Direction direction, boolean initial, Component label, OnPress onPress) {
+            super(x, y, width, height, label, onPress);
+            this.direction = direction;
+            this.state = initial;
+        }
+
+        void setState(boolean state) {
+            this.state = state;
+        }
+
+        @Override
+        protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+            renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
+            ItemStack neighbor = AbstractGeneratorScreen.this.menu.getNeighborStack(this.direction);
+            if (!neighbor.isEmpty()) {
+                // 有相邻方块：只显示物品图标，整体居中
+                int iconX = this.getX() + (this.getWidth() - 16) / 2;
+                int iconY = this.getY() + (this.getHeight() - 16) / 2;
+                guiGraphics.renderItem(neighbor, iconX, iconY);
+            } else {
+                // 无相邻方块：显示方向名，居中
+                guiGraphics.drawCenteredString(AbstractGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
+            }
+        }
+    }
+
+    /**
      * 带边框与居中文字的通用按钮
      */
     protected abstract class SimpleButton extends Button {
@@ -87,7 +122,10 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
             super(x, y, width, height, label, onPress, DEFAULT_NARRATION);
         }
 
-        protected void renderButton(GuiGraphics guiGraphics, int color) {
+        /**
+         * 仅绘制按钮背景与边框，不含居中文字（子类自行决定文字或图标）
+         */
+        protected void renderButtonBg(GuiGraphics guiGraphics, int color) {
             guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
             // 1px 边框（鼠标悬浮时边框变亮，用于指示可交互）
             int borderColor = this.isHovered() ? 0xFFFFFF00 : 0xFF000000;
@@ -95,6 +133,13 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
             guiGraphics.fill(this.getX() - 1, this.getY() + this.getHeight(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1, borderColor);
             guiGraphics.fill(this.getX() - 1, this.getY(), this.getX(), this.getY() + this.getHeight(), borderColor);
             guiGraphics.fill(this.getX() + this.getWidth(), this.getY(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(), borderColor);
+        }
+
+        /**
+         * 绘制按钮背景+边框+居中文字（沿用原 renderButton 行为）
+         */
+        protected void renderButton(GuiGraphics guiGraphics, int color) {
+            renderButtonBg(guiGraphics, color);
             guiGraphics.drawCenteredString(AbstractGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
         }
     }

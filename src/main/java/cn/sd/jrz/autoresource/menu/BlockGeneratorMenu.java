@@ -4,11 +4,14 @@ import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.SimpleContainer;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraftforge.items.SlotItemHandler;
 
 import javax.annotation.Nonnull;
@@ -44,6 +47,8 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     private boolean clientTransferEast;
     private boolean clientPlaceBlockBelow;
     private boolean clientOutputEnabled;
+    // 六方向相邻方块注册 id（客户端读同步值，服务端读实体）
+    private final int[] clientNeighborBlockId = new int[6];
 
     public BlockGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.BLOCK_GENERATOR_MENU.get(), id, playerInventory, pos);
@@ -109,6 +114,11 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
         addDataSlot(makeDataSlot(() -> entity.transferEast ? 1 : 0, v -> clientTransferEast = v != 0));
         addDataSlot(makeDataSlot(() -> entity.placeBlockBelow ? 1 : 0, v -> clientPlaceBlockBelow = v != 0));
         addDataSlot(makeDataSlot(() -> entity.outputEnabled ? 1 : 0, v -> clientOutputEnabled = v != 0));
+        // 六方向相邻方块注册 id（服务端读实体，客户端读同步值，供 GUI 方向按钮显示图标）
+        for (Direction direction : Direction.values()) {
+            final int idx = direction.ordinal();
+            addDataSlot(makeDataSlot(() -> entity.getNeighborBlockId(direction), v -> clientNeighborBlockId[idx] = v));
+        }
     }
 
     /**
@@ -168,6 +178,25 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
      */
     public boolean isOutputEnabled() {
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.outputEnabled : clientOutputEnabled;
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        int id;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+            id = entity.getNeighborBlockId(direction);
+        } else {
+            id = clientNeighborBlockId[direction.ordinal()];
+        }
+        if (id <= 0) {
+            return ItemStack.EMPTY;
+        }
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     /**

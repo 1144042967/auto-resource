@@ -25,12 +25,12 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
      */
     private static final int OUTPUT_SLOT_INDEX = 1;
 
-    private StateButton faceDown;
-    private StateButton faceUp;
-    private StateButton faceNorth;
-    private StateButton faceSouth;
-    private StateButton faceWest;
-    private StateButton faceEast;
+    private FaceButton faceDown;
+    private FaceButton faceUp;
+    private FaceButton faceNorth;
+    private FaceButton faceSouth;
+    private FaceButton faceWest;
+    private FaceButton faceEast;
     private StateButton placeButton;
     private StateButton outputButton;
     /**
@@ -48,13 +48,13 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     @Override
     protected void init() {
         super.init();
-        // 六个传输面（宽 44 以容纳英文面名）
-        this.faceDown = new StateButton(this.leftPos + 17, this.topPos + 76, 44, 12, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_DOWN));
-        this.faceUp = new StateButton(this.leftPos + 66, this.topPos + 76, 44, 12, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_UP));
-        this.faceNorth = new StateButton(this.leftPos + 115, this.topPos + 76, 44, 12, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_NORTH));
-        this.faceSouth = new StateButton(this.leftPos + 17, this.topPos + 92, 44, 12, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_SOUTH));
-        this.faceWest = new StateButton(this.leftPos + 66, this.topPos + 92, 44, 12, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_WEST));
-        this.faceEast = new StateButton(this.leftPos + 115, this.topPos + 92, 44, 12, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_EAST));
+        // 六个传输面（宽 44 以容纳英文面名；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名）
+        this.faceDown = new FaceButton(this.leftPos + 17, this.topPos + 76, 44, 12, Direction.DOWN, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_DOWN));
+        this.faceUp = new FaceButton(this.leftPos + 66, this.topPos + 76, 44, 12, Direction.UP, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_UP));
+        this.faceNorth = new FaceButton(this.leftPos + 115, this.topPos + 76, 44, 12, Direction.NORTH, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_NORTH));
+        this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 92, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_SOUTH));
+        this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 92, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_WEST));
+        this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 92, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), button -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_EAST));
         this.addRenderableWidget(this.faceDown);
         this.addRenderableWidget(this.faceUp);
         this.addRenderableWidget(this.faceNorth);
