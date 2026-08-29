@@ -185,39 +185,93 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
 
     /**
      * 快速转移物品
+     * <p>玩家背包 -> 充电槽/加速槽的合并不直接使用 vanilla {@link #moveItemStackTo}——
+     * vanilla 合并分支以物品自身上限作为目标上限，不感知槽位自定义上限（充电/加速槽上限为 1），
+     * 会绕过 {@link cn.sd.jrz.autoresource.storage.MachineSlotStorage#setItem} 的裁剪保护，
+     * 表现即"放入后槽位显示 64，重开 GUI 后实际没存"。
      */
     @Override
     @NotNull
     public ItemStack quickMoveStack(@NotNull Player player, int index) {
-        ItemStack itemStack = ItemStack.EMPTY;
+        if (index < 0 || index >= this.slots.size()) {
+            return ItemStack.EMPTY;
+        }
         Slot slot = this.slots.get(index);
-        if (slot.hasItem()) {
-            ItemStack stack = slot.getItem();
-            itemStack = stack.copy();
-            if (index < 2) {
-                // 机器槽 -> 玩家背包
-                if (!this.moveItemStackTo(stack, 2, 38, true)) {
-                    return ItemStack.EMPTY;
-                }
-            } else {
-                // 玩家背包 -> 优先充电槽，其次加速槽，其余留在背包
-                if (!this.moveItemStackTo(stack, 1, 2, false)) {
-                    if (!this.moveItemStackTo(stack, 0, 1, false)) {
-                        return ItemStack.EMPTY;
-                    }
-                }
+        if (!slot.hasItem()) {
+            return ItemStack.EMPTY;
+        }
+        ItemStack original = slot.getItem();
+        if (index < 2) {
+            // 机器槽 -> 玩家背包：vanilla moveItemStackTo 在该方向（玩家背包不限制堆叠）安全
+            ItemStack moving = original.copy();
+            if (!this.moveItemStackTo(moving, 2, 38, true)) {
+                return ItemStack.EMPTY;
             }
-            if (stack.isEmpty()) {
+            int placed = original.getCount() - moving.getCount();
+            if (placed <= 0) {
+                return ItemStack.EMPTY;
+            }
+            if (moving.isEmpty()) {
                 slot.set(ItemStack.EMPTY);
             } else {
                 slot.setChanged();
             }
-            if (stack.getCount() == itemStack.getCount()) {
-                return ItemStack.EMPTY;
-            }
-            slot.onTake(player, stack);
+            slot.onTake(player, moving);
+            return moving;
         }
-        return itemStack;
+        // 玩家背包 -> 优先充电槽(1)，其次加速槽(0)，全部尊重槽位自定义上限
+        ItemStack moving = original.copy();
+        ItemStack leftover = insertRespectingSlotLimit(moving, 1);
+        leftover = insertRespectingSlotLimit(leftover, 0);
+        int placed = original.getCount() - leftover.getCount();
+        if (placed <= 0) {
+            return ItemStack.EMPTY;
+        }
+        if (leftover.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+        slot.onTake(player, leftover);
+        return leftover;
+    }
+
+    /**
+     * 尊重槽位自定义上限地把 stack 合并/放入 destSlotIndex，返回剩余（与 {@code BlockGeneratorMenu.insertIntoMarkerSlot} 同构）。
+     */
+    private ItemStack insertRespectingSlotLimit(ItemStack stack, int destSlotIndex) {
+        if (stack.isEmpty()) {
+            return stack;
+        }
+        Slot dest = this.slots.get(destSlotIndex);
+        if (!dest.mayPlace(stack)) {
+            return stack;
+        }
+        ItemStack existing = dest.getItem();
+        int slotLimit = dest.getMaxStackSize(stack);
+        if (existing.isEmpty()) {
+            int toPlace = Math.min(slotLimit, stack.getCount());
+            if (toPlace <= 0) {
+                return stack;
+            }
+            ItemStack placed = stack.split(toPlace);
+            dest.setByPlayer(placed);
+            dest.setChanged();
+            return stack;
+        }
+        if (ItemStack.isSameItemSameTags(existing, stack) && existing.getCount() < slotLimit) {
+            int toPlace = Math.min(stack.getCount(), slotLimit - existing.getCount());
+            if (toPlace <= 0) {
+                return stack;
+            }
+            stack.shrink(toPlace);
+            ItemStack merged = existing.copy();
+            merged.grow(toPlace);
+            dest.setByPlayer(merged);
+            dest.setChanged();
+            return stack;
+        }
+        return stack;
     }
 
     /**

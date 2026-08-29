@@ -33,13 +33,8 @@ public class MachineSlot extends Slot {
      */
     @Override
     public int getMaxStackSize(ItemStack stack) {
-        return Math.min(this.getMaxStackSize(), container().getStackLimit(this.getContainerSlot(), stack));
-    }
-
-    @Override
-    public int getMaxStackSize() {
-        // Integer.MAX_VALUE 表示不额外限制，交给 getStackLimit 按物品与槽位计算
-        return Integer.MAX_VALUE;
+        // 基于具体 stack 的实际限制：物品自身上限与槽位自定义上限取小
+        return container().getStackLimit(this.getContainerSlot(), stack);
     }
 
     @Override

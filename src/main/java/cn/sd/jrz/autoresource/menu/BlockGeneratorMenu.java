@@ -233,7 +233,12 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     }
 
     /**
-     * 快速转移物品：标记槽不可取出，输出槽无实际物品；玩家背包只可移入标记槽
+     * 快速转移物品：标记槽不可取出，输出槽无实际物品；玩家背包只可移入标记槽。
+     * <p>注意：必须自己实现合并/放置逻辑，不直接使用 vanilla {@link #moveItemStackTo}——
+     * vanilla 的合并分支使用 {@code ItemStack.getMaxStackSize()}（物品自身上限）作为目标上限，
+     * 不感知 {@link net.minecraft.world.inventory.Slot#getMaxStackSize(ItemStack)} 的槽位自定义上限，
+     * 会绕过 {@link cn.sd.jrz.autoresource.storage.MachineSlotStorage#setItem} 的裁剪保护，
+     * 表现即"放入后两槽位显示 64，重开 GUI 后实际没存"。
      */
     @Override
     @NotNull
@@ -243,23 +248,59 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
             return ItemStack.EMPTY;
         }
         Slot slot = this.slots.get(index);
-        if (slot.hasItem()) {
-            ItemStack stack = slot.getItem();
-            ItemStack itemStack = stack.copy();
-            // 玩家背包 -> 尝试移入标记槽
-            if (!this.moveItemStackTo(stack, 0, 1, false)) {
-                return ItemStack.EMPTY;
-            }
-            if (stack.isEmpty()) {
-                slot.set(ItemStack.EMPTY);
-            } else {
-                slot.setChanged();
-            }
-            if (stack.getCount() == itemStack.getCount()) {
-                return ItemStack.EMPTY;
-            }
-            slot.onTake(player, stack);
+        if (!slot.hasItem()) {
+            return ItemStack.EMPTY;
         }
-        return ItemStack.EMPTY;
+        ItemStack original = slot.getItem();
+        ItemStack moving = original.copy();
+        ItemStack leftover = insertIntoMarkerSlot(moving);
+        int placed = original.getCount() - leftover.getCount();
+        if (placed <= 0) {
+            return ItemStack.EMPTY;
+        }
+        if (leftover.isEmpty()) {
+            slot.set(ItemStack.EMPTY);
+        } else {
+            slot.setChanged();
+        }
+        slot.onTake(player, leftover);
+        return leftover;
+    }
+
+    /**
+     * 尊重标记槽自定义上限（{@link Slot#getMaxStackSize(ItemStack)}）地把 stack 合并/放入标记槽，返回剩余。
+     * 该方法与 vanilla {@link #moveItemStackTo} 等价但避开了"以物品自身上限为目标槽上限"的合并 bug。
+     */
+    private ItemStack insertIntoMarkerSlot(ItemStack stack) {
+        Slot dest = this.slots.get(0);
+        if (!dest.mayPlace(stack)) {
+            return stack;
+        }
+        ItemStack existing = dest.getItem();
+        int slotLimit = dest.getMaxStackSize(stack);
+        if (existing.isEmpty()) {
+            int toPlace = Math.min(slotLimit, stack.getCount());
+            if (toPlace <= 0) {
+                return stack;
+            }
+            ItemStack placed = stack.split(toPlace);
+            dest.setByPlayer(placed);
+            dest.setChanged();
+            return stack;
+        }
+        if (ItemStack.isSameItemSameTags(existing, stack) && existing.getCount() < slotLimit) {
+            int toPlace = Math.min(stack.getCount(), slotLimit - existing.getCount());
+            if (toPlace <= 0) {
+                return stack;
+            }
+            stack.shrink(toPlace);
+            // 通过 setByPlayer → set → setItem 路径写回，由 MachineSlotStorage.setItem 的裁剪做最终防御
+            ItemStack merged = existing.copy();
+            merged.grow(toPlace);
+            dest.setByPlayer(merged);
+            dest.setChanged();
+            return stack;
+        }
+        return stack;
     }
 }
