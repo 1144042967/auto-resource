@@ -3,10 +3,14 @@ package cn.sd.jrz.autoresource.menu;
 import cn.sd.jrz.autoresource.entities.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.setup.ARRegistration;
 import net.minecraft.core.BlockPos;
+import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.neoforged.neoforge.items.SlotItemHandler;
@@ -39,6 +43,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     private int clientTickCount;
     private int clientSecond;
     private boolean clientPlaceFluidBelow;
+    private final int[] clientNeighborBlockId = new int[6];
 
     public LiquidGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(ARRegistration.LIQUID_GENERATOR_MENU.get(), id, playerInventory, pos);
@@ -66,6 +71,13 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
         // 六面传输开关 + 主动输出总开关数据槽（继承基类）
         addTransferFaceDataSlots();
         addOutputEnabledDataSlot();
+        // 六方向相邻方块注册 id（服务端读实体，客户端读同步值，供 GUI 方向按钮显示图标）
+        if (entity != null) {
+            for (Direction direction : Direction.values()) {
+                final int idx = direction.ordinal();
+                addDataSlot(makeDataSlot(() -> entity.getNeighborBlockId(direction), v -> clientNeighborBlockId[idx] = v));
+            }
+        }
     }
 
     /**
@@ -173,5 +185,24 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
             slot.onTake(player, stack);
         }
         return itemStack;
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        int id;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
+            id = entity.getNeighborBlockId(direction);
+        } else {
+            id = clientNeighborBlockId[direction.ordinal()];
+        }
+        if (id <= 0) {
+            return ItemStack.EMPTY;
+        }
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }
