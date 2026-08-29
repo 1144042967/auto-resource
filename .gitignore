@@ -38,6 +38,3 @@ hs_err_*.log
 replay_*.log
 *.hprof
 *.jfr
-
-# 本地编译期依赖（create-fabric jar，可从 Modrinth 重新下载）
-libs/*.jar
