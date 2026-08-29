@@ -22,9 +22,9 @@ import javax.annotation.Nonnull;
 public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>> extends AbstractContainerScreen<M> {
     protected static final int TEXT_COLOR = 4210752; // 0x404040 深灰
     /**
-     * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，上下至少留 2 px 边距：12 - 2*2 = 8 px）
+     * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，图标填满整按钮高度，无边距）
      */
-    protected static final int FACE_ICON_SIZE = 8;
+    protected static final int FACE_ICON_SIZE = 12;
 
     protected AbstractGeneratorScreen(M menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -128,10 +128,10 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
 
         @Override
         protected void renderWidget(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
-            renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
+            renderButtonBg(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
             ItemStack neighbor = AbstractGeneratorScreen.this.menu.getNeighborStack(this.direction);
             if (!neighbor.isEmpty()) {
-                // 有相邻方块：只显示物品图标，按 FACE_ICON_SIZE 缩放后居中（按钮高 12 px，上下至少留 2 px 边距）
+                // 有相邻方块：只显示物品图标，按 FACE_ICON_SIZE 缩放后居中（按钮高 12 px，图标填满整按钮高度）
                 renderFaceIcon(guiGraphics, this.getX(), this.getY(), this.getWidth(), this.getHeight(), neighbor);
             } else {
                 // 无相邻方块：显示方向名，居中

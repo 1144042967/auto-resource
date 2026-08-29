@@ -24,9 +24,9 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/water_wheel_motor_gui.png");
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
     /**
-     * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，上下至少留 2 px 边距：12 - 2*2 = 8 px）
+     * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，图标填满整按钮高度，无边距）
      */
-    private static final int FACE_ICON_SIZE = 8;
+    private static final int FACE_ICON_SIZE = 12;
 
     private StateButton directionButton;
     private FaceButton faceDown;
