@@ -1,12 +1,14 @@
 package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -21,11 +23,13 @@ import org.jetbrains.annotations.Nullable;
  * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
  * 六面传输开关与轮询索引（findIndex），提供面的开关判断、六面开关 NBT 读写与 setChanged 节流。
  * <p>
- * 1.21.1 适配：Mojang 仍保留 saveAdditional/loadAdditional 名称，但新增 HolderLookup.Provider 参数
- * 用于组件 NBT 编解码；saveWithoutMetadata 现在返回 CompoundTag 并使用 HolderLookup.Provider。
- * ExtendedScreenHandlerFactory 已被移除，菜单创建由标准 MenuProvider#createMenu 直接处理。
+ * 实现 {@link ExtendedScreenHandlerFactory}：打开 GUI 时向客户端附带机器坐标
+ * （对应 Forge 版 NetworkHooks.openScreen 携带的附加数据），客户端据此定位实体而非玩家位置。
+ * <p>
+ * 1.21.1 适配：ExtendedScreenHandlerFactory 接口改为泛型 D + StreamCodec 编解码
+ * （getScreenOpeningData 返回类型化数据）；saveAdditional 新增 HolderLookup.Provider 参数。
  */
-public abstract class AbstractGeneratorEntity extends BlockEntity implements MenuProvider {
+public abstract class AbstractGeneratorEntity extends BlockEntity implements MenuProvider, ExtendedScreenHandlerFactory<BlockPos> {
     public final DataConfig config;
 
     // 核心数据（output 单位因机器而异：FE 能量 / mB 流体 / 方块×1000）
@@ -129,6 +133,15 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         if (nbt.contains("outputEnabled", Tag.TAG_BYTE)) {
             outputEnabled = nbt.getBoolean("outputEnabled");
         }
+    }
+
+    /**
+     * 打开扩展菜单时向客户端同步的附加数据：机器坐标（客户端工厂据此构造同名菜单）
+     */
+    @Override
+    @NotNull
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return getBlockPos();
     }
 
     @Override

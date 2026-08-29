@@ -84,7 +84,7 @@ public class BlockGeneratorItem extends BlockItem {
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
         // 标记槽内容物描述（兼容未标记/为空的情况）
         if (tag.contains("markerSlot", Tag.TAG_COMPOUND)) {
-            MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(tag.getCompound("markerSlot"));
+            MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(context.registries(), tag.getCompound("markerSlot"));
             ItemStack marked = marker.getItem(0);
             if (!marked.isEmpty()) {
                 tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.marked", marked.getHoverName()).withStyle(ChatFormatting.GOLD));

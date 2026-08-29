@@ -13,11 +13,13 @@ import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -47,6 +49,13 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             Level level = getLevel();
             if (level != null && !level.isClientSide) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+                // sendBlockUpdated 只发方块状态；标记物品数据还需额外发送 BE 更新包，
+                // 客户端（GUI 标记/输出槽、四周贴图）才能即时读到 markerSlot
+                if (level instanceof ServerLevel serverLevel) {
+                    ChunkPos chunkPos = new ChunkPos(getBlockPos());
+                    ClientboundBlockEntityDataPacket packet = getUpdatePacket();
+                    serverLevel.getChunkSource().chunkMap.getPlayers(chunkPos, false).forEach(p -> p.connection.send(packet));
+                }
             }
         }
     }.setValidator(DataConfig::isBlockGeneratorItem).setSlotLimit(0, 1);
@@ -198,7 +207,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         saveTransferFaces(nbt);
         saveOutputEnabled(nbt);
         nbt.putBoolean("placeBlockBelow", placeBlockBelow);
-        nbt.put("markerSlot", markerSlot.serializeNBT());
+        nbt.put("markerSlot", markerSlot.serializeNBT(registryLookup));
     }
 
     /**
@@ -237,7 +246,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             placeBlockBelow = nbt.getBoolean("placeBlockBelow");
         }
         if (nbt.contains("markerSlot", Tag.TAG_COMPOUND)) {
-            markerSlot.deserializeNBT(nbt.getCompound("markerSlot"));
+            markerSlot.deserializeNBT(registryLookup, nbt.getCompound("markerSlot"));
         }
     }
 }

@@ -455,8 +455,8 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         nbt.putInt("wirelessRange", wirelessRange);
         nbt.putInt("transferRepeat", transferRepeat);
         saveTransferFaces(nbt);
-        nbt.put("starSlot", starSlot.serializeNBT());
-        nbt.put("chargeSlot", chargeSlot.serializeNBT());
+        nbt.put("starSlot", starSlot.serializeNBT(registryLookup));
+        nbt.put("chargeSlot", chargeSlot.serializeNBT(registryLookup));
     }
 
     @Override
@@ -491,10 +491,10 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         }
         loadTransferFaces(nbt);
         if (nbt.contains("starSlot", Tag.TAG_COMPOUND)) {
-            starSlot.deserializeNBT(nbt.getCompound("starSlot"));
+            starSlot.deserializeNBT(registryLookup, nbt.getCompound("starSlot"));
         }
         if (nbt.contains("chargeSlot", Tag.TAG_COMPOUND)) {
-            chargeSlot.deserializeNBT(nbt.getCompound("chargeSlot"));
+            chargeSlot.deserializeNBT(registryLookup, nbt.getCompound("chargeSlot"));
         }
     }
 }

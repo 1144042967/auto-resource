@@ -1,7 +1,6 @@
 package cn.sd.jrz.autoresource.storage;
 
 import net.minecraft.core.HolderLookup;
-import net.minecraft.core.RegistryAccess;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
 import net.minecraft.nbt.Tag;
@@ -91,15 +90,17 @@ public class MachineSlotStorage implements Container {
 
     // ==================== NBT 读写（键位兼容 Forge 版存档） ====================
 
-    public CompoundTag serializeNBT() {
+    /**
+     * 序列化槽位内容。1.21.1 的 ItemStack.save(provider, tag) 不填充传入的 tag，
+     * 而是返回编码后的新 Tag（内部走 CODEC.encode 到传入 prefix 上返回结果），
+     * 必须接收返回值并写入，否则槽位 NBT 为空、标记等内容静默丢失。
+     */
+    public CompoundTag serializeNBT(HolderLookup.Provider registryLookup) {
         ListTag nbtTagList = new ListTag();
-        HolderLookup.Provider registryLookup = RegistryAccess.EMPTY;
         for (int i = 0; i < stacks.size(); i++) {
             if (!stacks.get(i).isEmpty()) {
-                CompoundTag itemTag = new CompoundTag();
+                CompoundTag itemTag = (CompoundTag) stacks.get(i).save(registryLookup, new CompoundTag());
                 itemTag.putInt("Slot", i);
-                // 1.21.1：ItemStack.save(HolderLookup.Provider, Tag) 写入给定 Tag
-                stacks.get(i).save(registryLookup, itemTag);
                 nbtTagList.add(itemTag);
             }
         }
@@ -109,15 +110,13 @@ public class MachineSlotStorage implements Container {
         return nbt;
     }
 
-    public MachineSlotStorage deserializeNBT(CompoundTag nbt) {
+    public MachineSlotStorage deserializeNBT(HolderLookup.Provider registryLookup, CompoundTag nbt) {
         setSize(nbt.contains("Size", Tag.TAG_INT) ? nbt.getInt("Size") : stacks.size());
         ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
-        HolderLookup.Provider registryLookup = RegistryAccess.EMPTY;
         for (int i = 0; i < tagList.size(); i++) {
             CompoundTag itemTags = tagList.getCompound(i);
             int slot = itemTags.getInt("Slot");
             if (slot >= 0 && slot < stacks.size()) {
-                // 1.21.1：ItemStack.parseOptional(HolderLookup.Provider, CompoundTag) 返回 ItemStack
                 stacks.set(slot, ItemStack.parseOptional(registryLookup, itemTags));
             }
         }

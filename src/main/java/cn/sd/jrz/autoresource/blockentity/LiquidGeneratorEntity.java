@@ -401,8 +401,8 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         saveTransferFaces(nbt);
         saveOutputEnabled(nbt);
         nbt.putBoolean("placeFluidBelow", placeFluidBelow);
-        nbt.put("inputSlot", inputSlot.serializeNBT());
-        nbt.put("outputSlot", outputSlot.serializeNBT());
+        nbt.put("inputSlot", inputSlot.serializeNBT(registryLookup));
+        nbt.put("outputSlot", outputSlot.serializeNBT(registryLookup));
     }
 
     @Override
@@ -423,10 +423,10 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
             placeFluidBelow = nbt.getBoolean("placeFluidBelow");
         }
         if (nbt.contains("inputSlot", Tag.TAG_COMPOUND)) {
-            inputSlot.deserializeNBT(nbt.getCompound("inputSlot"));
+            inputSlot.deserializeNBT(registryLookup, nbt.getCompound("inputSlot"));
         }
         if (nbt.contains("outputSlot", Tag.TAG_COMPOUND)) {
-            outputSlot.deserializeNBT(nbt.getCompound("outputSlot"));
+            outputSlot.deserializeNBT(registryLookup, nbt.getCompound("outputSlot"));
         }
     }
 }

@@ -14,6 +14,8 @@ import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
+import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerType;
+import net.minecraft.core.BlockPos;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.resources.ResourceLocation;
@@ -83,31 +85,12 @@ public class Registration {
             BuiltInRegistries.BLOCK_ENTITY_TYPE, id("block_generator"),
             BlockEntityType.Builder.of((pos, state) -> new BlockGeneratorEntity(pos, state, DataConfig.BLOCK_GENERATOR), BLOCK_GENERATOR).build(null));
 
-    // ==================== Menus（1.21.1：ExtendedScreenHandlerType 已被 fabric-api 0.116 移除，
-    // 改用普通 MenuType + 工厂在创建时按玩家所在世界的实体坐标定位机器实体） ====================
+    // ==================== Menus（扩展屏幕处理器：打开时携带机器坐标，客户端工厂据此定位实体） ====================
 
     public static final MenuType<EnergyGeneratorMenu> ENERGY_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("energy_generator"),
-            new MenuType<>(Registration::createEnergyGeneratorMenu, null));
+            new ExtendedScreenHandlerType<>((id, inv, pos) -> new EnergyGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
     public static final MenuType<LiquidGeneratorMenu> LIQUID_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("liquid_generator"),
-            new MenuType<>(Registration::createLiquidGeneratorMenu, null));
+            new ExtendedScreenHandlerType<>((id, inv, pos) -> new LiquidGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
     public static final MenuType<BlockGeneratorMenu> BLOCK_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("block_generator"),
-            new MenuType<>(Registration::createBlockGeneratorMenu, null));
-
-    /**
-     * 通过玩家所在世界查找最近的对应实体并创建菜单（fallback：未找到实体时使用玩家坐标）
-     */
-    private static EnergyGeneratorMenu createEnergyGeneratorMenu(int id, net.minecraft.world.entity.player.Inventory inv) {
-        net.minecraft.core.BlockPos pos = inv.player.blockPosition();
-        return new EnergyGeneratorMenu(id, inv, pos);
-    }
-
-    private static LiquidGeneratorMenu createLiquidGeneratorMenu(int id, net.minecraft.world.entity.player.Inventory inv) {
-        net.minecraft.core.BlockPos pos = inv.player.blockPosition();
-        return new LiquidGeneratorMenu(id, inv, pos);
-    }
-
-    private static BlockGeneratorMenu createBlockGeneratorMenu(int id, net.minecraft.world.entity.player.Inventory inv) {
-        net.minecraft.core.BlockPos pos = inv.player.blockPosition();
-        return new BlockGeneratorMenu(id, inv, pos);
-    }
+            new ExtendedScreenHandlerType<>((id, inv, pos) -> new BlockGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
 }

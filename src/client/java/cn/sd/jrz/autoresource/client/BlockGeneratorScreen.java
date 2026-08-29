@@ -106,7 +106,8 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
 
     @Override
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
-        renderBackground(guiGraphics, mouseX, mouseY, partialTick);
+        // 注意：1.21.1 的 AbstractContainerScreen.renderBackground(4参) 内部会回调 renderBg，此处只能用只渲染背景的方法，否则无限递归
+        renderMenuBackground(guiGraphics);
         guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
         int trackLeft = this.leftPos + 12;
