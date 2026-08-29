@@ -23,12 +23,12 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
     private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/energy_generator_gui.png");
 
     private StateButton wirelessButton;
-    private StateButton faceDown;
-    private StateButton faceUp;
-    private StateButton faceNorth;
-    private StateButton faceSouth;
-    private StateButton faceWest;
-    private StateButton faceEast;
+    private FaceButton faceDown;
+    private FaceButton faceUp;
+    private FaceButton faceNorth;
+    private FaceButton faceSouth;
+    private FaceButton faceWest;
+    private FaceButton faceEast;
 
     public EnergyGeneratorScreen(EnergyGeneratorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title, 176, 310);
@@ -46,12 +46,12 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         this.addRenderableWidget(new MiniButton(this.leftPos + 132, this.topPos + 109, 16, 12, Component.literal("+"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_RANGE_UP)));
         this.addRenderableWidget(new MiniButton(this.leftPos + 128, this.topPos + 173, 16, 12, Component.literal("-"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_DOWN)));
         this.addRenderableWidget(new MiniButton(this.leftPos + 148, this.topPos + 173, 16, 12, Component.literal("+"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_UP)));
-        this.faceDown = new StateButton(this.leftPos + 17, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_DOWN));
-        this.faceUp = new StateButton(this.leftPos + 66, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_UP));
-        this.faceNorth = new StateButton(this.leftPos + 115, this.topPos + 136, 44, 12, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_NORTH));
-        this.faceSouth = new StateButton(this.leftPos + 17, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_SOUTH));
-        this.faceWest = new StateButton(this.leftPos + 66, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_WEST));
-        this.faceEast = new StateButton(this.leftPos + 115, this.topPos + 152, 44, 12, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_EAST));
+        this.faceDown = new FaceButton(this.leftPos + 17, this.topPos + 136, 44, 12, Direction.DOWN, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_DOWN));
+        this.faceUp = new FaceButton(this.leftPos + 66, this.topPos + 136, 44, 12, Direction.UP, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_UP));
+        this.faceNorth = new FaceButton(this.leftPos + 115, this.topPos + 136, 44, 12, Direction.NORTH, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_NORTH));
+        this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 152, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_SOUTH));
+        this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 152, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_WEST));
+        this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 152, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_EAST));
         this.addRenderableWidget(this.faceDown);
         this.addRenderableWidget(this.faceUp);
         this.addRenderableWidget(this.faceNorth);
