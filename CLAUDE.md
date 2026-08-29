@@ -30,14 +30,6 @@
 ./gradlew build
 ```
 
-### Create 联动编译条件
-
-build.gradle 会检测 `libs/create*.jar`：
-- 存在 → 以 `modCompileOnly` 参与编译，compat/create 全部代码生效
-- 不存在 → 从两个 source set 中排除 compat 相关类（CreateCompat 常驻，其余排除），保证无 jar 也能完整构建本体功能
-
-jar 请从 Modrinth「Create Fabric」下载（MC 1.20.1、0.5.1j 系列）放入 `libs/`。`libs/*.jar` 已被 .gitignore 忽略。
-
 ## 项目架构
 
 ```
@@ -63,14 +55,10 @@ src/main/java/cn/sd/jrz/autoresource/          # 通用 source set
 │   └── MachineSlot.java            # 替代 SlotItemHandler 的 GUI 槽位包装
 ├── menu/                          # 容器 ×4（DataSlot long 高低位拆分、clickMenuButton 按钮 id 与 Forge 版一致）
 ├── client/                        # （物理位置在 src/client/java，见下）
-├── compat/create/                 # 机械动力联动（仅当 Create 加载时经反射注册；需 libs/ jar 参与编译）
-│   ├── CreateCompat.java           # isCreateLoaded 判断 + 水车物品懒加载缓存（自身零 Create 引用）
-│   ├── CreateRegistration.java     # 反射入口 register()：注册 water_wheel_motor 四件套
-│   └── WaterWheelMotor{Block,Entity,Item,Menu}.java
 ├── network/
 │   └── ConfigSync.java             # 登录时下发配置快照（ServerPlayConnectionEvents.JOIN）
 ├── setup/
-│   ├── Registration.java           # Registry.register 直注册四类对象 + Create 反射触发点
+│   ├── Registration.java           # Registry.register 直注册四类对象
 │   ├── ItemManager.java            # FabricItemGroup 创造标签页
 │   └── TransferSetup.java          # Energy/Fluid/Item Storage.SIDED.registerForBlockEntity 集中挂接
 ├── util/
@@ -83,11 +71,7 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 ├── EnergyGeneratorScreen.java      # FE发电机 GUI
 ├── LiquidGeneratorScreen.java      # 流体生成器 GUI（进度条配色随流体）
 ├── BlockGeneratorScreen.java       # 方块生成器 GUI（输出槽点击提取：单击/Shift/空格）
-├── BlockGeneratorRenderer.java     # 标记物品四面渲染（getParticleIcon + cutout 平面矩形）
-└── compat/create/
-    ├── CreateRegistrationClient.java # 反射入口 registerScreens/registerRenderers
-    ├── WaterWheelMotorScreen.java    # 水车马达 GUI（方向按钮+转速显示）
-    └── WaterWheelMotorRenderer.java  # 四面转速文字渲染（Font.drawInBatch + Quaternionf）
+└── BlockGeneratorRenderer.java     # 标记物品四面渲染（getParticleIcon + cutout 平面矩形）
 ```
 
 ## 注册体系
@@ -97,7 +81,6 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 - 注册的机器：`energy_generator_fe`、`liquid_generator_water`、`liquid_generator_lava`、`block_generator`
 - 菜单类型为 `ExtendedScreenHandlerType`，打开时附带机器 `BlockPos`（对应 Forge IForgeMenuType + NetworkHooks）
 - 方块属性保持 Forge 版一致：蓝色、活塞推动销毁、硬度 0.5/抗性 3、光照 7
-- Create 联动字段（WATER_WHEEL_MOTOR 四个 @Nullable 字段）由 `CreateRegistration.register()` 反射填充
 
 ## 功能要点（与 Forge 版对齐）
 
@@ -121,14 +104,6 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 - 标记槽锁定后决定输出种类；`onContentsChanged` 触发 sendBlockUpdated 刷新客户端渲染
 - 输出展示槽为 vanilla SimpleContainer(1) ghost slot；提取经 clickMenuButton（1 个/一组/背包满）
 - 内部 存量=方块×1000；六面 push 用 ItemStorage.SIDED（insert 自动多槽合并，语义≈insertItemStacked）
-
-### 4. 水车马达（water_wheel_motor，可选）
-
-- `DirectionalKineticBlock + IBE` / `GeneratingKineticBlockEntity`，转速=水车数×(1|4)，容量=数量×(256|512) SU
-- `handleWheelContentsChanged()` 三重兜底保证加水车后动力网络正确重建（updateGeneratedRotation + 显式 updateStressFor/updateCapacityFor + detach/setNetwork(null)/setSpeed(0)/再传播）
-- Menu 构造时 `(MenuType<WaterWheelMotorMenu>) Registration.WATER_WHEEL_MOTOR_MENU` 强转读取
-- 槽位 setChanged 补发 handleWheelContentsChanged（moveItemStackTo 合并场景不触发 onContentsChanged）
-- 纹理坐标约定：水车槽 8,57；玩家槽基准 y=97（GUI png 已烘焙槽框）
 
 ## 配置系统
 
@@ -163,15 +138,14 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 ## 命名规范
 
-- 注册名：`<type>_generator_<material>` / `water_wheel_motor`
+- 注册名：`<type>_generator_<material>`
 - 语言键：`block.autoresource.<name>`、`item.autoresource.<name>`、`screen.autoresource.<name>`
-- 语言文件共 48 种（en_us/zh_cn 最全，含水车马达全部键；其余语言后续同步）
+- 语言文件共 48 种（en_us/zh_cn 最全；其余语言后续同步）
 
 ## 依赖
 
 - **Fabric Loader** ≥0.19.3（唯一硬加载器依赖）
 - **fabric-api** *（transfer/screen/itemgroup/networking/rendering 各子模块按需使用）
-- 可选：create-fabric ≥0.5.1（联动；运行时装 mod，开发装 libs/ jar）
 
 ## 待验证清单（首个构建批次逐项核对）
 
@@ -179,5 +153,4 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 2. teamreborn `EnergyStorage.ITEM.find(variant, context)` + `ContainerItemContext.forSlot(withInitial)`
 3. `FluidStorage.ITEM` 存在性（若缺失：通用容器灌装分支静默降级，桶特判不受影响）
 4. `BlockApiLookup.registerForBlockEntity((be, dir)->..., type)` 参数序
-5. 配方条件 `{"condition":"fabric:mod_loaded","values":["create"]}` 是否被 resource-conditions 模块识别
-6. `MachineSlot` 中 vanilla `Slot.container` 字段名与方法可见性
+5. `MachineSlot` 中 vanilla `Slot.container` 字段名与方法可见性

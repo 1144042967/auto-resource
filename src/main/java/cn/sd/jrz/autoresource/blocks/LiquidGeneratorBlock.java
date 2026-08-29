@@ -5,7 +5,6 @@ import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -19,8 +18,8 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -46,7 +45,6 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
     /**
      * 破坏时输入槽与输出槽中的物品掉落
      */
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
@@ -63,7 +61,6 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
         return drops;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {

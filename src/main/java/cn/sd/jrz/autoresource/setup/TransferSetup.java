@@ -8,8 +8,8 @@ import cn.sd.jrz.autoresource.capability.EnergyConnection;
 import cn.sd.jrz.autoresource.capability.LiquidConnection;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
-import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.Direction;
+import team.reborn.energy.api.EnergyStorage;
 
 /**
  * 机器对外的能量/流体/物品存储暴露（对应 Forge 版实体覆写 getCapability 的部分）：
@@ -28,10 +28,10 @@ public final class TransferSetup {
 
         // 流体生成器：六面输出流体
         FluidStorage.SIDED.registerForBlockEntity(
-                (LiquidGeneratorEntity entity, Direction direction) -> entity.getFluidConnection(),
+                (LiquidGeneratorEntity entity, Direction direction) -> new LiquidConnection(entity),
                 Registration.LIQUID_GENERATOR_WATER_ENTITY);
         FluidStorage.SIDED.registerForBlockEntity(
-                (LiquidGeneratorEntity entity, Direction direction) -> entity.getFluidConnection(),
+                (LiquidGeneratorEntity entity, Direction direction) -> new LiquidConnection(entity),
                 Registration.LIQUID_GENERATOR_LAVA_ENTITY);
 
         // 流体生成器的物品管道视图：插入仅进输入槽、抽取仅来自输出槽

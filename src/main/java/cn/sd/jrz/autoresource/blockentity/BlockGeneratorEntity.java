@@ -1,7 +1,6 @@
 package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.capability.BlockConnection;
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.storage.MachineSlotStorage;
 import cn.sd.jrz.autoresource.util.Tool;
@@ -23,7 +22,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -52,9 +50,6 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             }
         }
     }.setValidator(DataConfig::isBlockGeneratorItem).setSlotLimit(0, 1);
-
-    // 对外连接实例（六面相同；由 TransferSetup 暴露到 ItemStorage.SIDED）
-    private final BlockConnection blockConnection = new BlockConnection(this);
 
     public BlockGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(pos, state, config);

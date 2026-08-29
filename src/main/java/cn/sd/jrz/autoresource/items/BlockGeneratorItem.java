@@ -12,14 +12,11 @@ import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.tags.TagKey;
-import net.minecraft.world.item.BlockItem;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
+import net.minecraft.world.item.*;
+import net.minecraft.world.item.component.CustomData;
 import net.minecraft.world.level.block.Block;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -63,8 +60,8 @@ public class BlockGeneratorItem extends BlockItem {
         long second = config.getSecond();
         long step = config.getStep();
         // 1.21.1：BlockEntityTag 改为组件存储（DataComponents.BLOCK_ENTITY_DATA）
-        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        if (tag != null && !tag.isEmpty()) {
+        CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, CustomData.EMPTY).copyTag();
+        if (!tag.isEmpty()) {
             if (tag.contains("output", Tag.TAG_LONG)) {
                 output = tag.getLong("output") / 1000D;
             }
@@ -86,7 +83,7 @@ public class BlockGeneratorItem extends BlockItem {
         }
         tooltip.add(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
         // 标记槽内容物描述（兼容未标记/为空的情况）
-        if (tag != null && tag.contains("markerSlot", Tag.TAG_COMPOUND)) {
+        if (tag.contains("markerSlot", Tag.TAG_COMPOUND)) {
             MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(tag.getCompound("markerSlot"));
             ItemStack marked = marker.getItem(0);
             if (!marked.isEmpty()) {
@@ -173,7 +170,7 @@ public class BlockGeneratorItem extends BlockItem {
                 ResourceLocation loc = ResourceLocation.tryParse(id);
                 if (loc != null) {
                     Item item = BuiltInRegistries.ITEM.get(loc);
-                    if (item != null && item != net.minecraft.world.item.Items.AIR) {
+                    if (item != Items.AIR) {
                         supported.add(item);
                     }
                 }

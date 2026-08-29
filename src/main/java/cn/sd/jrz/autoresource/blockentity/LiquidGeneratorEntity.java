@@ -12,8 +12,8 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -31,16 +31,14 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * 流体生成器实体（水源机/岩浆机）：产量自动增长、输入槽填充/转移输出、上方容器充液、
  * 六面流体传输（可逐面禁用）、"下方生成流体"。各参数逐台独立保存。
- *
+ * <p>
  * 单位说明：内部存储单位为 mB（显示层除以 1000 折算成桶）；对外 Transfer API 以 droplets 计（×81）。
  */
 public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
@@ -66,13 +64,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     // 输出槽：只允许机器放入已填满的物品，玩家/管道不可主动放入；只能放 1 个
     public final MachineSlotStorage outputSlot = new MachineSlotStorage(1).setValidator(stack -> false);
 
-    // 对外连接实例（六面相同；由 TransferSetup 分别暴露到 FluidStorage/ItemStorage 的 SIDED 查找）
-    private final LiquidConnection fluidConnection = new LiquidConnection(this);
     private final DualSlotPipeView pipeView = new DualSlotPipeView(this);
-
-    public LiquidConnection getFluidConnection() {
-        return fluidConnection;
-    }
 
     public DualSlotPipeView getPipeView() {
         return pipeView;

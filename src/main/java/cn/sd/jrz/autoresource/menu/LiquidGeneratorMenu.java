@@ -147,7 +147,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
         if (id <= 0) {
             return ItemStack.EMPTY;
         }
-        //noinspection deprecation
+        //noinspection
         Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
         return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }

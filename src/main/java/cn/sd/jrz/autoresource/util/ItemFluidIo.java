@@ -14,13 +14,15 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 物品流体温养读写兼容层（替代 Forge 版对 ForgeCapabilities.FLUID_HANDLER_ITEM 的逐栈查询），
  * 经由 Fabric Transfer API 的 {@code FluidStorage.ITEM} 查找；vanilla 空桶不在其列（由调用方特判）。
- *
+ * <p>
  * 单位换算：Fabric Transfer API 流体数量为 droplets，官方规定 1 mB = 81 droplets、1 桶 = 81000 droplets；
  * 本机内部存储单位即 mB（输出显示除以 1000 折算为桶）。
  */
 public final class ItemFluidIo {
 
-    /** 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000） */
+    /**
+     * 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000）
+     */
     public static final long DROPLETS_PER_MB = 81L;
 
     private ItemFluidIo() {
@@ -34,7 +36,7 @@ public final class ItemFluidIo {
         if (storage == null || !storage.supportsInsertion()) {
             return false;
         }
-        try (Transaction txn = Transaction.openOuter()) {
+        try (Transaction ignored = Transaction.openOuter()) {
             FluidVariant variant = FluidVariant.of(fluid);
             long currentlyHeld = 0;
             boolean hasCompatibleTank = false;
@@ -69,7 +71,6 @@ public final class ItemFluidIo {
      * 向独立物品灌入流体，最多灌入 {@code maxMillibuckets} mB，返回 [实际灌入 mB, 变换后的物品堆栈]；
      * 不能灌入（无能力/不接受该流体）时返回 null。调用方决定结果堆栈的去处（回写输入槽/转入输出槽）。
      */
-    @SuppressWarnings("removal")
     @Nullable
     public static FillResult fill(ItemStack stack, Fluid fluid, long maxMillibuckets) {
         if (stack.isEmpty() || maxMillibuckets <= 0) {
@@ -128,7 +129,6 @@ public final class ItemFluidIo {
         }
     }
 
-    @SuppressWarnings("removal")
     private static Storage<FluidVariant> findWithInitial(ItemStack stack) {
         ContainerItemContext context = ContainerItemContext.withConstant(ItemVariant.of(stack), stack.getCount());
         return context.find(FluidStorage.ITEM);

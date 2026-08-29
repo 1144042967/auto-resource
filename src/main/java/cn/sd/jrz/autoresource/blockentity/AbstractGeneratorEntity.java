@@ -3,7 +3,6 @@ package cn.sd.jrz.autoresource.blockentity;
 import cn.sd.jrz.autoresource.DataConfig;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.Tag;
@@ -12,20 +11,16 @@ import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
-import net.minecraft.world.item.Item;
-import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
 /**
  * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
  * 六面传输开关与轮询索引（findIndex），提供面的开关判断、六面开关 NBT 读写与 setChanged 节流。
- *
+ * <p>
  * 1.21.1 适配：Mojang 仍保留 saveAdditional/loadAdditional 名称，但新增 HolderLookup.Provider 参数
  * 用于组件 NBT 编解码；saveWithoutMetadata 现在返回 CompoundTag 并使用 HolderLookup.Provider。
  * ExtendedScreenHandlerFactory 已被移除，菜单创建由标准 MenuProvider#createMenu 直接处理。
@@ -58,15 +53,6 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         super(config.getEntityType(), pos, state);
         this.config = config;
         this.output = config.getMin();
-    }
-
-    /**
-     * 获取当前 HolderLookup.Provider，用于 1.21.1 BlockEntity 的 saveAdditional/loadAdditional 回调。
-     * level 为 null 时退化返回 null（写入流程默认就会跳过我们的字段）。
-     */
-    @Nullable
-    protected HolderLookup.Provider lookup() {
-        return level != null ? level.registryAccess() : null;
     }
 
     /**
@@ -161,17 +147,7 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
         if (level == null) {
             return 0;
         }
-        //noinspection deprecation
+        //noinspection
         return BuiltInRegistries.BLOCK.getId(level.getBlockState(worldPosition.relative(direction)).getBlock());
-    }
-
-    /**
-     * 指定方向相邻方块的物品栈（数量 1）。无方块或方块无对应物品时返回空。用于 GUI 方向按钮显示相邻方块图标。
-     */
-    @NotNull
-    public ItemStack getNeighborStack(Direction direction) {
-        //noinspection deprecation
-        Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();
-        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }

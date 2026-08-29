@@ -165,7 +165,7 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
         if (id <= 0) {
             return ItemStack.EMPTY;
         }
-        //noinspection deprecation
+        //noinspection
         Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
         return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }

@@ -9,10 +9,9 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
-import net.minecraft.world.item.Item.TooltipContext;
 import net.minecraft.world.level.block.Block;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 public class EnergyGeneratorItem extends BlockItem {
@@ -47,7 +46,7 @@ public class EnergyGeneratorItem extends BlockItem {
         long step = config.getStep();
         // 1.21.1：BlockEntityTag 改为组件存储（DataComponents.BLOCK_ENTITY_DATA），不存在则为空
         CompoundTag tag = stack.getOrDefault(DataComponents.BLOCK_ENTITY_DATA, net.minecraft.world.item.component.CustomData.EMPTY).copyTag();
-        if (tag != null && !tag.isEmpty()) {
+        if (!tag.isEmpty()) {
             if (tag.contains("output", Tag.TAG_LONG)) {
                 output = tag.getLong("output");
             }

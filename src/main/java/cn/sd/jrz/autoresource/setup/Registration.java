@@ -2,23 +2,20 @@ package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.DataConfig;
-import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
-import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
-import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
-import cn.sd.jrz.autoresource.compat.create.CreateCompat;
+import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
-import cn.sd.jrz.autoresource.menu.AbstractGeneratorMenu;
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.core.registries.Registries;
 import net.minecraft.resources.ResourceLocation;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.item.DyeColor;
@@ -28,8 +25,6 @@ import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockBehaviour;
 import net.minecraft.world.level.material.PushReaction;
 
-import org.jetbrains.annotations.Nullable;
-
 /**
  * 中心注册表：Fabric 使用 Registry.register 直接注册（对应 Forge 版的 DeferredRegister），
  * 所有机器方块属性保持一致：蓝色、活塞推动销毁、硬度 0.5/爆炸抗性 3、发光 7。
@@ -37,11 +32,6 @@ import org.jetbrains.annotations.Nullable;
 public class Registration {
 
     public static void init() {
-        // 机械动力联动：仅当 Create 加载时经反射注册（不能在字节码里引用 Create 类，否则无 Create 时 NoClassDefFoundError）。
-        if (CreateCompat.isCreateLoaded()) {
-            CreateCompat.invokeRegistration("register", new Class<?>[0], new Object[0]);
-        }
-
         // 方块实体持有的能量/流体/物品存储向周边暴露（六面均可访问）
         TransferSetup.init();
     }
@@ -97,11 +87,11 @@ public class Registration {
     // 改用普通 MenuType + 工厂在创建时按玩家所在世界的实体坐标定位机器实体） ====================
 
     public static final MenuType<EnergyGeneratorMenu> ENERGY_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("energy_generator"),
-            new MenuType<>((id, inv) -> createEnergyGeneratorMenu(id, inv), null));
+            new MenuType<>(Registration::createEnergyGeneratorMenu, null));
     public static final MenuType<LiquidGeneratorMenu> LIQUID_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("liquid_generator"),
-            new MenuType<>((id, inv) -> createLiquidGeneratorMenu(id, inv), null));
+            new MenuType<>(Registration::createLiquidGeneratorMenu, null));
     public static final MenuType<BlockGeneratorMenu> BLOCK_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("block_generator"),
-            new MenuType<>((id, inv) -> createBlockGeneratorMenu(id, inv), null));
+            new MenuType<>(Registration::createBlockGeneratorMenu, null));
 
     /**
      * 通过玩家所在世界查找最近的对应实体并创建菜单（fallback：未找到实体时使用玩家坐标）
@@ -120,15 +110,4 @@ public class Registration {
         net.minecraft.core.BlockPos pos = inv.player.blockPosition();
         return new BlockGeneratorMenu(id, inv, pos);
     }
-
-    // ==================== Create（机械动力）联动 —— 仅当 Create 加载时由 CreateRegistration 反射填充，否则均为 null ====================
-
-    @Nullable
-    public static Block WATER_WHEEL_MOTOR;
-    @Nullable
-    public static Item WATER_WHEEL_MOTOR_ITEM;
-    @Nullable
-    public static BlockEntityType<?> WATER_WHEEL_MOTOR_ENTITY;
-    @Nullable
-    public static MenuType<?> WATER_WHEEL_MOTOR_MENU;
 }

@@ -2,10 +2,9 @@ package cn.sd.jrz.autoresource.util;
 
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
-import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.world.item.ItemStack;
-
 import org.jetbrains.annotations.Nullable;
+import team.reborn.energy.api.EnergyStorage;
 
 /**
  * 物品能量读写兼容层（替代 Forge 版对 ForgeCapabilities.ENERGY 的逐栈查询）。
@@ -45,7 +44,7 @@ public final class ItemEnergyIo {
             return 0;
         }
         try (Transaction txn = Transaction.openOuter()) {
-            long received = Math.min(storage.insert(Math.min(maxAmount, Long.MAX_VALUE), txn), maxAmount);
+            long received = Math.min(storage.insert(maxAmount, txn), maxAmount);
             txn.commit();
             return Math.max(0, received);
         } catch (Exception e) {
@@ -57,7 +56,6 @@ public final class ItemEnergyIo {
      * 一次性上下文向独立物品充能，返回 [充入量, 结果堆栈]；用于没有对应存储视图的场景（如装备槽），
      * 调用方负责将结果堆栈写回原位置；不可充电时返回 null。
      */
-    @SuppressWarnings("removal")
     @Nullable
     public static Result receiveStandalone(ItemStack stack, long maxAmount) {
         if (stack.isEmpty() || maxAmount <= 0) {
@@ -81,7 +79,6 @@ public final class ItemEnergyIo {
         }
     }
 
-    @SuppressWarnings("removal")
     private static EnergyStorage findWithInitial(ItemStack stack) {
         ContainerItemContext context = ContainerItemContext.withConstant(net.fabricmc.fabric.api.transfer.v1.item.ItemVariant.of(stack), stack.getCount());
         return context.find(EnergyStorage.ITEM);

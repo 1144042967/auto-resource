@@ -7,6 +7,7 @@ import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Iterator;
 
 /**

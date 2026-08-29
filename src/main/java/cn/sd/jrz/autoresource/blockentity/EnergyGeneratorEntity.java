@@ -9,7 +9,6 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.fabricmc.fabric.api.transfer.v1.item.InventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
-import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
@@ -28,9 +27,10 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
 import net.minecraft.world.phys.AABB;
-
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+import team.reborn.energy.api.EnergyStorage;
+
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -84,9 +84,6 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
             setChanged();
         }
     }.setValidator(ItemEnergyIo::canReceive).setSlotLimit(0, 1);
-
-    // 对外能量连接（六面相同；由 TransferSetup 暴露）
-    private final EnergyConnection energyConnection = new EnergyConnection(this);
 
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(pos, state, config);

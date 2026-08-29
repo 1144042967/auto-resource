@@ -4,14 +4,12 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.BlockHitResult;
-
 import org.jetbrains.annotations.NotNull;
 
 public class BlockGeneratorBlock extends AbstractGeneratorBlock {
@@ -33,7 +31,6 @@ public class BlockGeneratorBlock extends AbstractGeneratorBlock {
         generator.serverTick();
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {

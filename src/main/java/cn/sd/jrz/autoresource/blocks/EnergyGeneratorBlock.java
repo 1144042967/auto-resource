@@ -4,7 +4,6 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -14,8 +13,8 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -41,7 +40,6 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
     /**
      * 破坏时充电槽物品掉落（加速槽内容随物品 NBT 保留，不在此掉落）
      */
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
@@ -54,7 +52,6 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
         return drops;
     }
 
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
         if (level.isClientSide) {

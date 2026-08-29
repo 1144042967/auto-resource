@@ -12,7 +12,9 @@ import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -71,70 +73,6 @@ public class MachineSlotStorage implements Container {
     public MachineSlotStorage setSlotLimit(int slot, int limit) {
         slotLimits[slot] = limit;
         return this;
-    }
-
-    /**
-     * 向指定槽插入物品并返回剩余部分；simulate 为 true 时只计算不入账
-     */
-    @NotNull
-    public ItemStack insertItem(int slot, @NotNull ItemStack stack, boolean simulate) {
-        if (stack.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        if (!isItemValid(slot, stack)) {
-            return stack;
-        }
-        ItemStack existing = stacks.get(slot);
-
-        int limit = getStackLimit(slot, existing);
-        if (!existing.isEmpty()) {
-            if (!ItemStack.isSameItemSameComponents(existing, stack)) {
-                return stack;
-            }
-            limit -= existing.getCount();
-        }
-        if (limit <= 0) {
-            return stack;
-        }
-        boolean reachedLimit = stack.getCount() > limit;
-        if (!simulate) {
-            if (existing.isEmpty()) {
-                stacks.set(slot, reachedLimit ? stack.split(limit) : stack.split(stack.getCount()));
-            } else {
-                existing.grow(reachedLimit ? limit : stack.getCount());
-            }
-            onContentsChanged(slot);
-        } else if (reachedLimit) {
-            // 模拟模式下扣减副本计数以返回剩余量
-            stack = stack.copy();
-            stack.shrink(limit);
-        }
-        return reachedLimit ? stack : ItemStack.EMPTY;
-    }
-
-    /**
-     * 从指定槽提取至多 amount 个物品；simulate 为 true 时只计算不入账
-     */
-    @NotNull
-    public ItemStack extractItem(int slot, int amount, boolean simulate) {
-        if (amount == 0) {
-            return ItemStack.EMPTY;
-        }
-        ItemStack existing = stacks.get(slot);
-        if (existing.isEmpty()) {
-            return ItemStack.EMPTY;
-        }
-        int toExtract = Math.min(amount, existing.getCount());
-        ItemStack extracted = existing.copy();
-        extracted.setCount(toExtract);
-        if (!simulate) {
-            existing.shrink(toExtract);
-            if (existing.isEmpty()) {
-                stacks.set(slot, ItemStack.EMPTY);
-            }
-            onContentsChanged(slot);
-        }
-        return extracted;
     }
 
     /**
@@ -247,9 +185,7 @@ public class MachineSlotStorage implements Container {
 
     @Override
     public void clearContent() {
-        for (int i = 0; i < stacks.size(); i++) {
-            stacks.set(i, ItemStack.EMPTY);
-        }
+        Collections.fill(stacks, ItemStack.EMPTY);
         onChanged();
     }
 

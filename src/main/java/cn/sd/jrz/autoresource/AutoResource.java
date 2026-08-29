@@ -19,8 +19,4 @@ public class AutoResource implements ModInitializer {
         // 玩家登录时向客户端下发配置快照
         ConfigSync.init();
     }
-
-    public static String modId() {
-        return MODID;
-    }
 }

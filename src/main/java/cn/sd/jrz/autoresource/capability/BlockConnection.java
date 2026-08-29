@@ -1,13 +1,13 @@
 package cn.sd.jrz.autoresource.capability;
 
 import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
-import net.minecraft.world.item.ItemStack;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
 import net.fabricmc.fabric.api.transfer.v1.storage.StorageView;
 import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
-
+import net.minecraft.world.item.ItemStack;
 import org.jetbrains.annotations.NotNull;
+
 import java.util.Iterator;
 
 /**

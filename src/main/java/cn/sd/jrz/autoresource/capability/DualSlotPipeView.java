@@ -9,13 +9,14 @@ import net.fabricmc.fabric.api.transfer.v1.transaction.TransactionContext;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
+
 import java.util.List;
 
 /**
  * 流体生成器的物品管道视图（对应 Forge 版暴露的匿名 IItemHandler）：
  * - 插入只能进入输入槽（槽 0），抽取只能来自输出槽（槽 1），保证单向流动
  * - 以 CombinedStorage 组合两个 SingleStackStorage 子视图实现；
- *   SingleStackStorage 自带事务快照，事务中止时自动回滚堆栈
+ * SingleStackStorage 自带事务快照，事务中止时自动回滚堆栈
  */
 public class DualSlotPipeView extends CombinedStorage<ItemVariant, Storage<ItemVariant>> {
 

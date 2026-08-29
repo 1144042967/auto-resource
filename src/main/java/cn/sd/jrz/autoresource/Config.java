@@ -32,15 +32,25 @@ public class Config {
         }
 
         public static class FE {
-            /** 最小产量 */
+            /**
+             * 最小产量
+             */
             public long min = 1;
-            /** 最大产量 */
+            /**
+             * 最大产量
+             */
             public long max = Long.MAX_VALUE;
-            /** 每次增长间隔秒数 */
+            /**
+             * 每次增长间隔秒数
+             */
             public long second = 1;
-            /** 每次产量增量 */
+            /**
+             * 每次产量增量
+             */
             public long step = 1;
-            /** 放入加速槽的增长加速物品（加速后增长量=当前发电量 1%） */
+            /**
+             * 放入加速槽的增长加速物品（加速后增长量=当前发电量 1%）
+             */
             @SerializedName("star_item")
             public String starItem = "minecraft:nether_star";
         }
@@ -59,9 +69,6 @@ public class Config {
             public long second;
             public long step;
 
-            public Rate() {
-            }
-
             public Rate(long min, long max, long second, long step) {
                 this.min = min;
                 this.max = max;
@@ -72,7 +79,9 @@ public class Config {
 
         public static class BlockGroup {
             public Rate generator = new Rate(50, Long.MAX_VALUE, 10, 50);
-            /** 方块生成机可生成产品列表：物品 ID 或 # 开头的标签 */
+            /**
+             * 方块生成机可生成产品列表：物品 ID 或 # 开头的标签
+             */
             public List<String> items = defaultItems();
         }
 
