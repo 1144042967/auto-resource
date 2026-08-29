@@ -32,11 +32,12 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
 
     /**
      * 在按钮内居中绘制缩放后的物品图标（用于方向按钮显示相邻方块）
-     * @param x 按钮左边界
-     * @param y 按钮上边界
-     * @param buttonWidth 按钮宽度
+     *
+     * @param x            按钮左边界
+     * @param y            按钮上边界
+     * @param buttonWidth  按钮宽度
      * @param buttonHeight 按钮高度
-     * @param stack 要渲染的物品栈
+     * @param stack        要渲染的物品栈
      */
     protected void renderFaceIcon(GuiGraphics guiGraphics, int x, int y, int buttonWidth, int buttonHeight, ItemStack stack) {
         // 物品默认渲染为 16×16 px；按目标尺寸等比缩放

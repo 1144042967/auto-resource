@@ -2,13 +2,13 @@ package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.DataConfig;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
 import cn.sd.jrz.autoresource.compat.create.CreateCompat;
-import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
-import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
-import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
 import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
