@@ -1,5 +1,6 @@
 package cn.sd.jrz.autoresource.compat.create;
 
+import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -22,6 +23,10 @@ import javax.annotation.Nonnull;
 public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMotorMenu> {
     private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/water_wheel_motor_gui.png");
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
+    /**
+     * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，上下至少留 2 px 边距：12 - 2*2 = 8 px）
+     */
+    private static final int FACE_ICON_SIZE = 8;
 
     private StateButton directionButton;
     private FaceButton faceDown;
@@ -36,6 +41,21 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
         this.imageWidth = 176;
         this.imageHeight = 177;
         this.inventoryLabelY = 80;
+    }
+
+    /**
+     * 在按钮内居中绘制缩放后的物品图标（用于方向按钮显示相邻方块）
+     */
+    private void renderFaceIcon(GuiGraphics guiGraphics, int x, int y, int buttonWidth, int buttonHeight, ItemStack stack) {
+        float scale = FACE_ICON_SIZE / 16.0F;
+        int iconX = x + (buttonWidth - FACE_ICON_SIZE) / 2;
+        int iconY = y + (buttonHeight - FACE_ICON_SIZE) / 2;
+        PoseStack poseStack = guiGraphics.pose();
+        poseStack.pushPose();
+        poseStack.translate(iconX, iconY, 100.0F);
+        poseStack.scale(scale, scale, scale);
+        guiGraphics.renderItem(stack, 0, 0);
+        poseStack.popPose();
     }
 
     @Override
@@ -160,10 +180,8 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
             renderButtonBg(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
             ItemStack neighbor = WaterWheelMotorScreen.this.menu.getNeighborStack(this.direction);
             if (!neighbor.isEmpty()) {
-                // 有相邻方块：只显示物品图标，整体居中
-                int iconX = this.getX() + (this.getWidth() - 16) / 2;
-                int iconY = this.getY() + (this.getHeight() - 16) / 2;
-                guiGraphics.renderItem(neighbor, iconX, iconY);
+                // 有相邻方块：只显示物品图标，按 FACE_ICON_SIZE 缩放后居中（按钮高 12 px，上下至少留 2 px 边距）
+                WaterWheelMotorScreen.this.renderFaceIcon(guiGraphics, this.getX(), this.getY(), this.getWidth(), this.getHeight(), neighbor);
             } else {
                 // 无相邻方块：显示方向名，居中
                 guiGraphics.drawCenteredString(WaterWheelMotorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
