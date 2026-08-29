@@ -7,7 +7,7 @@
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
 - **Minecraft 版本**: `1.20.1`
-- **Loader**: Fabric Loader `0.19.3` + fabric-api `0.92.11+1.20.1`
+- **Loader**: Fabric Loader `0.16.13` + fabric-api `0.92.11+1.20.1`
 - **Loom**: `net.fabricmc.fabric-loom-remap:1.17-SNAPSHOT`（Gradle wrapper 9.5.1）
 - **Java 版本**: `17`，Mappings 为 `official` (Mojang)
 - **许可证**: `GNU LGPL v3`
@@ -169,7 +169,7 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 ## 依赖
 
-- **Fabric Loader** ≥0.19.3（唯一硬加载器依赖）
+- **Fabric Loader** ≥0.16.13（唯一硬加载器依赖）
 - **fabric-api** *（transfer/screen/itemgroup/networking/rendering 各子模块按需使用）
 - 可选：create-fabric ≥0.5.1（联动；运行时装 mod，开发装 libs/ jar）
 
