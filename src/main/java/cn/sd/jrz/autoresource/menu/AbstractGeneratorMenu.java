@@ -9,6 +9,7 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.entity.BlockEntity;
 
 import javax.annotation.Nonnull;
@@ -118,6 +119,15 @@ public abstract class AbstractGeneratorMenu<T extends AbstractGeneratorEntity> e
             return entity.outputEnabled;
         }
         return clientOutputEnabled;
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     * （默认返回空，由子类按需覆写以提供具体实现）
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        return ItemStack.EMPTY;
     }
 
     @Override
