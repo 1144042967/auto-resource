@@ -1,0 +1,116 @@
+package cn.sd.jrz.autoresource.setup;
+
+import cn.sd.jrz.autoresource.AutoResource;
+import cn.sd.jrz.autoresource.DataConfig;
+import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
+import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
+import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
+import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
+import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
+import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
+import cn.sd.jrz.autoresource.items.LiquidGeneratorItem;
+import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
+import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
+import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuType;
+import net.minecraft.core.BlockPos;
+import net.minecraft.core.Registry;
+import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.registries.Registries;
+import net.minecraft.resources.Identifier;
+import net.minecraft.world.inventory.MenuType;
+import net.minecraft.world.item.DyeColor;
+import net.minecraft.world.item.Item;
+import net.minecraft.world.level.block.Block;
+import net.minecraft.world.level.block.entity.BlockEntityType;
+import net.minecraft.world.level.block.state.BlockBehaviour;
+import net.minecraft.world.level.material.PushReaction;
+
+import org.jetbrains.annotations.Nullable;
+
+/**
+ * 中心注册表：Fabric 使用 Registry.register 直接注册（对应 Forge 版的 DeferredRegister），
+ * 所有机器方块属性保持一致：蓝色、活塞推动销毁、硬度 0.5/爆炸抗性 3、发光 7。
+ */
+public class Registration {
+
+    public static void init() {
+        // 机械动力联动：仅当 Create 加载时经反射注册（不能在字节码里引用 Create 类，否则无 Create 时 NoClassDefFoundError）。
+        if (CreateCompat.isCreateLoaded()) {
+            CreateCompat.invokeRegistration("register", new Class<?>[0], new Object[0]);
+        }
+
+        // 方块实体持有的能量/流体/物品存储向周边暴露（六面均可访问）
+        TransferSetup.init();
+    }
+
+    public static Identifier id(String path) {
+        return Identifier.fromNamespaceAndPath(AutoResource.MODID, path);
+    }
+
+    private static final BlockBehaviour.Properties BLOCK_PROPERTIES = BlockBehaviour.Properties.of()
+            .mapColor(DyeColor.BLUE)
+            .pushReaction(PushReaction.POPPED)
+            .strength(0.5f, 3.0f)
+            .lightLevel(state -> 7);
+
+    // ==================== Blocks ====================
+
+    public static final Block ENERGY_GENERATOR_FE = Registry.register(BuiltInRegistries.BLOCK, id("energy_generator_fe"),
+            new EnergyGeneratorBlock(BLOCK_PROPERTIES, DataConfig.ENERGY_GENERATOR_FE));
+    public static final Block LIQUID_GENERATOR_WATER = Registry.register(BuiltInRegistries.BLOCK, id("liquid_generator_water"),
+            new LiquidGeneratorBlock(BLOCK_PROPERTIES, DataConfig.LIQUID_GENERATOR_WATER));
+    public static final Block LIQUID_GENERATOR_LAVA = Registry.register(BuiltInRegistries.BLOCK, id("liquid_generator_lava"),
+            new LiquidGeneratorBlock(BLOCK_PROPERTIES, DataConfig.LIQUID_GENERATOR_LAVA));
+    public static final Block BLOCK_GENERATOR = Registry.register(BuiltInRegistries.BLOCK, id("block_generator"),
+            new BlockGeneratorBlock(BLOCK_PROPERTIES, DataConfig.BLOCK_GENERATOR));
+
+    // ==================== Items ====================
+
+    public static final Item ENERGY_GENERATOR_FE_ITEM = Registry.register(BuiltInRegistries.ITEM, id("energy_generator_fe"),
+            new EnergyGeneratorItem(ENERGY_GENERATOR_FE, DataConfig.ENERGY_GENERATOR_FE));
+    public static final Item LIQUID_GENERATOR_WATER_ITEM = Registry.register(BuiltInRegistries.ITEM, id("liquid_generator_water"),
+            new LiquidGeneratorItem(LIQUID_GENERATOR_WATER, DataConfig.LIQUID_GENERATOR_WATER));
+    public static final Item LIQUID_GENERATOR_LAVA_ITEM = Registry.register(BuiltInRegistries.ITEM, id("liquid_generator_lava"),
+            new LiquidGeneratorItem(LIQUID_GENERATOR_LAVA, DataConfig.LIQUID_GENERATOR_LAVA));
+    public static final Item BLOCK_GENERATOR_ITEM = Registry.register(BuiltInRegistries.ITEM, id("block_generator"),
+            new BlockGeneratorItem(BLOCK_GENERATOR, DataConfig.BLOCK_GENERATOR));
+
+    // ==================== Block Entities ====================
+
+    public static final BlockEntityType<EnergyGeneratorEntity> ENERGY_GENERATOR_FE_ENTITY = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE, id("energy_generator_fe"),
+            new BlockEntityType<>((pos, state) -> new EnergyGeneratorEntity(pos, state, DataConfig.ENERGY_GENERATOR_FE), java.util.Set.of(ENERGY_GENERATOR_FE)));
+    public static final BlockEntityType<LiquidGeneratorEntity> LIQUID_GENERATOR_WATER_ENTITY = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE, id("liquid_generator_water"),
+            new BlockEntityType<>((pos, state) -> new LiquidGeneratorEntity(pos, state, DataConfig.LIQUID_GENERATOR_WATER), java.util.Set.of(LIQUID_GENERATOR_WATER)));
+    public static final BlockEntityType<LiquidGeneratorEntity> LIQUID_GENERATOR_LAVA_ENTITY = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE, id("liquid_generator_lava"),
+            new BlockEntityType<>((pos, state) -> new LiquidGeneratorEntity(pos, state, DataConfig.LIQUID_GENERATOR_LAVA), java.util.Set.of(LIQUID_GENERATOR_LAVA)));
+    public static final BlockEntityType<BlockGeneratorEntity> BLOCK_GENERATOR_ENTITY = Registry.register(
+            BuiltInRegistries.BLOCK_ENTITY_TYPE, id("block_generator"),
+            new BlockEntityType<>((pos, state) -> new BlockGeneratorEntity(pos, state, DataConfig.BLOCK_GENERATOR), java.util.Set.of(BLOCK_GENERATOR)));
+
+    // ==================== Menus（扩展菜单类型：打开时携带机器坐标） ====================
+
+    public static final MenuType<EnergyGeneratorMenu> ENERGY_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("energy_generator"),
+            new ExtendedMenuType<>((id, inv, pos) -> new EnergyGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
+    public static final MenuType<LiquidGeneratorMenu> LIQUID_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("liquid_generator"),
+            new ExtendedMenuType<>((id, inv, pos) -> new LiquidGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
+    public static final MenuType<BlockGeneratorMenu> BLOCK_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("block_generator"),
+            new ExtendedMenuType<>((id, inv, pos) -> new BlockGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
+
+    // ==================== Create（机械动力）联动 —— 仅当 Create 加载时由 CreateRegistration 反射填充，否则均为 null ====================
+
+    @Nullable
+    public static Block WATER_WHEEL_MOTOR;
+    @Nullable
+    public static Item WATER_WHEEL_MOTOR_ITEM;
+    @Nullable
+    public static BlockEntityType<?> WATER_WHEEL_MOTOR_ENTITY;
+    @Nullable
+    public static MenuType<?> WATER_WHEEL_MOTOR_MENU;
+}
