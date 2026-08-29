@@ -5,14 +5,19 @@ import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.storage.MachineSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 
 import org.jetbrains.annotations.NotNull;
+
+import javax.annotation.Nonnull;
 
 /**
  * 流体生成器容器：输入槽（0，空桶/可容纳流体物品）、输出槽（1，已填满桶）与玩家背包；数据槽同步 GUI，按钮修改六面开关。
@@ -42,6 +47,7 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
     private boolean clientTransferEast;
     private boolean clientPlaceFluidBelow;
     private boolean clientOutputEnabled;
+    private final int[] clientNeighborBlockId = new int[6];
 
     public LiquidGeneratorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super(Registration.LIQUID_GENERATOR_MENU, id, playerInventory, pos);
@@ -69,6 +75,11 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
         addDataSlot(makeDataSlot(() -> entity.transferEast ? 1 : 0, v -> clientTransferEast = v != 0));
         addDataSlot(makeDataSlot(() -> entity.placeFluidBelow ? 1 : 0, v -> clientPlaceFluidBelow = v != 0));
         addDataSlot(makeDataSlot(() -> entity.outputEnabled ? 1 : 0, v -> clientOutputEnabled = v != 0));
+        // 六方向相邻方块注册 id（服务端读实体，客户端读同步值，供 GUI 方向按钮显示图标）
+        for (Direction direction : Direction.values()) {
+            final int idx = direction.ordinal();
+            addDataSlot(makeDataSlot(() -> entity.getNeighborBlockId(direction), v -> clientNeighborBlockId[idx] = v));
+        }
     }
 
     /**
@@ -196,5 +207,24 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
             slot.onTake(player, stack);
         }
         return itemStack;
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        int id;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+            id = entity.getNeighborBlockId(direction);
+        } else {
+            id = clientNeighborBlockId[direction.ordinal()];
+        }
+        if (id <= 0) {
+            return ItemStack.EMPTY;
+        }
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }

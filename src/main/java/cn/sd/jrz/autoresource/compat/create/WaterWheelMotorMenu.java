@@ -4,16 +4,20 @@ import cn.sd.jrz.autoresource.setup.Registration;
 import cn.sd.jrz.autoresource.storage.MachineSlot;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.inventory.DataSlot;
 import net.minecraft.world.inventory.MenuType;
 import net.minecraft.world.inventory.Slot;
+import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 
 import org.jetbrains.annotations.NotNull;
 
+import javax.annotation.Nonnull;
 import java.util.function.IntConsumer;
 import java.util.function.IntSupplier;
 
@@ -38,6 +42,7 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     private int clientDirection; // 0=顺时针, 1=逆时针
     private int clientFace;
     private int clientCapacity;
+    private final int[] clientNeighborBlockId = new int[6];
 
     public WaterWheelMotorMenu(int id, Inventory playerInventory, BlockPos pos) {
         super((MenuType<WaterWheelMotorMenu>) (MenuType<?>) Registration.WATER_WHEEL_MOTOR_MENU, id);
@@ -62,6 +67,11 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         addDataSlot(makeDataSlot(() -> entity.counterClockwise ? 1 : 0, v -> clientDirection = v));
         addDataSlot(makeDataSlot(() -> entity.getOutputFace().ordinal(), v -> clientFace = v));
         addDataSlot(makeDataSlot(() -> (int) entity.totalCapacity(), v -> clientCapacity = v));
+        // 六方向相邻方块注册 id（服务端读实体，客户端读同步值，供 GUI 方向按钮显示图标）
+        for (Direction direction : Direction.values()) {
+            final int idx = direction.ordinal();
+            addDataSlot(makeDataSlot(() -> entity.getNeighborBlockId(direction), v -> clientNeighborBlockId[idx] = v));
+        }
     }
 
     /**
@@ -176,5 +186,24 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
                 setter.accept(value);
             }
         };
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     */
+    @Nonnull
+    public ItemStack getNeighborStack(Direction direction) {
+        int id;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+            id = entity.getNeighborBlockId(direction);
+        } else {
+            id = clientNeighborBlockId[direction.ordinal()];
+        }
+        if (id <= 0) {
+            return ItemStack.EMPTY;
+        }
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }
