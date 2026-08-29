@@ -19,7 +19,7 @@ import javax.annotation.Nonnull;
  */
 @OnlyIn(Dist.CLIENT)
 public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/block_generator_gui.png");
     /**
      * 输出展示槽在菜单中的槽位索引
      */

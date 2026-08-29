@@ -49,7 +49,7 @@ public final class CreateCompat {
     @Nullable
     public static Item waterWheelItem() {
         if (waterWheelItem == null) {
-            waterWheelItem = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(CREATE_ID, "water_wheel"));
+            waterWheelItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(CREATE_ID, "water_wheel"));
         }
         return waterWheelItem;
     }
@@ -60,7 +60,7 @@ public final class CreateCompat {
     @Nullable
     public static Item largeWaterWheelItem() {
         if (largeWaterWheelItem == null) {
-            largeWaterWheelItem = ForgeRegistries.ITEMS.getValue(ResourceLocation.fromNamespaceAndPath(CREATE_ID, "large_water_wheel"));
+            largeWaterWheelItem = ForgeRegistries.ITEMS.getValue(new ResourceLocation(CREATE_ID, "large_water_wheel"));
         }
         return largeWaterWheelItem;
     }

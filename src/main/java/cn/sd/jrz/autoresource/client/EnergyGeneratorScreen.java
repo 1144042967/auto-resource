@@ -18,7 +18,7 @@ import javax.annotation.Nonnull;
  */
 @OnlyIn(Dist.CLIENT)
 public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/energy_generator_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/energy_generator_gui.png");
 
     private StateButton wirelessButton;
     private FaceButton faceDown;

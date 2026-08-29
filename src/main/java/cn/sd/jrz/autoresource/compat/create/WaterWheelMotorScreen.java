@@ -21,7 +21,7 @@ import javax.annotation.Nonnull;
  */
 @OnlyIn(Dist.CLIENT)
 public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMotorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/water_wheel_motor_gui.png");
+    private static final ResourceLocation TEXTURE = new ResourceLocation("autoresource", "textures/gui/water_wheel_motor_gui.png");
     private static final int TEXT_COLOR = 4210752; // 0x404040 深灰
     /**
      * 方向按钮内物品图标的目标像素尺寸（按钮高 12 px，图标填满整按钮高度，无边距）

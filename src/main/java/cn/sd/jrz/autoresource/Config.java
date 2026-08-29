@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource;
 
 import net.minecraftforge.common.ForgeConfigSpec;
+import net.minecraftforge.fml.ModLoadingContext;
 import net.minecraftforge.fml.config.ModConfig;
 import net.minecraftforge.fml.javafmlmod.FMLJavaModLoadingContext;
 
@@ -111,7 +112,7 @@ public class Config {
         SERVER_CONFIG = SERVER_BUILDER.build();
     }
 
-    public static void init(FMLJavaModLoadingContext context) {
+    public static void init(ModLoadingContext context) {
         context.registerConfig(ModConfig.Type.SERVER, SERVER_CONFIG);
     }
 }
