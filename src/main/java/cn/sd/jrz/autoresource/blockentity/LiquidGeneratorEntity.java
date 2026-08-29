@@ -169,6 +169,10 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
 
     /**
      * 给上方容器中可容纳流体的物品充入流体
+     * <p>说明：直接使用 vanilla {@link Container} 接口（{@code removeItem} / {@code setItem}）操作槽位——
+     * Fabric Transfer API 的 {@link InventoryStorage#of} 对 vanilla Container 的 {@link SingleSlotStorage}
+     * 封装器在某些容器（如 Chest）上不稳定，直接读写 Container 更接近 Forge 版
+     * {@code ItemStackHandler.extractItem/insertItem} 的语义。
      */
     private void fillContainersAbove() {
         Level level = getLevel();
@@ -179,8 +183,8 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         if (!(blockEntity instanceof Container container)) {
             return;
         }
-        InventoryStorage storageView = InventoryStorage.of(container, null);
-        for (int i = 0; i < storageView.getSlotCount(); i++) {
+        int slotCount = container.getContainerSize();
+        for (int i = 0; i < slotCount; i++) {
             if (liquid <= 0) {
                 return;
             }
@@ -188,16 +192,16 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
             if (stack.isEmpty()) {
                 continue;
             }
-            SingleSlotStorage<ItemVariant> slotView = storageView.getSlot(i);
-            // 空桶特判：同一事务内取出空桶、放入流体桶
+            // 空桶特判：同槽内"取 1 个空桶、放入 1 个流体桶"
             if (stack.is(Items.BUCKET)) {
-                if (liquid >= 1000 && fillBucketInAboveContainer(blockEntity, slotView)) {
+                if (liquid >= 1000 && fillBucketInAboveContainer(container, i)) {
                     liquid -= 1000;
                     blockEntity.setChanged();
                 }
                 continue;
             }
-            // 可容纳流体的物品：经槽位上下文填充（变更自动回写原槽位）
+            // 可容纳流体的物品：经 Fabric Transfer API 的 FluidStorage.ITEM 查找（vanilla Container 通常不暴露）
+            SingleSlotStorage<ItemVariant> slotView = InventoryStorage.of(container, null).getSlot(i);
             ContainerItemContext context = ContainerItemContext.ofSingleSlot(slotView);
             Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsInsertion()) {
@@ -225,24 +229,49 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     /**
-     * 上方容器槽位内的桶替换：取 1 个空桶放入同数量的对应流体桶（同槽有剩余空桶时会因容量不足失败回滚）
+     * 上方容器槽位内的桶替换：直接读写 vanilla Container 接口
+     * <p>语义对齐 Forge 版 {@link net.minecraftforge.items.ItemHandlerHelper#insertItemStacked}：
+     * 先在容器内任意空槽/可合并槽放入 1 个流体桶，再从原空桶槽取走 1 个。
+     * 若容器无空位放流体桶（同种流体桶不可合并的槽位也算），整体放弃（与 Forge 版一致）。
      */
-    private boolean fillBucketInAboveContainer(BlockEntity blockEntity, SingleSlotStorage<ItemVariant> slotView) {
+    private boolean fillBucketInAboveContainer(Container container, int slot) {
         Item filledBucket = getFilledBucketItem();
-        try (var txn = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
-            long taken = slotView.extract(ItemVariant.of(Items.BUCKET), 1, txn);
-            if (taken != 1) {
-                return false;
-            }
-            long placed = slotView.insert(ItemVariant.of(filledBucket), 1, txn);
-            if (placed != 1) {
-                return false;
-            }
-            txn.commit();
-            return true;
-        } catch (Exception e) {
+        ItemStack bucketStack = container.getItem(slot);
+        if (!bucketStack.is(Items.BUCKET) || bucketStack.getCount() < 1) {
             return false;
         }
+        // 1) 在容器内找一个可放置 1 个流体桶的槽位（空槽或同种流体桶且未堆满）
+        int targetSlot = -1;
+        int slotCount = container.getContainerSize();
+        for (int j = 0; j < slotCount; j++) {
+            if (j == slot) {
+                continue;
+            }
+            ItemStack s = container.getItem(j);
+            if (s.isEmpty()) {
+                targetSlot = j;
+                break;
+            }
+            if (s.is(filledBucket) && s.getCount() < s.getMaxStackSize()) {
+                targetSlot = j;
+                break;
+            }
+        }
+        if (targetSlot < 0) {
+            // 没有空槽放流体桶 → 放弃（避免吞空桶）
+            return false;
+        }
+        // 2) 放入 1 个流体桶到目标槽
+        ItemStack existing = container.getItem(targetSlot);
+        if (existing.isEmpty()) {
+            container.setItem(targetSlot, new ItemStack(filledBucket));
+        } else {
+            existing.grow(1);
+            container.setItem(targetSlot, existing);
+        }
+        // 3) 从原空桶槽取走 1 个
+        container.removeItem(slot, 1);
+        return true;
     }
 
     /**
