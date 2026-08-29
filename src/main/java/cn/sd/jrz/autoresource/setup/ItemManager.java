@@ -10,7 +10,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 创造模式标签页注册：顺序 FE 发电 → 水生成 → 岩浆生成 → 方块生成 → 水车马达（仅 Create 加载时显示）
+ * 创造模式标签页注册：顺序 方块生成 → 水生成 → 岩浆生成 → FE 发电（前置 teamreborn energy 加载时）→ 水车马达（仅 Create 加载时）。
+ * 主题图标为方块生成机。
  */
 public class ItemManager {
     private static CreativeModeTab TAB;
@@ -19,12 +20,15 @@ public class ItemManager {
         ResourceLocation tabId = new ResourceLocation(AutoResource.MODID, "autoresource");
         TAB = FabricItemGroup.builder()
                 .title(Component.translatable("itemGroup.autoresource"))
-                .icon(() -> new ItemStack(Registration.ENERGY_GENERATOR_FE_ITEM))
+                .icon(() -> new ItemStack(Registration.BLOCK_GENERATOR_ITEM))
                 .displayItems((parameters, output) -> {
-                    output.accept(Registration.ENERGY_GENERATOR_FE_ITEM);
+                    output.accept(Registration.BLOCK_GENERATOR_ITEM);
                     output.accept(Registration.LIQUID_GENERATOR_WATER_ITEM);
                     output.accept(Registration.LIQUID_GENERATOR_LAVA_ITEM);
-                    output.accept(Registration.BLOCK_GENERATOR_ITEM);
+                    // FE 发电：仅当 teamreborn energy 加载时显示
+                    if (Registration.ENERGY_GENERATOR_FE_ITEM != null) {
+                        output.accept(Registration.ENERGY_GENERATOR_FE_ITEM);
+                    }
                     // Create 联动：仅当 Create 加载时显示水车马达
                     if (Registration.WATER_WHEEL_MOTOR_ITEM != null) {
                         output.accept(Registration.WATER_WHEEL_MOTOR_ITEM);

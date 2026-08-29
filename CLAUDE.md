@@ -94,15 +94,16 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 `Registration.java` 使用 Fabric 的 `Registry.register(BuiltInRegistries.X, id, obj)` 直接静态字段注册：
 
-- 注册的机器：`energy_generator_fe`、`liquid_generator_water`、`liquid_generator_lava`、`block_generator`
+- 注册的机器：`liquid_generator_water`、`liquid_generator_lava`、`block_generator`；`energy_generator_fe` 为可选前置（teamreborn energy 加载时才注册，字段 @Nullable）
 - 菜单类型为 `ExtendedScreenHandlerType`，打开时附带机器 `BlockPos`（对应 Forge IForgeMenuType + NetworkHooks）
 - 方块属性保持 Forge 版一致：蓝色、活塞推动销毁、硬度 0.5/抗性 3、光照 7
 - Create 联动字段（WATER_WHEEL_MOTOR 四个 @Nullable 字段）由 `CreateRegistration.register()` 反射填充
 
 ## 功能要点（与 Forge 版对齐）
 
-### 1. 发电机（energy_generator_fe）
+### 1. 发电机（energy_generator_fe，可选前置）
 
+- **前置**：依赖 teamreborn energy mod（`team_reborn_energy`，FE 能量 API）。未安装时不注册发电机（`EnergyCompat.isEnergyLoaded()` 判断，EnergyGenerator*/EnergyConnection/ItemEnergyIo 类不会被加载）；创造栏不显示、配方/战利品表经 `fabric:load_conditions` 跳过
 - 最大发电量 `Long.MAX_VALUE` FE/t；初始 1/t，每秒 +step；加速槽内放配置物品后每步增量为当前发电量 1%
 - 充电顺序：充电槽物品 → 上方玩家/生物（Player 经 InventoryStorage 全槽位；生物经 EquipmentSlot standalone 回写）→ 上方容器 → 六面 push（轮询 findIndex）→ 无线扫描分片输电
 - 六面开关、输出总开关、无线参数逐台 NBT 持久化；`scanCursor`/`wirelessTargets` 仅存内存
@@ -171,6 +172,7 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 - **Fabric Loader** ≥0.16.13（唯一硬加载器依赖）
 - **fabric-api** *（transfer/screen/itemgroup/networking/rendering 各子模块按需使用）
+- 可选：teamreborn energy 3.0.0（发电机前置；未安装时不加载发电机，build.gradle 用 modImplementation 提供开发期依赖）
 - 可选：create-fabric ≥0.5.1（联动；运行时装 mod，开发装 libs/ jar）
 
 ## 待验证清单（首个构建批次逐项核对）

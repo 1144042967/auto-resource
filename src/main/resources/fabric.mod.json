@@ -23,7 +23,8 @@
 		]
 	},
 	"suggests": {
-		"create": ">=0.5.1"
+		"create": ">=0.5.1",
+		"team_reborn_energy": "*"
 	},
 	"depends": {
 		"fabricloader": ">=0.16.13",
