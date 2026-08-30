@@ -105,15 +105,33 @@ public abstract class AbstractGeneratorMenu<T extends BlockEntity> extends Abstr
         };
     }
 
-    protected static int hiWord(long value) {
-        return (int) (value >> 32);
+    /**
+     * 1.21.1 数据槽同步坑：ClientboundContainerSetDataPacket 的值用 writeShort/readShort
+     * 传输（仅 16 位），任何 ≥32768（低 16 位第 15 位置位）的值都会被截断并符号扩展，
+     * 导致客户端重建出 ≈2³² 的错值（GUI 显示 4.29M）。因此 long 值须拆成 4×16 位同步。
+     * <p>
+     * 以下四个方法把 long 拆成 4 个 16 位块（各块 ≤ 0xFFFF，经 writeShort/readShort 无损传输）：
+     */
+    protected static int w0(long value) {
+        return (int) (value & 0xFFFF);
     }
 
-    protected static int loWord(long value) {
-        return (int) (value & 0xFFFFFFFFL);
+    protected static int w1(long value) {
+        return (int) ((value >>> 16) & 0xFFFF);
     }
 
-    protected static long mergeLong(int hi, int lo) {
-        return ((long) hi << 32) | (lo & 0xFFFFFFFFL);
+    protected static int w2(long value) {
+        return (int) ((value >>> 32) & 0xFFFF);
+    }
+
+    protected static int w3(long value) {
+        return (int) ((value >>> 48) & 0xFFFF);
+    }
+
+    /**
+     * 由 4 个 16 位块重建 long（与 {@link #w0(long)} 等配套）
+     */
+    protected static long mergeLong4(int a, int b, int c, int d) {
+        return (a & 0xFFFFL) | ((b & 0xFFFFL) << 16) | ((c & 0xFFFFL) << 32) | ((d & 0xFFFFL) << 48);
     }
 }

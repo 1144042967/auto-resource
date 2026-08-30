@@ -132,6 +132,11 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 **掉落状态保留（1.21.1）**：数据包目录为**单数** `data/autoresource/recipe/` 与 `data/autoresource/loot_table/blocks/`（1.20.x 用复数）。loot 表只负责掉落方块自身与自定义名称（`copy_name`）；机器状态经 `AbstractGeneratorBlock.getDrops` 覆写，用 `BlockEntity.saveCustomOnly` 序列化后写入掉落物品的 `block_entity_data` 组件，放置时经 `CustomData.loadInto` → `loadCustomOnly`（即 `loadAdditional`）恢复。原因：1.21.1 的 `copy_nbt` 已更名为 `copy_custom_data` 且写入 `custom_data` 组件（非本 mod 读取的 `block_entity_data`），无法直接用于状态保留。
 
+## 已知 1.21.1 注意事项
+
+- **数据槽值仅 16 位**：`ClientboundContainerSetDataPacket` 用 `writeShort/readShort` 传输，数据槽每个值只有 16 位（≥32768 会被截断+符号扩展）。**long 数值必须拆成 4×16 位块同步**（`AbstractGeneratorMenu.w0/w1/w2/w3/mergeLong4`），不能拆 hi/lo 32 位——否则数值 ≥32768 时客户端重建出 ≈2³²，GUI 显示 4.29M 并回绕归零。三个子菜单已全部改用 4×16 方案。
+- 数据包目录为**单数** `recipe/` 与 `loot_table/`（1.20.x 用复数）；配方 result 用 `id` 键。
+
 ## 事务安全说明（Fabric 特有）
 
 - 对外 Connection 类的 extract 均 `txn.addCloseCallback(result.wasAborted() → 回补)` 保证回滚
