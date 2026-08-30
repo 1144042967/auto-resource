@@ -91,9 +91,10 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
         poseStack.scale(TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
         // 居中：水平按文字实际宽度，垂直按 8px 字高中心
         float textWidth = this.font.width(text);
-        // 1.21.11：submitText(pose, x, y, text, shadow, mode, color, bg, 0, light)
+        // 1.21.11：submitText(pose, x, y, text, shadow, mode, light, color, bg, flag)
+        // 4 个 int 顺序为 (light, color, bg, flag)；颜色须 ARGB，flag 传 0 走 Font.drawInBatch 分支
         nodeCollector.submitText(poseStack, -textWidth / 2f, -4f, text.getVisualOrderText(), true,
-                Font.DisplayMode.NORMAL, 0xFFFFFF, 0, 0, light);
+                Font.DisplayMode.NORMAL, light, 0xFFFFFFFF, 0, 0);
         poseStack.popPose();
     }
 
