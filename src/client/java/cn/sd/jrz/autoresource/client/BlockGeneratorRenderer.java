@@ -81,7 +81,8 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(sprite.contents().name());
         // 强制至少 15 级方块光照，保留环境天空光
         int light = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT) | (state.lightCoords & 0xFFFF0000);
-        RenderType renderType = RenderTypes.entityCutout(AtlasIds.BLOCKS);
+        // RenderType 的纹理绑定（Sampler0）用带 .png 的图集位置；getAtlasOrThrow 才用 AtlasIds（不带 .png）
+        RenderType renderType = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
         for (Direction side : SIDES) {
             // lambda 捕获需 effectively final
             final TextureAtlasSprite spriteForFace = sprite;
