@@ -5,7 +5,7 @@ import net.fabricmc.fabric.api.itemgroup.v1.FabricItemGroup;
 import net.minecraft.core.Registry;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
@@ -16,7 +16,7 @@ import net.minecraft.world.item.ItemStack;
 public class ItemManager {
 
     public static void init() {
-        ResourceLocation tabId = ResourceLocation.fromNamespaceAndPath(AutoResource.MODID, "autoresource");
+        Identifier tabId = Identifier.fromNamespaceAndPath(AutoResource.MODID, "autoresource");
         CreativeModeTab tab = FabricItemGroup.builder()
                 .title(Component.translatable("itemGroup.autoresource"))
                 .icon(() -> new ItemStack(Registration.BLOCK_GENERATOR_ITEM))

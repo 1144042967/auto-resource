@@ -1,4 +1,4 @@
-# AutoResource — Minecraft Fabric 1.21.1 Mod
+# AutoResource — Minecraft Fabric 1.21.11 Mod
 
 ## 项目概述
 
@@ -6,8 +6,8 @@
 
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
-- **Minecraft 版本**: `1.21.1`
-- **Loader**: Fabric Loader `0.16.13` + fabric-api `0.116.15+1.21.1`
+- **Minecraft 版本**: `1.21.11`
+- **Loader**: Fabric Loader `0.17.3` + fabric-api `0.139.1+1.21.11`（均取最早可运行版本以兼容更多整合包）
 - **Loom**: `net.fabricmc.fabric-loom-remap:1.17-SNAPSHOT`（Gradle wrapper 9.5.1）
 - **Java 版本**: `21`，Mappings 为 `official` (Mojang)
 - **许可证**: `GNU LGPL v3`
@@ -132,10 +132,24 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 **掉落状态保留（1.21.1）**：数据包目录为**单数** `data/autoresource/recipe/` 与 `data/autoresource/loot_table/blocks/`（1.20.x 用复数）。loot 表只负责掉落方块自身与自定义名称（`copy_name`）；机器状态经 `AbstractGeneratorBlock.getDrops` 覆写，用 `BlockEntity.saveWithFullMetadata`（**必须含 `id` 字段**——`minecraft:block_entity_data` 组件的 codec 校验要求，缺 id 时物品在存档/实体保存时解码抛 "Missing id for entity" 崩溃）序列化后写入掉落物品的 `block_entity_data` 组件，放置时经 `CustomData.loadInto` → `loadCustomOnly`（即 `loadAdditional`）恢复。`removeDroppedSlots` 钩子从 block_entity_data 移除会被 `getDrops` 单独掉落的槽位（流体机输入/输出槽、能量机充电槽），避免"掉落+重放"重复；方块机标记槽、能量机加速槽随物品保留。原因：1.21.1 的 `copy_nbt` 已更名为 `copy_custom_data` 且写入 `custom_data` 组件（非本 mod 读取的 `block_entity_data`），无法直接用于状态保留。
 
-## 已知 1.21.1 注意事项
+## 已知 1.21.11 注意事项
 
+- **BlockEntity 持久化改为流式 ValueOutput/ValueInput**：`saveAdditional(ValueOutput)` / `loadAdditional(ValueInput)` 取代旧的 `(CompoundTag, HolderLookup.Provider)`。基础类型用 `putLong/getLongOr` 等；子结构用 `child()/childOrEmpty()`；槽位容器（MachineSlotStorage）提供 `saveTo(ValueOutput)/loadFrom(ValueInput)`，物品经 `ItemStackWithSlot.CODEC` 由 ValueOutput 内部 RegistryOps 编码（无需外部 Provider）。读取时 `getXOr(key, 当前值)` 缺字段保持当前值，等价旧版 contains 判断。
+- **ItemStack NBT 序列化方法移除**：`ItemStack.save(provider, tag)` 与 `parseOptional(provider, tag)` 在 1.21.11 已删除。槽位序列化改用 `ItemStackWithSlot.CODEC`（value output 场景）或 `ItemStack.SINGLE_ITEM_CODEC` + `RegistryOps`（CompoundTag 场景）。`CompoundTag.getCompound/getLong/getInt/getBoolean` 返回 `Optional`，改用 `getXOr`；`contains(String, int)` 移除，改用单参 `contains` 或 `getXOr`。
+- **`block_entity_data` 组件类型改为 `TypedEntityData`**：不再 `CustomData`。读取用 `stack.get(DataComponents.BLOCK_ENTITY_DATA).getUnsafe()`；写入用 `TypedEntityData.of(blockEntity.getType(), tag)`。`saveWithFullMetadata` 不再含 `id`（type 由组件自身承载），无需再补 id。
+- **`ResourceLocation` 更名为 `Identifier`**（`net.minecraft.resources.Identifier`），方法名不变（`fromNamespaceAndPath`/`tryParse` 等）。
+- **`Registry.get(Identifier)` 返回 `Optional<Reference<T>>`**：取值改用 `getOptional(id).orElse(默认)` 或 `getValue(id)`；`Registry.getTag` 移除，改用 `getTagOrEmpty(TagKey)` 直接迭代。
+- **`Level.isClientSide` 改为方法 `isClientSide()`**；`Level.getMinBuildHeight()` 更名为 `getMinY()`（来自 `LevelHeightAccessor`）。
+- **BlockEntityType 构造私有化**：vanilla `BlockEntityType.Builder` 移除，Fabric 侧改用 `FabricBlockEntityTypeBuilder.create(factory, blocks).build()` 注册。
+- **GUI 输入事件对象化**：`mouseClicked(double,double,int)` → `mouseClicked(MouseButtonEvent, boolean)`；`keyPressed/keyReleased(int,int,int)` → `keyPressed(KeyEvent)`/`keyReleased(KeyEvent)`。修饰键用 `event.hasShiftDown()`（`InputWithModifiers` 默认方法）。
+- **按钮渲染重构**：`AbstractButton.renderWidget` 为 final，子类改实现 `renderContents(GuiGraphics, int, int, float)`；`GuiGraphics.pose()` 返回 `Matrix3x2fStack`（2D），用 `pushMatrix/translate(x,y)/scale(s,s)/popMatrix`。
+- **BlockEntityRenderer 拆为三阶段**：`createRenderState()`/`extractRenderState(实体, state, ...)`/`submit(state, PoseStack, SubmitNodeCollector, CameraRenderState)`。自定义顶点几何用 `nodeCollector.submitCustomGeometry(poseStack, renderType, (pose, consumer)->...)`；图集改用 `Minecraft.getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(...)`；RenderType 用 `RenderTypes.entityCutout(图集)`。
 - **数据槽值仅 16 位**：`ClientboundContainerSetDataPacket` 用 `writeShort/readShort` 传输，数据槽每个值只有 16 位（≥32768 会被截断+符号扩展）。**long 数值必须拆成 4×16 位块同步**（`AbstractGeneratorMenu.w0/w1/w2/w3/mergeLong4`），不能拆 hi/lo 32 位——否则数值 ≥32768 时客户端重建出 ≈2³²，GUI 显示 4.29M 并回绕归零。三个子菜单已全部改用 4×16 方案。
 - 数据包目录为**单数** `recipe/` 与 `loot_table/`（1.20.x 用复数）；配方 result 用 `id` 键。
+- **配方 ingredient 改为字符串**：1.21.11 的 crafting 配方 key/ingredients 值不再支持 `{"item": "..."}` 对象形式，改用纯字符串（物品直接写 id 如 `"minecraft:stick"`，标签前缀 `#` 如 `"#minecraft:planks"`，多选用字符串数组）。配方解析失败仅报错不崩服务端，但配方不生效。
+- **Block/Item 构造要求 `Properties.setId(ResourceKey)`**：1.21.11 中注册方块/物品时，其 Properties 必须调用 `setId(ResourceKey.create(Registries.BLOCK/ITEM, id))`，否则构造时抛 "Block id not set"/"Item id not set" 崩溃。方块须为每个注册项构建独立 Properties（共享的 Properties 无法区分 id）；物品类构造器需接收 ResourceKey 参数。
+- **loader 要求 ≥0.17.3**：1.21.11 的 fabric-api（含最老的 0.135.x）全部声明 `fabricloader >= 0.17.3`，1.21.1 时代的 0.16.13 无法加载（mod resolution 失败）。
+- **fabric-api 需 ≥0.139.1**：0.135.x–0.139.0 与最终版 1.21.11 的 mixin 不兼容——0.135/0.138 崩在 game-rule/registry-sync mixin，0.139.0 崩在 `GameRuleCommand$1` @Shadow。0.139.1 起正常。实测 loader 0.17.3 + fabric-api 0.139.1 为最早可运行组合。
 
 ## 事务安全说明（Fabric 特有）
 
@@ -151,9 +165,9 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 ## 依赖
 
-- **Fabric Loader** ≥0.16.13（唯一硬加载器依赖）
+- **Fabric Loader** ≥0.17.3（唯一硬加载器依赖；1.21.11 的 fabric-api 全部要求 ≥0.17.3，开发环境用 0.17.3 以兼容更多整合包）
 - **fabric-api** *（transfer/screen/itemgroup/networking/rendering 各子模块按需使用）
-- 可选：teamreborn energy 4.1.0（发电机前置；未安装时不加载发电机，build.gradle 用 modImplementation 提供开发期依赖）
+- 可选：teamreborn energy 4.2.0（发电机前置；适配 MC 1.21.5+，未安装时不加载发电机，build.gradle 用 modImplementation 提供开发期依赖）
 
 ## 待验证清单（首个构建批次逐项核对）
 
@@ -162,3 +176,5 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 3. `FluidStorage.ITEM` 存在性（若缺失：通用容器灌装分支静默降级，桶特判不受影响）
 4. `BlockApiLookup.registerForBlockEntity((be, dir)->..., type)` 参数序
 5. `MachineSlot` 中 vanilla `Slot.container` 字段名与方法可见性
+6. BlockGeneratorRenderer 新 submit 渲染流程（SubmitNodeCollector.submitCustomGeometry）在客户端实际表现
+7. teamreborn energy 4.2.0 在 1.21.11 运行时加载与 FE 充电逻辑（编译已通过，运行时待验证）

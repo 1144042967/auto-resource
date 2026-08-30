@@ -130,16 +130,16 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
      * 客户端/服务端都能访问的展示值（服务端读实体，客户端读同步值）
      */
     public long getBlock() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.block : clientBlock;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? entity.block : clientBlock;
     }
 
     @Override
     public long getOutput() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.output : clientOutput;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? entity.output : clientOutput;
     }
 
     public long getStep() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.config.getStep() : clientStep;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? entity.config.getStep() : clientStep;
     }
 
     @Override
@@ -149,16 +149,16 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
 
     @Override
     public int getTickCount() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.tickCount) : clientTickCount;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? (int) Math.min(Integer.MAX_VALUE, entity.tickCount) : clientTickCount;
     }
 
     @Override
     public int getSecond() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()) : clientSecond;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()) : clientSecond;
     }
 
     public boolean isFaceEnabled(Direction direction) {
-        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
             return entity.isTransferEnabled(direction);
         }
         return switch (direction) {
@@ -178,7 +178,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     @Override
     public ItemStack getNeighborStack(Direction direction) {
         int id;
-        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
             id = entity.getNeighborBlockId(direction);
         } else {
             id = clientNeighborBlockId[direction.ordinal()];
@@ -195,14 +195,14 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
      * 是否开启"下方生成方块"（客户端读同步值，服务端读实体）
      */
     public boolean isPlaceBlockBelow() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.placeBlockBelow : clientPlaceBlockBelow;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? entity.placeBlockBelow : clientPlaceBlockBelow;
     }
 
     /**
      * 是否开启主动输出（客户端读同步值，服务端读实体）
      */
     public boolean isOutputEnabled() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.outputEnabled : clientOutputEnabled;
+        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? entity.outputEnabled : clientOutputEnabled;
     }
 
     /**
@@ -211,7 +211,7 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
     @Override
     public boolean clickMenuButton(@NotNull Player player, int id) {
         //noinspection resource
-        if (entity == null || player.level().isClientSide) {
+        if (entity == null || player.level().isClientSide()) {
             return false;
         }
         switch (id) {

@@ -24,11 +24,11 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// TechReborn 提供的 FE 能量 API
-	// 版本对应关系：3.0.0=MC 1.20.x、4.1.0=MC 1.21.x（4.0.0 起改用 ResourceLocation.parse，
-	// 旧的 3.0.0 在 1.21.1 上会因 new ResourceLocation(String) 已移除而 NoSuchMethodError 崩溃）
-	// MC 1.21.1 fabric-api 已内置 net.fabricmc.fabric.api.transfer.v1.energy.EnergyStorage
+	// 版本对应关系：3.0.0=MC 1.20.x、4.1.0=MC 1.21.x、4.2.0=MC 1.21.5+（含 1.21.11）
+	// 4.1.0 虽声明 >=1.21- 可加载，但 4.2.0 是官方针对 1.21.5+ 构建的版本，故 1.21.11 用 4.2.0
+	// MC 1.21.x fabric-api 已内置 net.fabricmc.fabric.api.transfer.v1.energy.EnergyStorage
 	// 但为兼容下游 FE 接收方惯例，此处仍保留 teamreborn 入口
-	modImplementation "teamreborn:energy:4.1.0"
+	modImplementation "teamreborn:energy:4.2.0"
 
 	// JetBrains 注解
 	modImplementation "org.jetbrains:annotations:24.1.0"

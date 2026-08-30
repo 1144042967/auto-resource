@@ -25,7 +25,7 @@ public class BlockGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     protected void tickEntity(Level level, BlockEntity tile) {
-        if (level.isClientSide || !(tile instanceof BlockGeneratorEntity generator)) {
+        if (level.isClientSide() || !(tile instanceof BlockGeneratorEntity generator)) {
             return;
         }
         generator.serverTick();
@@ -33,7 +33,7 @@ public class BlockGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         BlockGeneratorEntity generator = (BlockGeneratorEntity) level.getBlockEntity(pos);

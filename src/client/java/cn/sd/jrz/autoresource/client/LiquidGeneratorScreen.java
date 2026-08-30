@@ -5,7 +5,7 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
@@ -16,7 +16,7 @@ import org.jetbrains.annotations.NotNull;
  * 流体生成器 GUI：展示流体量/产量/下次增长/增长百分比，并提供六个传输面开关与输入/输出槽；数值用单位缩写。
  */
 public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/liquid_generator_gui.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/liquid_generator_gui.png");
 
     private FaceButton faceDown;
     private FaceButton faceUp;

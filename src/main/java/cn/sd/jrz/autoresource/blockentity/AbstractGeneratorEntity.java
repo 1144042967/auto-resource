@@ -5,8 +5,6 @@ import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -16,6 +14,8 @@ import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -84,55 +84,41 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     }
 
     /**
-     * 六面开关写入 NBT（子类 {@code writeNbt} 调用）
+     * 六面开关写入（1.21.11 流式持久化 ValueOutput）
      */
-    protected void saveTransferFaces(CompoundTag nbt) {
-        nbt.putBoolean("transferDown", transferDown);
-        nbt.putBoolean("transferUp", transferUp);
-        nbt.putBoolean("transferNorth", transferNorth);
-        nbt.putBoolean("transferSouth", transferSouth);
-        nbt.putBoolean("transferWest", transferWest);
-        nbt.putBoolean("transferEast", transferEast);
+    protected void saveTransferFaces(ValueOutput output) {
+        output.putBoolean("transferDown", transferDown);
+        output.putBoolean("transferUp", transferUp);
+        output.putBoolean("transferNorth", transferNorth);
+        output.putBoolean("transferSouth", transferSouth);
+        output.putBoolean("transferWest", transferWest);
+        output.putBoolean("transferEast", transferEast);
     }
 
     /**
-     * 六面开关从 NBT 读取（子类 {@code readNbt} 调用）
+     * 六面开关读取（缺字段保持当前值，等价旧版 contains 判断）
      */
-    protected void loadTransferFaces(CompoundTag nbt) {
-        if (nbt.contains("transferDown", Tag.TAG_BYTE)) {
-            transferDown = nbt.getBoolean("transferDown");
-        }
-        if (nbt.contains("transferUp", Tag.TAG_BYTE)) {
-            transferUp = nbt.getBoolean("transferUp");
-        }
-        if (nbt.contains("transferNorth", Tag.TAG_BYTE)) {
-            transferNorth = nbt.getBoolean("transferNorth");
-        }
-        if (nbt.contains("transferSouth", Tag.TAG_BYTE)) {
-            transferSouth = nbt.getBoolean("transferSouth");
-        }
-        if (nbt.contains("transferWest", Tag.TAG_BYTE)) {
-            transferWest = nbt.getBoolean("transferWest");
-        }
-        if (nbt.contains("transferEast", Tag.TAG_BYTE)) {
-            transferEast = nbt.getBoolean("transferEast");
-        }
+    protected void loadTransferFaces(ValueInput input) {
+        transferDown = input.getBooleanOr("transferDown", transferDown);
+        transferUp = input.getBooleanOr("transferUp", transferUp);
+        transferNorth = input.getBooleanOr("transferNorth", transferNorth);
+        transferSouth = input.getBooleanOr("transferSouth", transferSouth);
+        transferWest = input.getBooleanOr("transferWest", transferWest);
+        transferEast = input.getBooleanOr("transferEast", transferEast);
     }
 
     /**
-     * 主动输出总开关写入 NBT（子类 {@code writeNbt} 调用）
+     * 主动输出总开关写入（1.21.11 流式持久化 ValueOutput）
      */
-    protected void saveOutputEnabled(CompoundTag nbt) {
-        nbt.putBoolean("outputEnabled", outputEnabled);
+    protected void saveOutputEnabled(ValueOutput output) {
+        output.putBoolean("outputEnabled", outputEnabled);
     }
 
     /**
-     * 主动输出总开关从 NBT 读取（子类 {@code readNbt} 调用）
+     * 主动输出总开关读取
      */
-    protected void loadOutputEnabled(CompoundTag nbt) {
-        if (nbt.contains("outputEnabled", Tag.TAG_BYTE)) {
-            outputEnabled = nbt.getBoolean("outputEnabled");
-        }
+    protected void loadOutputEnabled(ValueInput input) {
+        outputEnabled = input.getBooleanOr("outputEnabled", outputEnabled);
     }
 
     /**

@@ -17,7 +17,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -31,6 +30,8 @@ import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.material.Fluids;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -79,7 +80,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      */
     public void serverTick() {
         Level level = getLevel();
-        if (level == null || level.isClientSide) {
+        if (level == null || level.isClientSide()) {
             return;
         }
         // 增长逻辑：产量到间隔后增加
@@ -427,40 +428,28 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：saveAdditional 新增 HolderLookup.Provider 参数
-        nbt.putLong("output", output);
-        nbt.putLong("liquid", liquid);
-        nbt.putLong("tickCount", tickCount);
-        saveTransferFaces(nbt);
-        saveOutputEnabled(nbt);
-        nbt.putBoolean("placeFluidBelow", placeFluidBelow);
-        nbt.put("inputSlot", inputSlot.serializeNBT(registryLookup));
-        nbt.put("outputSlot", outputSlot.serializeNBT(registryLookup));
+    protected void saveAdditional(@NotNull ValueOutput out) {
+        // 1.21.11：持久化改为流式 ValueOutput（out 参数名避开同名字段 output）
+        out.putLong("output", output);
+        out.putLong("liquid", liquid);
+        out.putLong("tickCount", tickCount);
+        saveTransferFaces(out);
+        saveOutputEnabled(out);
+        out.putBoolean("placeFluidBelow", placeFluidBelow);
+        inputSlot.saveTo(out.child("inputSlot"));
+        outputSlot.saveTo(out.child("outputSlot"));
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：loadAdditional 替代旧版 load
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("liquid", Tag.TAG_LONG)) {
-            liquid = Tool.suit(nbt.getLong("liquid"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
-        loadTransferFaces(nbt);
-        loadOutputEnabled(nbt);
-        if (nbt.contains("placeFluidBelow", Tag.TAG_BYTE)) {
-            placeFluidBelow = nbt.getBoolean("placeFluidBelow");
-        }
-        if (nbt.contains("inputSlot", Tag.TAG_COMPOUND)) {
-            inputSlot.deserializeNBT(registryLookup, nbt.getCompound("inputSlot"));
-        }
-        if (nbt.contains("outputSlot", Tag.TAG_COMPOUND)) {
-            outputSlot.deserializeNBT(registryLookup, nbt.getCompound("outputSlot"));
-        }
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 1.21.11：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        liquid = Tool.suit(input.getLongOr("liquid", liquid));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeFluidBelow = input.getBooleanOr("placeFluidBelow", placeFluidBelow);
+        inputSlot.loadFrom(input.childOrEmpty("inputSlot"));
+        outputSlot.loadFrom(input.childOrEmpty("outputSlot"));
     }
 }

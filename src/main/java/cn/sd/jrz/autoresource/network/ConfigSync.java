@@ -9,7 +9,7 @@ import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
 import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.server.level.ServerPlayer;
 import org.jetbrains.annotations.NotNull;
 
@@ -20,11 +20,11 @@ import org.jetbrains.annotations.NotNull;
  * 菜单进度计算与物品 tooltip 均依赖该快照数值。
  * <p>
  * 1.21.1：ServerPlayNetworking.send 现在接受 CustomPacketPayload，
- * 原先 (ServerPlayer, ResourceLocation, FriendlyByteBuf) 三参签名已移除。
+ * 原先 (ServerPlayer, Identifier, FriendlyByteBuf) 三参签名已移除。
  */
 public final class ConfigSync {
 
-    public static final ResourceLocation CHANNEL = ResourceLocation.fromNamespaceAndPath(AutoResource.MODID, "config_sync");
+    public static final Identifier CHANNEL = Identifier.fromNamespaceAndPath(AutoResource.MODID, "config_sync");
     public static final CustomPacketPayload.Type<ConfigPayload> PAYLOAD_TYPE = new CustomPacketPayload.Type<>(CHANNEL);
 
     /**

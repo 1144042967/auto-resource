@@ -5,7 +5,7 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.ChatFormatting;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.core.registries.Registries;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
@@ -39,8 +39,9 @@ public abstract class DataConfig {
             String id = Config.get().energy.fe.starItem;
             if (cachedStarItem == null || !id.equals(cachedStarId)) {
                 cachedStarId = id;
-                ResourceLocation loc = ResourceLocation.tryParse(id);
-                Item resolved = loc != null ? BuiltInRegistries.ITEM.get(loc) : null;
+                Identifier loc = Identifier.tryParse(id);
+                // 1.21.11：Registry.get(Identifier) 返回 Optional<Reference<Item>>，改用 getOptional 直接取值
+                Item resolved = loc != null ? BuiltInRegistries.ITEM.getOptional(loc).orElse(Items.AIR) : null;
                 // Fabric 注册表查不到时返回 AIR 而非 null，一并回退默认
                 cachedStarItem = resolved == null || resolved == Items.AIR ? Items.NETHER_STAR : resolved;
             }
@@ -190,14 +191,14 @@ public abstract class DataConfig {
             }
             if (id.startsWith("#")) {
                 // 标签形式：#minecraft:planks
-                ResourceLocation loc = ResourceLocation.tryParse(id.substring(1));
+                Identifier loc = Identifier.tryParse(id.substring(1));
                 if (loc != null && stack.is(TagKey.create(Registries.ITEM, loc))) {
                     return true;
                 }
             } else {
                 // 物品 ID 形式：minecraft:dirt
-                ResourceLocation loc = ResourceLocation.tryParse(id);
-                if (loc != null && stack.getItem() == BuiltInRegistries.ITEM.get(loc)) {
+                Identifier loc = Identifier.tryParse(id);
+                if (loc != null && stack.getItem() == BuiltInRegistries.ITEM.getOptional(loc).orElse(Items.AIR)) {
                     return true;
                 }
             }

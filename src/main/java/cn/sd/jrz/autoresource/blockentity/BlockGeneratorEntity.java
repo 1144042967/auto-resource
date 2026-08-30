@@ -10,7 +10,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
 import net.minecraft.server.level.ServerLevel;
@@ -24,6 +23,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 
@@ -47,7 +48,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             setChanged();
             // 标记槽变化时同步到客户端并触发重新渲染（否则客户端看不到标记物品）
             Level level = getLevel();
-            if (level != null && !level.isClientSide) {
+            if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
                 // sendBlockUpdated 只发方块状态；标记物品数据还需额外发送 BE 更新包，
                 // 客户端（GUI 标记/输出槽、四周贴图）才能即时读到 markerSlot
@@ -69,7 +70,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
      */
     public void serverTick() {
         Level level = getLevel();
-        if (level == null || level.isClientSide) {
+        if (level == null || level.isClientSide()) {
             return;
         }
         // 增长逻辑：产量到间隔后增加（与是否标记无关）
@@ -199,15 +200,15 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：新增 HolderLookup.Provider 参数用于组件 NBT 编解码
-        nbt.putLong("output", output);
-        nbt.putLong("block", block);
-        nbt.putLong("tickCount", tickCount);
-        saveTransferFaces(nbt);
-        saveOutputEnabled(nbt);
-        nbt.putBoolean("placeBlockBelow", placeBlockBelow);
-        nbt.put("markerSlot", markerSlot.serializeNBT(registryLookup));
+    protected void saveAdditional(@NotNull ValueOutput out) {
+        // 1.21.11：持久化改为流式 ValueOutput（out 参数名避开同名字段 output）
+        out.putLong("output", output);
+        out.putLong("block", block);
+        out.putLong("tickCount", tickCount);
+        saveTransferFaces(out);
+        saveOutputEnabled(out);
+        out.putBoolean("placeBlockBelow", placeBlockBelow);
+        markerSlot.saveTo(out.child("markerSlot"));
     }
 
     /**
@@ -229,24 +230,14 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：loadAdditional 替代旧版 load，参数变为 HolderLookup.Provider
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("block", Tag.TAG_LONG)) {
-            block = Tool.suit(nbt.getLong("block"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
-        loadTransferFaces(nbt);
-        loadOutputEnabled(nbt);
-        if (nbt.contains("placeBlockBelow", Tag.TAG_BYTE)) {
-            placeBlockBelow = nbt.getBoolean("placeBlockBelow");
-        }
-        if (nbt.contains("markerSlot", Tag.TAG_COMPOUND)) {
-            markerSlot.deserializeNBT(registryLookup, nbt.getCompound("markerSlot"));
-        }
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 1.21.11：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        block = Tool.suit(input.getLongOr("block", block));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeBlockBelow = input.getBooleanOr("placeBlockBelow", placeBlockBelow);
+        markerSlot.loadFrom(input.childOrEmpty("markerSlot"));
     }
 }

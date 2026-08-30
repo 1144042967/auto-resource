@@ -3,9 +3,11 @@ package cn.sd.jrz.autoresource.client;
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
 import org.jetbrains.annotations.NotNull;
@@ -15,7 +17,7 @@ import org.lwjgl.glfw.GLFW;
  * 方块生成器 GUI：展示存量/产量/增长百分比与六个面开关、标记槽、输出展示槽（单击/Shift/空格提取）及"下方生成方块"开关；数值用单位缩写。
  */
 public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/block_generator_gui.png");
     /**
      * 输出展示槽在菜单中的槽位索引
      */
@@ -66,31 +68,32 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
-    public boolean keyPressed(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_SPACE) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_SPACE) {
             this.spaceDown = true;
         }
-        return super.keyPressed(keyCode, scanCode, modifiers);
+        return super.keyPressed(event);
     }
 
     @Override
-    public boolean keyReleased(int keyCode, int scanCode, int modifiers) {
-        if (keyCode == GLFW.GLFW_KEY_SPACE) {
+    public boolean keyReleased(KeyEvent event) {
+        if (event.key() == GLFW.GLFW_KEY_SPACE) {
             this.spaceDown = false;
         }
-        return super.keyReleased(keyCode, scanCode, modifiers);
+        return super.keyReleased(event);
     }
 
     /**
      * 拦截输出展示槽的点击：单击提取一个、Shift+单击提取一组、空格+单击提取到背包满
+     * 1.21.11：mouseClicked 改为 MouseButtonEvent 事件对象（坐标/按钮/修饰键）
      */
     @Override
-    public boolean mouseClicked(double mouseX, double mouseY, int button) {
-        if (button == 0) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean down) {
+        if (event.button() == 0) {
             Slot outputSlot = this.menu.slots.get(OUTPUT_SLOT_INDEX);
-            if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, mouseX, mouseY)) {
+            if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, event.x(), event.y())) {
                 int id;
-                if (hasShiftDown()) {
+                if (event.hasShiftDown()) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_STACK;
                 } else if (this.spaceDown) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_ALL;
@@ -101,7 +104,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
                 return true;
             }
         }
-        return super.mouseClicked(mouseX, mouseY, button);
+        return super.mouseClicked(event, down);
     }
 
     @Override

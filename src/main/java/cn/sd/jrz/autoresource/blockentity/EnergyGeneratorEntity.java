@@ -13,7 +13,6 @@ import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
-import net.minecraft.nbt.Tag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -26,6 +25,8 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.chunk.LevelChunk;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -94,7 +95,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
      */
     public void serverTick() {
         Level level = getLevel();
-        if (level == null || level.isClientSide) {
+        if (level == null || level.isClientSide()) {
             return;
         }
         // 增长逻辑：先刷新下次增长量，到达间隔后应用
@@ -320,7 +321,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         int minX = originX - half * 16;
         int minZ = originZ - half * 16;
         int width = range * 16;
-        int minY = level.getMinBuildHeight();
+        int minY = level.getMinY();
         long layerSize = (long) width * width; // 单个 Y 层的方块数
         long volume = layerSize * level.getHeight(); // 整个 3D 扫描体积
 
@@ -444,57 +445,35 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     }
 
     @Override
-    protected void saveAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：saveAdditional 新增 HolderLookup.Provider 参数
-        nbt.putLong("output", output);
-        nbt.putLong("energy", energy);
-        nbt.putLong("tickCount", tickCount);
-        nbt.putLong("nextIncrease", nextIncrease);
-        nbt.putBoolean("wirelessOn", wirelessOn);
-        nbt.putInt("wirelessInterval", wirelessInterval);
-        nbt.putInt("wirelessRange", wirelessRange);
-        nbt.putInt("transferRepeat", transferRepeat);
-        saveTransferFaces(nbt);
-        nbt.put("starSlot", starSlot.serializeNBT(registryLookup));
-        nbt.put("chargeSlot", chargeSlot.serializeNBT(registryLookup));
+    protected void saveAdditional(@NotNull ValueOutput out) {
+        // 1.21.11：持久化改为流式 ValueOutput（out 参数名避开同名字段 output）
+        out.putLong("output", output);
+        out.putLong("energy", energy);
+        out.putLong("tickCount", tickCount);
+        out.putLong("nextIncrease", nextIncrease);
+        out.putBoolean("wirelessOn", wirelessOn);
+        out.putInt("wirelessInterval", wirelessInterval);
+        out.putInt("wirelessRange", wirelessRange);
+        out.putInt("transferRepeat", transferRepeat);
+        saveTransferFaces(out);
+        starSlot.saveTo(out.child("starSlot"));
+        chargeSlot.saveTo(out.child("chargeSlot"));
     }
 
     @Override
-    protected void loadAdditional(@NotNull CompoundTag nbt, @NotNull HolderLookup.Provider registryLookup) {
-        // 1.21.1：loadAdditional 替代旧版 load
-        if (nbt.contains("output", Tag.TAG_LONG)) {
-            output = Tool.suit(nbt.getLong("output"));
-        }
-        if (nbt.contains("energy", Tag.TAG_LONG)) {
-            energy = Tool.suit(nbt.getLong("energy"));
-        }
-        if (nbt.contains("tickCount", Tag.TAG_LONG)) {
-            tickCount = Tool.suit(nbt.getLong("tickCount"));
-        }
-        if (nbt.contains("nextIncrease", Tag.TAG_LONG)) {
-            nextIncrease = Tool.suit(nbt.getLong("nextIncrease"));
-        } else if (nbt.contains("beaconIncrease", Tag.TAG_LONG)) {
-            // 兼容旧存档字段名
-            nextIncrease = Tool.suit(nbt.getLong("beaconIncrease"));
-        }
-        if (nbt.contains("wirelessOn", Tag.TAG_BYTE)) {
-            wirelessOn = nbt.getBoolean("wirelessOn");
-        }
-        if (nbt.contains("wirelessInterval", Tag.TAG_INT)) {
-            wirelessInterval = Math.max(1, nbt.getInt("wirelessInterval"));
-        }
-        if (nbt.contains("wirelessRange", Tag.TAG_INT)) {
-            wirelessRange = Math.max(1, nbt.getInt("wirelessRange"));
-        }
-        if (nbt.contains("transferRepeat", Tag.TAG_INT)) {
-            transferRepeat = Math.max(1, nbt.getInt("transferRepeat"));
-        }
-        loadTransferFaces(nbt);
-        if (nbt.contains("starSlot", Tag.TAG_COMPOUND)) {
-            starSlot.deserializeNBT(registryLookup, nbt.getCompound("starSlot"));
-        }
-        if (nbt.contains("chargeSlot", Tag.TAG_COMPOUND)) {
-            chargeSlot.deserializeNBT(registryLookup, nbt.getCompound("chargeSlot"));
-        }
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 1.21.11：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        energy = Tool.suit(input.getLongOr("energy", energy));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        // 兼容旧存档字段名 beaconIncrease
+        nextIncrease = Tool.suit(input.getLongOr("nextIncrease", input.getLongOr("beaconIncrease", nextIncrease)));
+        wirelessOn = input.getBooleanOr("wirelessOn", wirelessOn);
+        wirelessInterval = Math.max(1, input.getIntOr("wirelessInterval", wirelessInterval));
+        wirelessRange = Math.max(1, input.getIntOr("wirelessRange", wirelessRange));
+        transferRepeat = Math.max(1, input.getIntOr("transferRepeat", transferRepeat));
+        loadTransferFaces(input);
+        starSlot.loadFrom(input.childOrEmpty("starSlot"));
+        chargeSlot.loadFrom(input.childOrEmpty("chargeSlot"));
     }
 }

@@ -37,7 +37,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     protected void tickEntity(Level level, BlockEntity tile) {
-        if (level.isClientSide || !(tile instanceof LiquidGeneratorEntity generator)) {
+        if (level.isClientSide() || !(tile instanceof LiquidGeneratorEntity generator)) {
             return;
         }
         generator.serverTick();
@@ -73,7 +73,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);

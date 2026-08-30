@@ -1,7 +1,6 @@
 package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.menu.AbstractGeneratorMenu;
-import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
@@ -12,6 +11,7 @@ import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
+import org.joml.Matrix3x2fStack;
 
 /**
  * 机器 GUI 基类：共享按钮点击发送、增长百分比计算、渲染循环与开关/通用小按钮；子类负责槽位布局、进度条配色与开关初始化。
@@ -66,12 +66,13 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
         float scale = FACE_ICON_SIZE / 16.0F;
         int iconX = x + (buttonWidth - FACE_ICON_SIZE) / 2;
         int iconY = y + (buttonHeight - FACE_ICON_SIZE) / 2;
-        PoseStack poseStack = guiGraphics.pose();
-        poseStack.pushPose();
-        poseStack.translate(iconX, iconY, 100.0F);
-        poseStack.scale(scale, scale, scale);
+        // 1.21.11：GuiGraphics.pose() 改为 2D 矩阵栈（Matrix3x2fStack）
+        Matrix3x2fStack pose = guiGraphics.pose();
+        pose.pushMatrix();
+        pose.translate(iconX, iconY);
+        pose.scale(scale, scale);
         guiGraphics.renderItem(stack, 0, 0);
-        poseStack.popPose();
+        pose.popMatrix();
     }
 
     /**
@@ -90,7 +91,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
         }
 
         @Override
-        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
         }
     }
@@ -113,7 +114,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
         }
 
         @Override
-        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButtonBg(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
             ItemStack neighbor = AbstractGeneratorScreen.this.menu.getNeighborStack(this.direction);
             if (!neighbor.isEmpty()) {

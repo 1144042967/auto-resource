@@ -5,7 +5,7 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import net.minecraft.resources.ResourceLocation;
+import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
 
@@ -15,7 +15,7 @@ import org.jetbrains.annotations.NotNull;
  * FE 发电机 GUI：展示发电量/电量/下次增长/增长百分比，并提供无线充电开关、扫描间隔、区块范围、重复传电次数与六个输电面开关；数值用单位缩写。
  */
 public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGeneratorMenu> {
-    private static final ResourceLocation TEXTURE = ResourceLocation.fromNamespaceAndPath("autoresource", "textures/gui/energy_generator_gui.png");
+    private static final Identifier TEXTURE = Identifier.fromNamespaceAndPath("autoresource", "textures/gui/energy_generator_gui.png");
 
     private StateButton wirelessButton;
     private FaceButton faceDown;
@@ -101,7 +101,8 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         // 加速槽标签：显示配置的目标物品名
         Item starItem = menu.getStarItem();
         if (starItem != null) {
-            guiGraphics.drawString(this.font, starItem.getDescription(), 28, 195, TEXT_COLOR, false);
+            // 1.21.11：Item.getDescription() 移除，改用 getName()
+            guiGraphics.drawString(this.font, starItem.getName(), 28, 195, TEXT_COLOR, false);
         }
         // 充电槽标签：右对齐贴近充电槽
         Component chargeLabel = Component.translatable("screen.autoresource.energy_generator.charge_slot");
@@ -130,7 +131,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         }
 
         @Override
-        protected void renderWidget(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
+        protected void renderContents(@NotNull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
             renderButton(guiGraphics, 0xFF808080);
         }
     }

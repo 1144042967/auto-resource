@@ -3,11 +3,16 @@ package cn.sd.jrz.autoresource.storage;
 import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
+import net.minecraft.nbt.NbtOps;
 import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -91,33 +96,50 @@ public class MachineSlotStorage implements Container {
     // ==================== NBT 读写（键位兼容 Forge 版存档） ====================
 
     /**
-     * 序列化槽位内容。1.21.1 的 ItemStack.save(provider, tag) 不填充传入的 tag，
-     * 而是返回编码后的新 Tag（内部走 CODEC.encode 到传入 prefix 上返回结果），
-     * 必须接收返回值并写入，否则槽位 NBT 为空、标记等内容静默丢失。
+     * 序列化槽位内容到 ValueOutput（1.21.11 BlockEntity 持久化新 API）。
+     * 结构保持 {Size, Items}，Items 元素由 {@link ItemStackWithSlot#CODEC} 编码（含槽位索引与物品栈），
+     * 物品由 ValueOutput 内部提供的 RegistryOps 解析，无需外部 HolderLookup。
      */
-    public CompoundTag serializeNBT(HolderLookup.Provider registryLookup) {
-        ListTag nbtTagList = new ListTag();
+    public void saveTo(ValueOutput output) {
+        output.putInt("Size", stacks.size());
+        var list = output.list("Items", ItemStackWithSlot.CODEC);
         for (int i = 0; i < stacks.size(); i++) {
             if (!stacks.get(i).isEmpty()) {
-                CompoundTag itemTag = (CompoundTag) stacks.get(i).save(registryLookup, new CompoundTag());
-                itemTag.putInt("Slot", i);
-                nbtTagList.add(itemTag);
+                list.add(new ItemStackWithSlot(i, stacks.get(i)));
             }
         }
-        CompoundTag nbt = new CompoundTag();
-        nbt.put("Items", nbtTagList);
-        nbt.putInt("Size", stacks.size());
-        return nbt;
     }
 
-    public MachineSlotStorage deserializeNBT(HolderLookup.Provider registryLookup, CompoundTag nbt) {
-        setSize(nbt.contains("Size", Tag.TAG_INT) ? nbt.getInt("Size") : stacks.size());
-        ListTag tagList = nbt.getList("Items", Tag.TAG_COMPOUND);
-        for (int i = 0; i < tagList.size(); i++) {
-            CompoundTag itemTags = tagList.getCompound(i);
-            int slot = itemTags.getInt("Slot");
+    /**
+     * 从 ValueInput 读取槽位内容（与 {@link #saveTo} 格式对应）
+     */
+    public void loadFrom(ValueInput input) {
+        setSize(input.getIntOr("Size", stacks.size()));
+        for (ItemStackWithSlot isws : input.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
+            int slot = isws.slot();
             if (slot >= 0 && slot < stacks.size()) {
-                stacks.set(slot, ItemStack.parseOptional(registryLookup, itemTags));
+                stacks.set(slot, isws.stack());
+            }
+        }
+        onChanged();
+    }
+
+    /**
+     * 从既有 CompoundTag 反序列化槽位内容（tooltip 读取 block_entity_data 组件中的机器状态时使用，
+     * 与 {@link #saveTo} 使用相同的 {Size, Items} 结构）
+     */
+    public MachineSlotStorage deserializeNBT(HolderLookup.Provider registryLookup, CompoundTag nbt) {
+        setSize(nbt.getIntOr("Size", stacks.size()));
+        ListTag tagList = nbt.getListOrEmpty("Items");
+        RegistryOps<Tag> ops = registryLookup.createSerializationContext(NbtOps.INSTANCE);
+        for (int i = 0; i < tagList.size(); i++) {
+            CompoundTag itemTags = tagList.getCompoundOrEmpty(i);
+            ItemStackWithSlot isws = ItemStackWithSlot.CODEC.parse(ops, itemTags).result().orElse(null);
+            if (isws != null) {
+                int slot = isws.slot();
+                if (slot >= 0 && slot < stacks.size()) {
+                    stacks.set(slot, isws.stack());
+                }
             }
         }
         onChanged();

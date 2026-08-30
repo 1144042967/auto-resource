@@ -32,7 +32,7 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     protected void tickEntity(Level level, BlockEntity tile) {
-        if (level.isClientSide || !(tile instanceof EnergyGeneratorEntity generator)) {
+        if (level.isClientSide() || !(tile instanceof EnergyGeneratorEntity generator)) {
             return;
         }
         generator.serverTick();
@@ -63,7 +63,7 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
 
     @Override
     public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         EnergyGeneratorEntity generator = (EnergyGeneratorEntity) level.getBlockEntity(pos);

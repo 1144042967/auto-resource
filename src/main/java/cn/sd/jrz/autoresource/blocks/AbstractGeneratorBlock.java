@@ -6,7 +6,7 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.world.item.ItemStack;
-import net.minecraft.world.item.component.CustomData;
+import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.EntityBlock;
@@ -56,12 +56,14 @@ public abstract class AbstractGeneratorBlock extends Block implements EntityBloc
 
     /**
      * 破坏掉落：经 loot 表掉落方块自身，并把机器状态写入掉落物品的
-     * {@code minecraft:block_entity_data} 组件（放置时经 {@code loadCustomOnly} 恢复，
-     * 数值/六面开关/标记等状态得以保留）。
+     * {@code minecraft:block_entity_data} 组件（放置时 vanilla 经
+     * {@link TypedEntityData#loadInto} 恢复，数值/六面开关/标记等状态得以保留）。
      * <p>
-     * 说明：1.21.1 的 loot 函数 {@code copy_nbt} 已更名为 {@code copy_custom_data} 且写入的是
-     * {@code custom_data} 组件，本 mod 物品 tooltip 与放置恢复读取的是 {@code block_entity_data}，
-     * 因此状态保留改由 Java 侧完成，loot 表只负责掉落方块自身与自定义名称。
+     * 说明：1.21.11 的 {@code block_entity_data} 组件类型为 {@link TypedEntityData}
+     * （携带 {@code type} 字段），故不再需要 1.21.1 时往 tag 里补写 {@code id} 的做法；
+     * {@code saveWithFullMetadata} 输出的 tag 由 {@link TypedEntityData#of} 与类型一起封装进组件。
+     * loot 函数 {@code copy_custom_data} 写入的是 {@code custom_data} 组件（非本 mod 读取的
+     * {@code block_entity_data}），因此状态保留仍由 Java 侧完成，loot 表只负责掉落方块自身与自定义名称。
      */
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
@@ -69,15 +71,13 @@ public abstract class AbstractGeneratorBlock extends Block implements EntityBloc
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (blockEntity != null) {
             HolderLookup.Provider registries = builder.getLevel().registryAccess();
-            // saveWithFullMetadata 含 id 字段：minecraft:block_entity_data 组件的 codec 校验要求 tag 带 id，
-            // 缺 id 时物品在存档/实体保存时解码会抛 "Missing id for entity" 崩溃。
             CompoundTag tag = blockEntity.saveWithFullMetadata(registries);
             // 去掉坐标（loadAdditional 不读），以及会被子类 getDrops 单独掉落的槽位（避免掉落+重放重复）
             tag.remove("x");
             tag.remove("y");
             tag.remove("z");
             removeDroppedSlots(tag);
-            CustomData data = CustomData.of(tag);
+            TypedEntityData<BlockEntityType<?>> data = TypedEntityData.of(blockEntity.getType(), tag);
             for (ItemStack stack : drops) {
                 if (stack.is(this.asItem())) {
                     stack.set(DataComponents.BLOCK_ENTITY_DATA, data);
