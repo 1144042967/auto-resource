@@ -17,7 +17,7 @@ import org.joml.Matrix3x2fStack;
  * 机器 GUI 基类：共享按钮点击发送、增长百分比计算、渲染循环与开关/通用小按钮；子类负责槽位布局、进度条配色与开关初始化。
  */
 public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>> extends AbstractContainerScreen<M> {
-    protected static final int TEXT_COLOR = 4210752; // 0x404040 深灰
+    protected static final int TEXT_COLOR = 0xFF404040; // 深灰（1.21.11 的 drawString 颜色按 ARGB 处理，缺 alpha 位会透明不渲染）
     protected static final int FACE_ICON_SIZE = 12;
 
     protected AbstractGeneratorScreen(M menu, Inventory playerInventory, Component title) {

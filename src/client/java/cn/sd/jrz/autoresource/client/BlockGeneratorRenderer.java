@@ -15,6 +15,7 @@ import net.minecraft.client.renderer.texture.OverlayTexture;
 import net.minecraft.client.renderer.texture.TextureAtlas;
 import net.minecraft.client.renderer.texture.TextureAtlasSprite;
 import net.minecraft.core.Direction;
+import net.minecraft.data.AtlasIds;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
@@ -76,11 +77,11 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         }
         TextureAtlasSprite sprite = Minecraft.getInstance().getBlockRenderer().getBlockModel(markedState).particleIcon();
         // 强制从当前方块图集重新解析精灵，确保首次渲染时贴图已加载
-        // 1.21.11：图集管理移到 AtlasManager（Minecraft.getAtlasManager）
-        sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(TextureAtlas.LOCATION_BLOCKS).getSprite(sprite.contents().name());
+        // 1.21.11：AtlasManager 查找键用 AtlasIds.*（不带 .png 后缀），而 TextureAtlas.LOCATION_BLOCKS 带 .png 会抛 Invalid atlas id
+        sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(sprite.contents().name());
         // 强制至少 15 级方块光照，保留环境天空光
         int light = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT) | (state.lightCoords & 0xFFFF0000);
-        RenderType renderType = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
+        RenderType renderType = RenderTypes.entityCutout(AtlasIds.BLOCKS);
         for (Direction side : SIDES) {
             // lambda 捕获需 effectively final
             final TextureAtlasSprite spriteForFace = sprite;
