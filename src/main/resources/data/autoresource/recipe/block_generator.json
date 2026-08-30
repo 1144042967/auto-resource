@@ -1,20 +1,24 @@
 {
   "type": "minecraft:crafting_shaped",
-  "group": "liquid_generator_water",
+  "group": "block_generator",
   "key": {
     "#": {
       "item": "minecraft:smooth_stone"
     },
     "W": {
       "item": "minecraft:water_bucket"
+    },
+    "L": {
+      "item": "minecraft:lava_bucket"
     }
   },
   "pattern": [
-    "#W#",
-    "WWW",
+    "#L#",
+    "# #",
     "#W#"
   ],
   "result": {
-    "item": "autoresource:liquid_generator_water"
+    "id": "autoresource:block_generator",
+    "count": 1
   }
 }

@@ -1,15 +1,13 @@
 package cn.sd.jrz.autoresource.setup;
 
 import cn.sd.jrz.autoresource.blockentity.BlockGeneratorEntity;
-import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.capability.BlockConnection;
-import cn.sd.jrz.autoresource.capability.EnergyConnection;
 import cn.sd.jrz.autoresource.capability.LiquidConnection;
+import cn.sd.jrz.autoresource.compat.energy.EnergyCompat;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.minecraft.core.Direction;
-import team.reborn.energy.api.EnergyStorage;
 
 /**
  * 机器对外的能量/流体/物品存储暴露（对应 Forge 版实体覆写 getCapability 的部分）：
@@ -21,10 +19,10 @@ public final class TransferSetup {
     }
 
     public static void init() {
-        // FE 发电机：六面输出能量
-        EnergyStorage.SIDED.registerForBlockEntity(
-                (EnergyGeneratorEntity entity, Direction direction) -> new EnergyConnection(entity),
-                Registration.ENERGY_GENERATOR_FE_ENTITY);
+        // FE 发电机：六面输出能量（前置 teamreborn energy 加载时经反射注册，避免本类加载触发 EnergyStorage 类解析）
+        if (EnergyCompat.isEnergyLoaded()) {
+            EnergyCompat.invokeEnergySetup();
+        }
 
         // 流体生成器：六面输出流体
         FluidStorage.SIDED.registerForBlockEntity(

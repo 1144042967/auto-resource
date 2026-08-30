@@ -7,7 +7,7 @@
 - **Mod ID**: `autoresource`
 - **Group**: `cn.sd.jrz`
 - **Minecraft 版本**: `1.21.1`
-- **Loader**: Fabric Loader `0.19.3` + fabric-api `0.116.15+1.21.1`
+- **Loader**: Fabric Loader `0.16.13` + fabric-api `0.116.15+1.21.1`
 - **Loom**: `net.fabricmc.fabric-loom-remap:1.17-SNAPSHOT`（Gradle wrapper 9.5.1）
 - **Java 版本**: `21`，Mappings 为 `official` (Mojang)
 - **许可证**: `GNU LGPL v3`
@@ -128,7 +128,9 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 - LiquidGeneratorEntity: `output/liquid/tickCount`、六面、`outputEnabled`、`placeFluidBelow`、`inputSlot/outputSlot`
 - BlockGeneratorEntity: `output/block/tickCount`、六面、`outputEnabled`、`placeBlockBelow`、`markerSlot`
 
-物品 tooltip 从 `BlockEntityTag` 读取状态；loot_tables 的 copy_nbt 键位同步保留。
+物品 tooltip 从 `DataComponents.BLOCK_ENTITY_DATA`（`minecraft:block_entity_data`）读取状态。
+
+**掉落状态保留（1.21.1）**：数据包目录为**单数** `data/autoresource/recipe/` 与 `data/autoresource/loot_table/blocks/`（1.20.x 用复数）。loot 表只负责掉落方块自身与自定义名称（`copy_name`）；机器状态经 `AbstractGeneratorBlock.getDrops` 覆写，用 `BlockEntity.saveCustomOnly` 序列化后写入掉落物品的 `block_entity_data` 组件，放置时经 `CustomData.loadInto` → `loadCustomOnly`（即 `loadAdditional`）恢复。原因：1.21.1 的 `copy_nbt` 已更名为 `copy_custom_data` 且写入 `custom_data` 组件（非本 mod 读取的 `block_entity_data`），无法直接用于状态保留。
 
 ## 事务安全说明（Fabric 特有）
 
@@ -144,8 +146,9 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 ## 依赖
 
-- **Fabric Loader** ≥0.19.3（唯一硬加载器依赖）
+- **Fabric Loader** ≥0.16.13（唯一硬加载器依赖）
 - **fabric-api** *（transfer/screen/itemgroup/networking/rendering 各子模块按需使用）
+- 可选：teamreborn energy 4.1.0（发电机前置；未安装时不加载发电机，build.gradle 用 modImplementation 提供开发期依赖）
 
 ## 待验证清单（首个构建批次逐项核对）
 

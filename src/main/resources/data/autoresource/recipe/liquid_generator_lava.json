@@ -15,6 +15,7 @@
     "#L#"
   ],
   "result": {
-    "item": "autoresource:liquid_generator_lava"
+    "id": "autoresource:liquid_generator_lava",
+    "count": 1
   }
 }
