@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.client;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphics;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -62,7 +63,8 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
     protected void renderBg(@NotNull GuiGraphics guiGraphics, float partialTick, int mouseX, int mouseY) {
         // 注意：1.21.1 的 AbstractContainerScreen.renderBackground(4参) 内部会回调 renderBg，此处只能用只渲染背景的方法，否则无限递归
         renderMenuBackground(guiGraphics);
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        // 1.21.11：不带 RenderPipeline 的 9 参 blit 内部参数重排有缺陷（矩形/UV 错乱），须用带 RenderPipeline 的重载（与 vanilla 容器一致）
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;

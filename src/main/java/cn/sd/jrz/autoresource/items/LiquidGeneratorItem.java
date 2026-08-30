@@ -32,7 +32,9 @@ public class LiquidGeneratorItem extends BlockItem {
      */
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        return super.getName(stack).copy().withStyle(config.getThemeColor());
+        // 1.21.11：Item 默认名称键为 item.<id>（Properties 用 "item" 前缀），而语言文件使用 block.<id>，
+        // 故显式改用方块翻译键，避免显示未翻译的键名
+        return Component.translatable(this.getBlock().getDescriptionId()).copy().withStyle(config.getThemeColor());
     }
 
     /**
