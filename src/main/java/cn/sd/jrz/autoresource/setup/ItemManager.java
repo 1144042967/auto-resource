@@ -28,6 +28,10 @@ public class ItemManager {
                     if (Registration.ENERGY_GENERATOR_FE_ITEM != null) {
                         output.accept(Registration.ENERGY_GENERATOR_FE_ITEM);
                     }
+                    // 水车马达（机械动力 Create 联动）：仅当 Create 加载时显示
+                    if (Registration.WATER_WHEEL_MOTOR_ITEM != null) {
+                        output.accept(Registration.WATER_WHEEL_MOTOR_ITEM);
+                    }
                 })
                 .build();
         Registry.register(BuiltInRegistries.CREATIVE_MODE_TAB, tabId, tab);

@@ -1,6 +1,7 @@
 package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.Config;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.network.ConfigSync;
 import cn.sd.jrz.autoresource.setup.Registration;
 import net.fabricmc.api.ClientModInitializer;
@@ -25,6 +26,16 @@ public class AutoResourceClient implements ClientModInitializer {
 
         // 方块生成机的标记物品四侧渲染
         BlockEntityRendererRegistry.register(Registration.BLOCK_GENERATOR_ENTITY, BlockGeneratorRenderer::new);
+
+        // Create 联动：仅当 Create 加载时经反射注册屏幕与渲染器（避免字节码引用 Create 依赖类）
+        if (CreateCompat.isCreateLoaded()) {
+            if (Registration.WATER_WHEEL_MOTOR_MENU != null) {
+                CreateCompat.invokeClient("registerScreens", new Class<?>[0], new Object[0]);
+            }
+            if (Registration.WATER_WHEEL_MOTOR_ENTITY != null) {
+                CreateCompat.invokeClient("registerRenderers", new Class<?>[0], new Object[0]);
+            }
+        }
 
         // 服务端配置快照接收：登录后立即替换本地配置
         ClientPlayNetworking.registerGlobalReceiver(ConfigSync.PAYLOAD_TYPE, (payload, context) -> {

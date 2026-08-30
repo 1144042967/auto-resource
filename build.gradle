@@ -17,6 +17,32 @@ loom {
 	}
 }
 
+// Create 兼容层（可选依赖）：libs/ 下提供 create-fly jar（1.21.11 机械动力飞越版，由第三方MOD/Create-Fly 项目
+// 用 gradle 9.5.1 构建产出）时才参与编译。未提供时排除需要 Create API 的兼容类（CreateCompat 不引用 Create 类型，保留编译）。
+def createJars = fileTree(dir: 'libs', include: 'create*.jar')
+def hasCreate = !createJars.empty
+
+sourceSets {
+	main {
+		java {
+			if (!hasCreate) {
+				exclude 'cn/sd/jrz/autoresource/compat/create/CreateRegistration.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorBlock.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorEntity.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorItem.java'
+				exclude 'cn/sd/jrz/autoresource/compat/create/WaterWheelMotorMenu.java'
+			}
+		}
+	}
+	client {
+		java {
+			if (!hasCreate) {
+				exclude 'cn/sd/jrz/autoresource/client/compat/create/**'
+			}
+		}
+	}
+}
+
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
 	mappings loom.officialMojangMappings()
@@ -32,6 +58,13 @@ dependencies {
 
 	// JetBrains 注解
 	modImplementation "org.jetbrains:annotations:24.1.0"
+
+	// Create 机械动力飞越版（可选）：libs/ 下有 create*.jar 才参与编译，发布版按可选依赖（运行时缺 create 时不加载）
+	if (hasCreate) {
+		// create-fly 用 unobfuscated（mojmap）命名构建，与项目 officialMojangMappings 一致，无需 loom 重映射；
+		// 用 compileOnly（而非 modCompileOnly）避免 remap 失败
+		compileOnly createJars
+	}
 }
 
 processResources {

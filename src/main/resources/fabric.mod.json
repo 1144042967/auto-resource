@@ -23,6 +23,7 @@
     ]
   },
   "suggests": {
+    "create": "*",
     "team_reborn_energy": "*"
   },
   "depends": {

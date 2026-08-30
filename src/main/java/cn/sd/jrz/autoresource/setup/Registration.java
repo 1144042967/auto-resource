@@ -8,6 +8,7 @@ import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.blocks.BlockGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.EnergyGeneratorBlock;
 import cn.sd.jrz.autoresource.blocks.LiquidGeneratorBlock;
+import cn.sd.jrz.autoresource.compat.create.CreateCompat;
 import cn.sd.jrz.autoresource.compat.energy.EnergyCompat;
 import cn.sd.jrz.autoresource.items.BlockGeneratorItem;
 import cn.sd.jrz.autoresource.items.EnergyGeneratorItem;
@@ -43,6 +44,11 @@ public class Registration {
         // 缺失的 EnergyStorage 类加载 → NoClassDefFoundError）
         if (EnergyCompat.isEnergyLoaded()) {
             registerEnergyGenerator();
+        }
+
+        // 机械动力联动：仅当 Create 加载时经反射注册（不能在字节码里引用 Create 类，否则无 Create 时 NoClassDefFoundError）
+        if (CreateCompat.isCreateLoaded()) {
+            CreateCompat.invokeRegistration("register", new Class<?>[0], new Object[0]);
         }
 
         // 方块实体持有的能量/流体/物品存储向周边暴露（六面均可访问）
@@ -100,6 +106,17 @@ public class Registration {
             new ExtendedScreenHandlerType<>((id, inv, pos) -> new LiquidGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
     public static final MenuType<BlockGeneratorMenu> BLOCK_GENERATOR_MENU = Registry.register(BuiltInRegistries.MENU, id("block_generator"),
             new ExtendedScreenHandlerType<>((id, inv, pos) -> new BlockGeneratorMenu(id, inv, pos), BlockPos.STREAM_CODEC));
+
+    // ==================== Create（机械动力）联动 —— 仅当 Create 加载时由 CreateRegistration 反射填充，否则均为 null ====================
+
+    @Nullable
+    public static Block WATER_WHEEL_MOTOR;
+    @Nullable
+    public static Item WATER_WHEEL_MOTOR_ITEM;
+    @Nullable
+    public static BlockEntityType<?> WATER_WHEEL_MOTOR_ENTITY;
+    @Nullable
+    public static MenuType<?> WATER_WHEEL_MOTOR_MENU;
 
     // ==================== FE 发电机 —— 前置 teamreborn energy 加载时注册，否则保持 null ====================
 

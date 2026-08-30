@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "autoresource:block/water_wheel_motor/water_wheel_motor_top",
+    "down": "autoresource:block/water_wheel_motor/water_wheel_motor_bottom",
+    "east": "autoresource:block/water_wheel_motor/water_wheel_motor_side",
+    "north": "autoresource:block/water_wheel_motor/water_wheel_motor_side",
+    "south": "autoresource:block/water_wheel_motor/water_wheel_motor_side",
+    "west": "autoresource:block/water_wheel_motor/water_wheel_motor_side",
+    "particle": "autoresource:block/water_wheel_motor/water_wheel_motor_side"
+  }
+}
