@@ -59,6 +59,8 @@ dependencies {
 	modImplementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
 	// TechReborn 提供的 FE 能量 API（Fabric 1.20.1 自带 fabric-transfer-api 没有 EnergyStorage；3.x 对应 MC 1.19.4–1.20.4）
+	// 开发期用 modImplementation（runClient 可测发电机）；发布后为可选前置（fabric.mod.json suggests），
+	// 未安装时 EnergyCompat.isEnergyLoaded() 为 false，发电机不注册。
 	modImplementation "teamreborn:energy:3.0.0"
 
 	// JetBrains @NotNull/@Nullable 注解（Fabric/Loom 不再随附 javax.annotation；全源码已迁到 org.jetbrains.annotations.*）
