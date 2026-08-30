@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.blocks;
 import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.EnergyGeneratorEntity;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
@@ -50,6 +51,14 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
             }
         }
         return drops;
+    }
+
+    /**
+     * 充电槽内容由 {@link #getDrops} 单独掉落，不随 block_entity_data 保留（加速槽保留）
+     */
+    @Override
+    protected void removeDroppedSlots(CompoundTag tag) {
+        tag.remove("chargeSlot");
     }
 
     @Override

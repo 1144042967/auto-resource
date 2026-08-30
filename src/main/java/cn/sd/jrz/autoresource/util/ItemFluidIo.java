@@ -4,7 +4,9 @@ import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
@@ -76,7 +78,10 @@ public final class ItemFluidIo {
         if (stack.isEmpty() || maxMillibuckets <= 0) {
             return null;
         }
-        ContainerItemContext context = ContainerItemContext.withConstant(ItemVariant.of(stack), stack.getCount());
+        // 用可变单槽承载物品：withConstant 只用于模拟、不持久化修改，context.getItemVariant()
+        // 始终返回原始（空）cell，导致灌装后拿到的仍是空物品、机器扣了液体却没效果。
+        SingleSlotStorage<ItemVariant> mutableSlot = new MutableItemStorage(stack.copy());
+        ContainerItemContext context = ContainerItemContext.ofSingleSlot(mutableSlot);
         Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) {
             return null;
@@ -149,5 +154,27 @@ public final class ItemFluidIo {
      * 灌装结果：实际消耗的机器 mB 与变换后的物品
      */
     public record FillResult(long millibuckets, ItemStack filled) {
+    }
+
+    /**
+     * 承载独立物品的可变单槽（fabric-transfer-api 5.x 无 withInitial，withConstant 只用于模拟）。
+     * 灌装时存储（如 TechReborn cell 的 SingleVariantItemStorage）会经 {@link #setStack} 写回，读取 {@link #getStack} 即得灌装后的物品。
+     */
+    private static final class MutableItemStorage extends SingleStackStorage {
+        private ItemStack stack;
+
+        MutableItemStorage(ItemStack stack) {
+            this.stack = stack;
+        }
+
+        @Override
+        protected ItemStack getStack() {
+            return stack;
+        }
+
+        @Override
+        protected void setStack(ItemStack stack) {
+            this.stack = stack;
+        }
     }
 }

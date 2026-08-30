@@ -4,6 +4,7 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -43,7 +44,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
     }
 
     /**
-     * 破坏时输入槽与输出槽中的物品掉落
+     * 破坏时输入槽与输出槽中的物品掉落（并从 block_entity_data 中移除，避免重放后槽位重复）
      */
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
@@ -59,6 +60,15 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
             }
         }
         return drops;
+    }
+
+    /**
+     * 输入/输出槽内容由 {@link #getDrops} 单独掉落，不随 block_entity_data 保留
+     */
+    @Override
+    protected void removeDroppedSlots(CompoundTag tag) {
+        tag.remove("inputSlot");
+        tag.remove("outputSlot");
     }
 
     @Override

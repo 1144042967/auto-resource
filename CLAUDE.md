@@ -96,7 +96,7 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 - 内部单位 mB；对外 FluidStorage droplets（×81）；产量显示除以 1000 折算桶
 - 输入槽接受空桶（特判）或 `FluidStorage.ITEM` 可容纳流体容器；空桶消耗 1000 mB 且要求液体≥1000 才转移输出
-- 上方容器充液走 InventoryStorage 槽位视图；上方的空桶在同一事务内"取空桶放入流体桶"
+- 上方容器充液走 vanilla Container 直接读写；上方的空桶在同一事务内"取空桶放入流体桶"。**可堆叠空 cell 特殊处理**：整堆原地灌装会丢 cell（SingleVariantItemStorage 把整堆当单个容器），因此若有空槽则从堆叠取 1 个放到空槽单独灌装（`findEmptySlot` + `fillCellInContainer`），无空槽跳过不灌整堆；单件原地灌装用 `ItemFluidIo.fill`（可变单槽承载）
 - "下方生成流体"每 5 ticks 放置一次（1000 mB/次）；有待填充桶时暂停六面输出（isBucketPending）
 
 ### 3. 方块生成器（block_generator）
@@ -130,7 +130,7 @@ src/client/java/cn/sd/jrz/autoresource/client/   # 客户端 source set（splitE
 
 物品 tooltip 从 `DataComponents.BLOCK_ENTITY_DATA`（`minecraft:block_entity_data`）读取状态。
 
-**掉落状态保留（1.21.1）**：数据包目录为**单数** `data/autoresource/recipe/` 与 `data/autoresource/loot_table/blocks/`（1.20.x 用复数）。loot 表只负责掉落方块自身与自定义名称（`copy_name`）；机器状态经 `AbstractGeneratorBlock.getDrops` 覆写，用 `BlockEntity.saveCustomOnly` 序列化后写入掉落物品的 `block_entity_data` 组件，放置时经 `CustomData.loadInto` → `loadCustomOnly`（即 `loadAdditional`）恢复。原因：1.21.1 的 `copy_nbt` 已更名为 `copy_custom_data` 且写入 `custom_data` 组件（非本 mod 读取的 `block_entity_data`），无法直接用于状态保留。
+**掉落状态保留（1.21.1）**：数据包目录为**单数** `data/autoresource/recipe/` 与 `data/autoresource/loot_table/blocks/`（1.20.x 用复数）。loot 表只负责掉落方块自身与自定义名称（`copy_name`）；机器状态经 `AbstractGeneratorBlock.getDrops` 覆写，用 `BlockEntity.saveWithFullMetadata`（**必须含 `id` 字段**——`minecraft:block_entity_data` 组件的 codec 校验要求，缺 id 时物品在存档/实体保存时解码抛 "Missing id for entity" 崩溃）序列化后写入掉落物品的 `block_entity_data` 组件，放置时经 `CustomData.loadInto` → `loadCustomOnly`（即 `loadAdditional`）恢复。`removeDroppedSlots` 钩子从 block_entity_data 移除会被 `getDrops` 单独掉落的槽位（流体机输入/输出槽、能量机充电槽），避免"掉落+重放"重复；方块机标记槽、能量机加速槽随物品保留。原因：1.21.1 的 `copy_nbt` 已更名为 `copy_custom_data` 且写入 `custom_data` 组件（非本 mod 读取的 `block_entity_data`），无法直接用于状态保留。
 
 ## 已知 1.21.1 注意事项
 

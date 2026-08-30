@@ -69,8 +69,14 @@ public abstract class AbstractGeneratorBlock extends Block implements EntityBloc
         BlockEntity blockEntity = builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY);
         if (blockEntity != null) {
             HolderLookup.Provider registries = builder.getLevel().registryAccess();
-            // saveCustomOnly 只写子类经 saveAdditional 保存的状态字段（含 CustomName），不含 id/坐标
-            CompoundTag tag = blockEntity.saveCustomOnly(registries);
+            // saveWithFullMetadata 含 id 字段：minecraft:block_entity_data 组件的 codec 校验要求 tag 带 id，
+            // 缺 id 时物品在存档/实体保存时解码会抛 "Missing id for entity" 崩溃。
+            CompoundTag tag = blockEntity.saveWithFullMetadata(registries);
+            // 去掉坐标（loadAdditional 不读），以及会被子类 getDrops 单独掉落的槽位（避免掉落+重放重复）
+            tag.remove("x");
+            tag.remove("y");
+            tag.remove("z");
+            removeDroppedSlots(tag);
             CustomData data = CustomData.of(tag);
             for (ItemStack stack : drops) {
                 if (stack.is(this.asItem())) {
@@ -79,5 +85,12 @@ public abstract class AbstractGeneratorBlock extends Block implements EntityBloc
             }
         }
         return drops;
+    }
+
+    /**
+     * 子类覆写：从 block_entity_data 中移除会被 {@code getDrops} 单独掉落（不应随物品保留）的槽位。
+     * 例如流体机的输入/输出槽（掉桶）、能量机的充电槽（掉充电物）；方块机标记槽与能量机加速槽保留。
+     */
+    protected void removeDroppedSlots(CompoundTag tag) {
     }
 }
