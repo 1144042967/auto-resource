@@ -63,8 +63,8 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
     public void submit(WaterWheelMotorRenderState state, PoseStack poseStack, SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
         int speed = state.speed;
         Component text = Component.translatable("screen.autoresource.water_wheel_motor.block_speed", String.format("%03d", speed));
-        // 强制至少 15 级方块光照，保留环境天空光
-        int light = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT) | (state.lightCoords & 0xFFFF0000);
+        // 自发光：方块光与天空光均强制 15 级全亮，转速文字不随环境（夜晚/地下）变暗
+        int light = MIN_BLOCK_LIGHT | (15 << 20);
         Direction output = state.outputFace;
         for (Direction side : Direction.values()) {
             // 只在垂直于输出方向的四个侧面显示（输出面与其对面是水车轮/底座贴图）

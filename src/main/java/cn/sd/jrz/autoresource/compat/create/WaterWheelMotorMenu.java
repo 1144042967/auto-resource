@@ -23,7 +23,7 @@ import java.util.function.IntSupplier;
  * 水车马达容器：单个水车槽 + 玩家背包，数据槽同步转速/方向/面/容量到客户端，
  * 按钮切换旋转方向与六面输出方向（转速由水车数量决定，不可手动调节）。
  * <p>26.1.2 移植：容量可能 ≥32768（64 个大水车 × 512 SU），数据槽按 2×16 位拆分同步；
- * Level.isClientSide 改为方法 isClientSide()；getNeighborStack 加 @Override。
+ * Level.isClientSide 改为方法 isClientSide()。
  */
 public class WaterWheelMotorMenu extends AbstractContainerMenu {
     // 按钮 ID
@@ -198,7 +198,6 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     /**
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      */
-    @Override
     @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         int id;
