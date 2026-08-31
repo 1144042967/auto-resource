@@ -111,7 +111,8 @@ public class BlockGeneratorItem extends BlockItem {
                 if (count > 0) {
                     sb.append(", ");
                 }
-                sb.append(items.get(i).getName(ItemStack.EMPTY).getString());
+                // 26.1.2：Item.getName(ItemStack) 只读 ITEM_NAME 组件（空栈返回空），须用默认实例的 hover name
+                sb.append(items.get(i).getDefaultInstance().getHoverName().getString());
                 if (++count == PER_ROW) {
                     tooltipAdder.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
                     sb = new StringBuilder();

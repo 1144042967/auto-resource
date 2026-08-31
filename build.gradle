@@ -6,11 +6,12 @@ repositories {
 	// Loom 已自动添加获取 Minecraft 与基础库所需仓库（镜像见 settings.gradle），仅当需要其他第三方 MOD 构件时才在此添加。
 }
 
-// Create 兼容层（可选依赖）：libs/ 下提供 create-fabric jar 与预先合并的 porting-lib 单 jar 时才参与编译。
-// MC 26.1.2(=1.21.5)对应 Create Fabric 6.0.x 系列、porting-lib 4.x；libs/ 下文件名匹配 "create*" 与 "porting*"。
+// Create 兼容层（可选依赖）：libs/ 下提供 create-fly jar（26.2 机械动力飞越版，Create-Fly 已内置
+// 动能 API，无需单独 porting-lib）时才参与编译。未提供时排除需要 Create API 的兼容类
+// （CreateCompat 不引用 Create 类型，保留编译）。
 def createJars = fileTree(dir: 'libs', include: 'create*.jar')
 def portingJars = fileTree(dir: 'libs', include: 'porting*.jar')
-def hasCreate = !createJars.empty && !portingJars.empty
+def hasCreate = !createJars.empty
 
 loom {
 	splitEnvironmentSourceSets()
@@ -21,10 +22,6 @@ loom {
 			sourceSet sourceSets.client
 		}
 	}
-
-	// 26.x 起 Mojang 不再单独提供 obfuscated jar（原 loom.officialMojangMappings() 失效），
-	// 此处声明不再注入中间映射，由源码直接引用映射后的命名空间（class_xxx）。
-	noIntermediateMappings()
 }
 
 sourceSets {
@@ -50,10 +47,11 @@ sourceSets {
 
 dependencies {
 	minecraft "com.mojang:minecraft:${project.minecraft_version}"
+	// 26.x 系列直接以官方 deobfuscated 名称发布，不再需要显式 mapping（loom 默认启用 official_mojang_mappings）
 	implementation "net.fabricmc:fabric-loader:${project.loader_version}"
 	implementation "net.fabricmc.fabric-api:fabric-api:${project.fabric_api_version}"
 
-	// TechReborn 提供的 FE 能量 API
+	// TechReborn 提供的 FE 能量 API（MC 26.x 系列需 5.x）
 	implementation "teamreborn:energy:5.0.0"
 
 	// JetBrains 注解
@@ -61,7 +59,9 @@ dependencies {
 
 	if (hasCreate) {
 		compileOnly createJars
-		compileOnly portingJars
+		if (!portingJars.empty) {
+			compileOnly portingJars
+		}
 	}
 }
 

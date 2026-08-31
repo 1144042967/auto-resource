@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.client;
 import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -62,10 +63,17 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
     }
 
     @Override
+    public void extractBackground(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        // 面板纹理：背景层用绝对坐标；须用带 RenderPipelines 的 10 参 blit（9 参 float 版本是 UV 语义）
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0f, 0.0f, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+    }
+
+    @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        // 增长进度条
+        // 必须先调 super：父类在其中 pushMatrix+translate(leftPos,topPos) 渲染按钮/槽位/标签并 popMatrix 还原
+        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
+        // 增长进度条（super 已还原到绝对坐标，用 leftPos/topPos 定位）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -83,27 +91,28 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 19, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 29, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 39, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 39, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 无线充电参数（间隔带单位）
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 79, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), 12, 95, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), 64, 95, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.range"), 12, 111, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), 64, 111, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 79, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), 12, 95, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), 64, 95, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.range"), 12, 111, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), 64, 111, TEXT_COLOR, false);
         // 重复传电次数（带单位）
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), 12, 175, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), 56, 175, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), 12, 175, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), 56, 175, TEXT_COLOR, false);
         // 加速槽标签：显示配置的目标物品名
         Item starItem = menu.getStarItem();
         if (starItem != null) {
-            guiGraphics.text(this.font, starItem.getName(ItemStack.EMPTY), 28, 195, TEXT_COLOR);
+            // 26.1.2：Item.getName(ItemStack) 只读 ITEM_NAME 组件（空栈返回空），须用默认实例的 hover name
+            guiGraphics.text(this.font, starItem.getDefaultInstance().getHoverName(), 28, 195, TEXT_COLOR, false);
         }
         // 充电槽标签：右对齐贴近充电槽
         Component chargeLabel = Component.translatable("screen.autoresource.energy_generator.charge_slot");
-        guiGraphics.text(this.font, chargeLabel, 150 - this.font.width(chargeLabel), 195, TEXT_COLOR);
+        guiGraphics.text(this.font, chargeLabel, 150 - this.font.width(chargeLabel), 195, TEXT_COLOR, false);
     }
 
     @Override
@@ -117,6 +126,13 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         this.faceSouth.setState(this.menu.isFaceEnabled(Direction.SOUTH));
         this.faceWest.setState(this.menu.isFaceEnabled(Direction.WEST));
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
+        // 悬浮提示：显示图标时提示相邻方块名称
+        this.faceDown.refreshTooltip();
+        this.faceUp.refreshTooltip();
+        this.faceNorth.refreshTooltip();
+        this.faceSouth.refreshTooltip();
+        this.faceWest.refreshTooltip();
+        this.faceEast.refreshTooltip();
     }
 
     /**

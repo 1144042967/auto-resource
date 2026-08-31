@@ -4,6 +4,7 @@ import cn.sd.jrz.autoresource.menu.AbstractGeneratorMenu;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import org.joml.Matrix3x2fStack;
 import net.minecraft.client.gui.components.AbstractButton;
+import net.minecraft.client.gui.components.Tooltip;
 import net.minecraft.client.gui.narration.NarrationElementOutput;
 import net.minecraft.client.gui.screens.inventory.AbstractContainerScreen;
 import net.minecraft.core.Direction;
@@ -18,7 +19,7 @@ import org.jetbrains.annotations.NotNull;
  * 机器 GUI 基类：共享按钮点击发送、增长百分比计算、渲染循环与开关/通用小按钮；子类负责槽位布局、进度条配色与开关初始化。
  */
 public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>> extends AbstractContainerScreen<M> {
-    protected static final int TEXT_COLOR = 4210752; // 0x404040 深灰
+    protected static final int TEXT_COLOR = 0xFF404040; // 深灰（26.1.2 text() 要求 ARGB：alpha 为 0 时直接跳过绘制）
     protected static final int FACE_ICON_SIZE = 12;
 
     protected AbstractGeneratorScreen(M menu, Inventory playerInventory, Component title, int imageWidth, int imageHeight) {
@@ -159,6 +160,8 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
     protected class FaceButton extends SimpleButton {
         private final Direction direction;
         private boolean state;
+        // 悬浮 tooltip 缓存：相邻方块变化时才 setTooltip（避免每帧重置延迟导致提示不出现）
+        private ItemStack lastNeighbor = ItemStack.EMPTY;
 
         FaceButton(int x, int y, int width, int height, Direction direction, boolean initial, Component label, OnPress onPress) {
             super(x, y, width, height, label, onPress);
@@ -168,6 +171,23 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
 
         void setState(boolean state) {
             this.state = state;
+        }
+
+        /**
+         * 相邻方块显示为图标时，悬浮提示其方块名称与按钮方向（无相邻方块时无提示）
+         */
+        void refreshTooltip() {
+            ItemStack neighbor = AbstractGeneratorScreen.this.menu.getNeighborStack(this.direction);
+            if (!ItemStack.matches(neighbor, lastNeighbor)) {
+                lastNeighbor = neighbor;
+                if (neighbor.isEmpty()) {
+                    this.setTooltip(null);
+                } else {
+                    // 第一行相邻方块名，第二行按钮方向名（getMessage 为方向 label）
+                    Component tip = neighbor.getHoverName().copy().append("\n").append(this.getMessage());
+                    this.setTooltip(Tooltip.create(tip));
+                }
+            }
         }
 
         @Override
