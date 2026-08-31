@@ -8,6 +8,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.ItemStack;
 
 import org.jetbrains.annotations.NotNull;
 
@@ -61,9 +62,9 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
     }
 
     @Override
-    public void extractBackground(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
@@ -78,6 +79,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
 
     @Override
     protected void extractLabels(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractLabels(guiGraphics, mouseX, mouseY);
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
@@ -97,7 +99,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         // 加速槽标签：显示配置的目标物品名
         Item starItem = menu.getStarItem();
         if (starItem != null) {
-            guiGraphics.text(this.font, Component.translatable(starItem.getDescriptionId()), 28, 195, TEXT_COLOR);
+            guiGraphics.text(this.font, starItem.getName(ItemStack.EMPTY), 28, 195, TEXT_COLOR);
         }
         // 充电槽标签：右对齐贴近充电槽
         Component chargeLabel = Component.translatable("screen.autoresource.energy_generator.charge_slot");
@@ -121,7 +123,7 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
      * 灰色小按钮（+/-）
      */
     private class MiniButton extends SimpleButton {
-        MiniButton(int x, int y, int width, int height, Component label, OnPress onPress) {
+        MiniButton(int x, int y, int width, int height, Component label, AbstractGeneratorScreen.OnPress onPress) {
             super(x, y, width, height, label, onPress);
         }
 

@@ -10,17 +10,19 @@ import net.minecraft.core.registries.Registries;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.tags.TagKey;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.item.Items;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.ArrayList;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -39,8 +41,8 @@ public class BlockGeneratorItem extends BlockItem {
 
     private final DataConfig config;
 
-    public BlockGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant());
+    public BlockGeneratorItem(Block block, DataConfig config, ResourceKey<Item> registryKey) {
+        super(block, new Properties().setId(registryKey).stacksTo(1).fireResistant());
         this.config = config;
     }
 
@@ -49,59 +51,59 @@ public class BlockGeneratorItem extends BlockItem {
      */
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        return super.getName(stack).copy().withStyle(config.getThemeColor());
+        // 26.1.2：Item 默认名称键为 item.<id>（Properties 用 "item" 前缀），而语言文件使用 block.<id>，
+        // 故显式改用方块翻译键，避免显示未翻译的键名
+        return Component.translatable(this.getBlock().getDescriptionId()).copy().withStyle(config.getThemeColor());
     }
 
     /**
      * tooltip 仅在客户端渲染调用，且只使用 common 类，无需环境隔离注解
+     * 26.1.2：appendHoverText 签名改为 TooltipDisplay + Consumer<Component>；
+     * 组件读取改为 TypedEntityData（type + tag）
      */
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext ctx, @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip, @NotNull TooltipFlag flagIn) {
-        super.appendHoverText(stack, ctx, display, tooltip, flagIn);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull TooltipDisplay tooltipDisplay, @NotNull Consumer<Component> tooltipAdder, @NotNull TooltipFlag flagIn) {
+        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flagIn);
         double output = config.getMin() / 1000D;
         long block = 0;
         long tickCount = 0;
         long second = config.getSecond();
         long step = config.getStep();
-        TypedEntityData<BlockEntityType<?>> blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        CompoundTag tag = blockEntityData == null ? null : blockEntityData.getUnsafe();
-        if (tag != null) {
-            if (tag.contains("output")) {
-                output = tag.getLongOr("output", (long) output) / 1000D;
-            }
-            if (tag.contains("block")) {
-                block = tag.getLongOr("block", block) / 1000;
-            }
-            if (tag.contains("tickCount")) {
-                tickCount = tag.getLongOr("tickCount", tickCount);
-            }
+        // 26.1.2：block_entity_data 组件为 TypedEntityData，getUnsafe 取原始 tag
+        TypedEntityData<BlockEntityType<?>> entityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        CompoundTag tag = entityData == null ? new CompoundTag() : entityData.getUnsafe();
+        if (!tag.isEmpty()) {
+            // 26.1.2：CompoundTag.getLong 返回 Optional，改用 getLongOr（缺字段用默认值）
+            output = tag.getLongOr("output", config.getMin()) / 1000D;
+            block = tag.getLongOr("block", 0) / 1000;
+            tickCount = tag.getLongOr("tickCount", 0);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
         // 数值行使用机器主题色
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.block", block).withStyle(config.getThemeColor()));
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.output", output).withStyle(config.getThemeColor()));
+        tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.block", block).withStyle(config.getThemeColor()));
+        tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output < config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
+            tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
+            tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
+        tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.step", second, step / 1000D).withStyle(ChatFormatting.GRAY));
         // 标记槽内容物描述（兼容未标记/为空的情况）
-        if (tag != null && tag.contains("markerSlot")) {
-            MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(tag.getCompoundOrEmpty("markerSlot"));
+        if (tag.contains("markerSlot")) {
+            MachineSlotStorage marker = new MachineSlotStorage(1).deserializeNBT(tag.getCompoundOrEmpty("markerSlot"), context.registries());
             ItemStack marked = marker.getItem(0);
             if (!marked.isEmpty()) {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.marked", marked.getHoverName()).withStyle(ChatFormatting.GOLD));
+                tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.marked", marked.getHoverName()).withStyle(ChatFormatting.GOLD));
             } else {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
+                tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
             }
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
+            tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.unmarked").withStyle(ChatFormatting.GRAY));
         }
         // 可生成方块列表（# 标签展开为实际物品；最多展示 MAX_ITEMS 种）
         List<Item> items = new ArrayList<>(getSupportedItems());
         if (!items.isEmpty()) {
-            tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks").withStyle(ChatFormatting.GRAY));
+            tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks").withStyle(ChatFormatting.GRAY));
             int visible = Math.min(items.size(), MAX_ITEMS);
             StringBuilder sb = new StringBuilder();
             int count = 0;
@@ -109,22 +111,22 @@ public class BlockGeneratorItem extends BlockItem {
                 if (count > 0) {
                     sb.append(", ");
                 }
-                sb.append(Component.translatable(items.get(i).getDescriptionId()).getString());
+                sb.append(items.get(i).getName(ItemStack.EMPTY).getString());
                 if (++count == PER_ROW) {
-                    tooltip.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
+                    tooltipAdder.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
                     sb = new StringBuilder();
                     count = 0;
                 }
             }
             if (count > 0) {
-                tooltip.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
+                tooltipAdder.accept(Component.literal(sb.toString()).withStyle(ChatFormatting.GRAY));
             }
             if (items.size() > MAX_ITEMS) {
-                tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks_more", items.size(), MAX_ITEMS).withStyle(ChatFormatting.GRAY));
+                tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.blocks_more", items.size(), MAX_ITEMS).withStyle(ChatFormatting.GRAY));
             }
         }
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.set_block").withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.accept(Component.translatable("item.autoresource.block_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
+        tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.set_block").withStyle(ChatFormatting.DARK_GRAY));
+        tooltipAdder.accept(Component.translatable("item.autoresource.block_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 
     /**
@@ -163,6 +165,7 @@ public class BlockGeneratorItem extends BlockItem {
                 Identifier loc = Identifier.tryParse(id.substring(1));
                 if (loc != null) {
                     TagKey<Item> tagKey = TagKey.create(Registries.ITEM, loc);
+                    // 26.1.2：Registry.getTag 移除，改用 getTagOrEmpty 直接迭代
                     for (Holder<Item> holder : BuiltInRegistries.ITEM.getTagOrEmpty(tagKey)) {
                         supported.add(holder.value());
                     }
@@ -171,8 +174,9 @@ public class BlockGeneratorItem extends BlockItem {
                 // 物品 ID 条目 → 直接加入（查不到时返回 AIR，跳过）
                 Identifier loc = Identifier.tryParse(id);
                 if (loc != null) {
-                    Item item = BuiltInRegistries.ITEM.getValue(loc);
-                    if (item != null && item != net.minecraft.world.item.Items.AIR) {
+                    // 26.1.2：Registry.get 返回 Optional<Reference<Item>>，改用 getOptional 直接取值
+                    Item item = BuiltInRegistries.ITEM.getOptional(loc).orElse(Items.AIR);
+                    if (item != Items.AIR) {
                         supported.add(item);
                     }
                 }

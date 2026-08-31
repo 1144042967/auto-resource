@@ -39,7 +39,7 @@ public abstract class DataConfig {
             if (cachedStarItem == null || !id.equals(cachedStarId)) {
                 cachedStarId = id;
                 Identifier loc = Identifier.tryParse(id);
-                Item resolved = loc != null ? BuiltInRegistries.ITEM.getValue(loc) : null;
+                Item resolved = loc != null ? BuiltInRegistries.ITEM.getOptional(loc).orElse(null) : null;
                 // Fabric 注册表查不到时返回 AIR 而非 null，一并回退默认
                 cachedStarItem = resolved == null || resolved == Items.AIR ? Items.NETHER_STAR : resolved;
             }
@@ -196,7 +196,7 @@ public abstract class DataConfig {
             } else {
                 // 物品 ID 形式：minecraft:dirt
                 Identifier loc = Identifier.tryParse(id);
-                if (loc != null && stack.getItem() == BuiltInRegistries.ITEM.getValue(loc)) {
+                if (loc != null && stack.getItem() == BuiltInRegistries.ITEM.getOptional(loc).orElse(null)) {
                     return true;
                 }
             }

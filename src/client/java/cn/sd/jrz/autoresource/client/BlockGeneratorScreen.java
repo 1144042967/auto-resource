@@ -2,8 +2,10 @@ package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
+import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
 import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -66,8 +68,8 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        // 32 = GLFW.GLFW_KEY_SPACE（Minecraft KeyEvent 沿用 GLFW 键码）
-        if (event.key() == 32) {
+        // 26.3 起 GLFW 改为 Mojang 自封的 InputConstants（仍以 GLFW keycode 为基础数值）
+        if (event.input() == InputConstants.KEY_SPACE) {
             this.spaceDown = true;
         }
         return super.keyPressed(event);
@@ -75,7 +77,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
 
     @Override
     public boolean keyReleased(KeyEvent event) {
-        if (event.key() == 32) {
+        if (event.input() == InputConstants.KEY_SPACE) {
             this.spaceDown = false;
         }
         return super.keyReleased(event);
@@ -85,7 +87,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
      * 拦截输出展示槽的点击：单击提取一个、Shift+单击提取一组、空格+单击提取到背包满
      */
     @Override
-    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean isDoubleClick) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         if (event.button() == 0) {
             Slot outputSlot = this.menu.slots.get(OUTPUT_SLOT_INDEX);
             if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, event.x(), event.y())) {
@@ -105,6 +107,22 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
+    public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        // 增长进度条
+        int trackLeft = this.leftPos + 12;
+        int trackRight = this.leftPos + 164;
+        int trackTop = this.topPos + 60;
+        guiGraphics.fill(trackLeft, trackTop, trackRight, trackTop + 4, 0xFF555555);
+        int percent = growthPercent();
+        if (percent > 0) {
+            int fill = (trackRight - trackLeft) * percent / 100;
+            guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, 0xFF00AA00);
+        }
+    }
+
+    @Override
     protected void extractLabels(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
         super.extractLabels(guiGraphics, mouseX, mouseY);
         BlockGeneratorMenu menu = this.menu;
@@ -120,23 +138,6 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         // 输出槽标签：右对齐贴近输出槽
         Component outputLabel = Component.translatable("screen.autoresource.block_generator.output_slot");
         guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR);
-    }
-
-    @Override
-    protected void extractSlots(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
-        super.extractSlots(guiGraphics, mouseX, mouseY);
-        // 背景与进度条在槽位之后绘制，避免遮盖物品
-        guiGraphics.blit(net.minecraft.client.renderer.RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0F, 0.0F, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        // 增长进度条
-        int trackLeft = this.leftPos + 12;
-        int trackRight = this.leftPos + 164;
-        int trackTop = this.topPos + 60;
-        guiGraphics.fill(trackLeft, trackTop, trackRight, trackTop + 4, 0xFF555555);
-        int percent = growthPercent();
-        if (percent > 0) {
-            int fill = (trackRight - trackLeft) * percent / 100;
-            guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, 0xFF00AA00);
-        }
     }
 
     @Override

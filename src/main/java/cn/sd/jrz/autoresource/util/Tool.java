@@ -1,6 +1,5 @@
 package cn.sd.jrz.autoresource.util;
 
-import net.minecraft.util.Prediction;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -51,7 +50,8 @@ public class Tool {
 
     public static void takeItem(Player player, ItemStack stack) {
         if (!player.addItem(stack)) {
-            ItemEntity entity = player.drop(stack, false, Prediction.SERVER_ONLY);
+            // 26.3 起 LivingEntity#drop 需要 Prediction 参数；SERVER_ONLY 等价旧 drop(stack, throwAround)
+            ItemEntity entity = player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
             if (entity != null) {
                 entity.setNoPickUpDelay();
                 entity.setTarget(player.getUUID());

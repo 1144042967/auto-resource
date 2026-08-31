@@ -13,7 +13,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -91,6 +90,10 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
 
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(pos, state, config);
+    }
+
+    public EnergyConnection getEnergyConnection() {
+        return energyConnection;
     }
 
     /**
@@ -449,7 +452,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("energy", energy);
         out.putLong("tickCount", tickCount);
@@ -459,28 +462,24 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         out.putInt("wirelessRange", wirelessRange);
         out.putInt("transferRepeat", transferRepeat);
         saveTransferFaces(out);
-        out.store("starSlot", CompoundTag.CODEC, starSlot.serializeNBT());
-        out.store("chargeSlot", CompoundTag.CODEC, chargeSlot.serializeNBT());
+        starSlot.saveTo(out.child("starSlot"));
+        chargeSlot.saveTo(out.child("chargeSlot"));
     }
 
     @Override
     protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
         output = Tool.suit(in.getLongOr("output", output));
         energy = Tool.suit(in.getLongOr("energy", energy));
         tickCount = Tool.suit(in.getLongOr("tickCount", tickCount));
         // 兼容旧存档字段名 beaconIncrease
-        if (in.getLong("nextIncrease").isPresent()) {
-            nextIncrease = Tool.suit(in.getLongOr("nextIncrease", nextIncrease));
-        } else if (in.getLong("beaconIncrease").isPresent()) {
-            nextIncrease = Tool.suit(in.getLongOr("beaconIncrease", nextIncrease));
-        }
+        nextIncrease = Tool.suit(in.getLongOr("nextIncrease", in.getLongOr("beaconIncrease", nextIncrease)));
         wirelessOn = in.getBooleanOr("wirelessOn", wirelessOn);
         wirelessInterval = Math.max(1, in.getIntOr("wirelessInterval", wirelessInterval));
         wirelessRange = Math.max(1, in.getIntOr("wirelessRange", wirelessRange));
         transferRepeat = Math.max(1, in.getIntOr("transferRepeat", transferRepeat));
         loadTransferFaces(in);
-        in.read("starSlot", CompoundTag.CODEC).ifPresent(starSlot::deserializeNBT);
-        in.read("chargeSlot", CompoundTag.CODEC).ifPresent(chargeSlot::deserializeNBT);
+        starSlot.loadFrom(in.childOrEmpty("starSlot"));
+        chargeSlot.loadFrom(in.childOrEmpty("chargeSlot"));
     }
 }

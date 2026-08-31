@@ -9,13 +9,17 @@ import net.fabricmc.fabric.api.transfer.v1.item.ItemStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
+import net.minecraft.core.HolderLookup;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -48,6 +52,14 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             Level level = getLevel();
             if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+                // sendBlockUpdated 只发方块状态；标记物品数据还需额外发送 BE 更新包，
+                // 客户端（GUI 标记/输出槽、四周贴图）才能即时读到 markerSlot
+                if (level instanceof ServerLevel serverLevel) {
+                    // 26.1.2：ChunkPos 构造器只接收 (int, int)，由 BlockPos 计算坐标
+                    ChunkPos chunkPos = new ChunkPos(getBlockPos().getX() >> 4, getBlockPos().getZ() >> 4);
+                    ClientboundBlockEntityDataPacket packet = getUpdatePacket();
+                    serverLevel.getChunkSource().chunkMap.getPlayers(chunkPos, false).forEach(p -> p.connection.send(packet));
+                }
             }
         }
     }.setValidator(DataConfig::isBlockGeneratorItem).setSlotLimit(0, 1);
@@ -195,25 +207,44 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("block", block);
         out.putLong("tickCount", tickCount);
         saveTransferFaces(out);
         saveOutputEnabled(out);
         out.putBoolean("placeBlockBelow", placeBlockBelow);
-        out.store("markerSlot", net.minecraft.nbt.CompoundTag.CODEC, markerSlot.serializeNBT());
+        markerSlot.saveTo(out.child("markerSlot"));
+    }
+
+    /**
+     * 初始同步到客户端的数据（含标记槽），保证进游戏后方块机即显示标记物品
+     * 26.1.2：getUpdateTag 仍存在，参数变为 HolderLookup.Provider
+     */
+    @Override
+    @NotNull
+    public CompoundTag getUpdateTag(@NotNull HolderLookup.Provider registryLookup) {
+        return saveWithFullMetadata(registryLookup);
+    }
+
+    /**
+     * 数据变化时发送给客户端的更新包（标记槽变化后强制刷新渲染）
+     */
+    @Override
+    @NotNull
+    public ClientboundBlockEntityDataPacket getUpdatePacket() {
+        return ClientboundBlockEntityDataPacket.create(this);
     }
 
     @Override
-    protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
-        output = Tool.suit(in.getLongOr("output", output));
-        block = Tool.suit(in.getLongOr("block", block));
-        tickCount = Tool.suit(in.getLongOr("tickCount", tickCount));
-        loadTransferFaces(in);
-        loadOutputEnabled(in);
-        placeBlockBelow = in.getBooleanOr("placeBlockBelow", placeBlockBelow);
-        in.read("markerSlot", net.minecraft.nbt.CompoundTag.CODEC).ifPresent(markerSlot::deserializeNBT);
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        block = Tool.suit(input.getLongOr("block", block));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeBlockBelow = input.getBooleanOr("placeBlockBelow", placeBlockBelow);
+        markerSlot.loadFrom(input.childOrEmpty("markerSlot"));
     }
 }

@@ -5,23 +5,24 @@ import net.minecraft.ChatFormatting;
 import net.minecraft.core.component.DataComponents;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
-import net.minecraft.world.item.BlockItem;
+import net.minecraft.resources.ResourceKey;
 import net.minecraft.world.item.Item;
+import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.TooltipFlag;
 import net.minecraft.world.item.component.TooltipDisplay;
 import net.minecraft.world.item.component.TypedEntityData;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.entity.BlockEntityType;
-
 import org.jetbrains.annotations.NotNull;
+
 import java.util.function.Consumer;
 
 public class EnergyGeneratorItem extends BlockItem {
     private final DataConfig config;
 
-    public EnergyGeneratorItem(Block block, DataConfig config) {
-        super(block, new Properties().stacksTo(1).fireResistant());
+    public EnergyGeneratorItem(Block block, DataConfig config, ResourceKey<Item> registryKey) {
+        super(block, new Properties().setId(registryKey).stacksTo(1).fireResistant());
         this.config = config;
     }
 
@@ -30,15 +31,19 @@ public class EnergyGeneratorItem extends BlockItem {
      */
     @Override
     public @NotNull Component getName(@NotNull ItemStack stack) {
-        return super.getName(stack).copy().withStyle(config.getThemeColor());
+        // 26.1.2：Item 默认名称键为 item.<id>（Properties 用 "item" 前缀），而语言文件使用 block.<id>，
+        // 故显式改用方块翻译键，避免显示未翻译的键名
+        return Component.translatable(this.getBlock().getDescriptionId()).copy().withStyle(config.getThemeColor());
     }
 
     /**
      * tooltip 仅在客户端渲染调用，且只使用 common 类，无需环境隔离注解
+     * 26.1.2：appendHoverText 签名改为 TooltipDisplay + Consumer<Component>；
+     * 组件读取改为 TypedEntityData（type + tag）
      */
     @Override
-    public void appendHoverText(@NotNull ItemStack stack, @NotNull Item.TooltipContext ctx, @NotNull TooltipDisplay display, @NotNull Consumer<Component> tooltip, @NotNull TooltipFlag flagIn) {
-        super.appendHoverText(stack, ctx, display, tooltip, flagIn);
+    public void appendHoverText(@NotNull ItemStack stack, @NotNull TooltipContext context, @NotNull TooltipDisplay tooltipDisplay, @NotNull Consumer<Component> tooltipAdder, @NotNull TooltipFlag flagIn) {
+        super.appendHoverText(stack, context, tooltipDisplay, tooltipAdder, flagIn);
         double output = config.getMin();
         long energy = 0;
         long tickCount = 0;
@@ -46,46 +51,36 @@ public class EnergyGeneratorItem extends BlockItem {
         boolean wirelessOn = false;
         long second = config.getSecond();
         long step = config.getStep();
-        TypedEntityData<BlockEntityType<?>> blockEntityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
-        CompoundTag tag = blockEntityData == null ? null : blockEntityData.getUnsafe();
-        if (tag != null) {
-            if (tag.contains("output")) {
-                output = tag.getLongOr("output", (long) output);
-            }
-            if (tag.contains("energy")) {
-                energy = tag.getLongOr("energy", energy);
-            }
-            if (tag.contains("tickCount")) {
-                tickCount = tag.getLongOr("tickCount", tickCount);
-            }
-            if (tag.contains("nextIncrease")) {
-                nextIncrease = tag.getLongOr("nextIncrease", nextIncrease);
-            } else if (tag.contains("beaconIncrease")) {
-                // 兼容旧字段名
-                nextIncrease = tag.getLongOr("beaconIncrease", nextIncrease);
-            }
-            if (tag.contains("wirelessOn")) {
-                wirelessOn = tag.getBooleanOr("wirelessOn", wirelessOn);
-            }
+        // 26.1.2：block_entity_data 组件为 TypedEntityData，getUnsafe 取原始 tag
+        TypedEntityData<BlockEntityType<?>> entityData = stack.get(DataComponents.BLOCK_ENTITY_DATA);
+        CompoundTag tag = entityData == null ? new CompoundTag() : entityData.getUnsafe();
+        if (!tag.isEmpty()) {
+            // 26.1.2：CompoundTag.getLong/getBoolean 返回 Optional，改用 getXOr（缺字段用默认值）
+            output = tag.getLongOr("output", config.getMin());
+            energy = tag.getLongOr("energy", 0);
+            tickCount = tag.getLongOr("tickCount", 0);
+            // 兼容旧字段名 beaconIncrease
+            nextIncrease = tag.getLongOr("nextIncrease", tag.getLongOr("beaconIncrease", config.getStep()));
+            wirelessOn = tag.getBooleanOr("wirelessOn", false);
         }
         double percent = (int) (tickCount / 20.00D / second * 10000) / 100.00D;
         // 数值行使用机器主题色
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy).withStyle(config.getThemeColor()));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.output", output).withStyle(config.getThemeColor()));
+        tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.energy", energy).withStyle(config.getThemeColor()));
+        tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.output", output).withStyle(config.getThemeColor()));
         if (output >= config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next_max").withStyle(ChatFormatting.GOLD));
+            tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next_max").withStyle(ChatFormatting.GOLD));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease).withStyle(config.getThemeColor()));
+            tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.next", nextIncrease).withStyle(config.getThemeColor()));
         }
         if (output < config.getMax()) {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
+            tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth", percent).withStyle(ChatFormatting.GREEN));
         } else {
-            tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
+            tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.growth_max").withStyle(ChatFormatting.GOLD));
         }
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step).withStyle(ChatFormatting.GRAY));
-        tooltip.accept(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off")
+        tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.step", second, step).withStyle(ChatFormatting.GRAY));
+        tooltipAdder.accept(Component.translatable(wirelessOn ? "item.autoresource.energy_generator.tooltip.wireless_on" : "item.autoresource.energy_generator.tooltip.wireless_off")
                 .withStyle(wirelessOn ? ChatFormatting.GREEN : ChatFormatting.RED));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster").withStyle(ChatFormatting.DARK_GRAY));
-        tooltip.accept(Component.translatable("item.autoresource.energy_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
+        tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.group_faster").withStyle(ChatFormatting.DARK_GRAY));
+        tooltipAdder.accept(Component.translatable("item.autoresource.energy_generator.tooltip.tip").withStyle(ChatFormatting.DARK_GRAY));
     }
 }

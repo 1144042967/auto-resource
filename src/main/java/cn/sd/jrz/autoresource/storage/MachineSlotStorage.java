@@ -1,18 +1,24 @@
 package cn.sd.jrz.autoresource.storage;
 
-import net.minecraft.core.registries.BuiltInRegistries;
+import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.nbt.ListTag;
-import net.minecraft.resources.Identifier;
+import net.minecraft.nbt.NbtOps;
+import net.minecraft.nbt.Tag;
+import net.minecraft.resources.RegistryOps;
 import net.minecraft.world.Container;
 import net.minecraft.world.ContainerHelper;
+import net.minecraft.world.ItemStackWithSlot;
 import net.minecraft.world.entity.player.Player;
-import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
+
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.function.Predicate;
 
@@ -23,6 +29,9 @@ import java.util.function.Predicate;
  * - 直接实现 vanilla {@link Container}，因此可被原生 {@link net.minecraft.world.inventory.Slot} 包装
  * - NBT 键位与 Forge 版一致（Size/Items[{Slot,id,Count}]），确保旧存档内容可继续读取
  * 内容变化通过 {@link #onContentsChanged(int)} 回调通知持有者（实体借此 setChanged/sendBlockUpdated）
+ * <p>
+ * 持久化在 26.x 中仍提供流式 ValueOutput/ValueInput 接口（与 {@code saveAdditional}/{@code loadAdditional} 直接对接），
+ * 也保留 CompoundTag 接口供 CompoundTag-based 调用点使用。
  */
 public class MachineSlotStorage implements Container {
 
@@ -153,16 +162,46 @@ public class MachineSlotStorage implements Container {
 
     // ==================== NBT 读写（键位兼容 Forge 版存档） ====================
 
-    public CompoundTag serializeNBT() {
+    /**
+     * 序列化槽位内容到 ValueOutput（与 BlockEntity 流式持久化对接）。
+     * 结构保持 {Size, Items}，Items 元素由 {@link ItemStackWithSlot#CODEC} 编码（含槽位索引与物品栈）。
+     */
+    public void saveTo(ValueOutput output) {
+        output.putInt("Size", stacks.size());
+        var list = output.list("Items", ItemStackWithSlot.CODEC);
+        for (int i = 0; i < stacks.size(); i++) {
+            if (!stacks.get(i).isEmpty()) {
+                list.add(new ItemStackWithSlot(i, stacks.get(i)));
+            }
+        }
+    }
+
+    /**
+     * 从 ValueInput 读取槽位内容
+     */
+    public void loadFrom(ValueInput input) {
+        setSize(input.getIntOr("Size", stacks.size()));
+        for (ItemStackWithSlot isws : input.listOrEmpty("Items", ItemStackWithSlot.CODEC)) {
+            int slot = isws.slot();
+            if (slot >= 0 && slot < stacks.size()) {
+                stacks.set(slot, isws.stack());
+            }
+        }
+        onChanged();
+    }
+
+    /**
+     * 序列化槽位内容到 CompoundTag（保留以兼容 CompoundTag-based 调用点，如 tooltip 读取 block_entity_data）。
+     */
+    public CompoundTag serializeNBT(HolderLookup.Provider lookup) {
+        RegistryOps<Tag> ops = lookup != null ? lookup.createSerializationContext(NbtOps.INSTANCE) : null;
         ListTag nbtTagList = new ListTag();
         for (int i = 0; i < stacks.size(); i++) {
-            ItemStack stack = stacks.get(i);
-            if (!stack.isEmpty()) {
+            if (!stacks.get(i).isEmpty()) {
                 CompoundTag itemTag = new CompoundTag();
                 itemTag.putInt("Slot", i);
-                itemTag.putInt("Count", stack.getCount());
-                Identifier itemId = BuiltInRegistries.ITEM.getKey(stack.getItem());
-                itemTag.putString("id", itemId.toString());
+                ItemStack.CODEC.encodeStart(ops != null ? ops : NbtOps.INSTANCE, stacks.get(i)).resultOrPartial(s -> {})
+                        .ifPresent(tag -> itemTag.merge((CompoundTag) tag));
                 nbtTagList.add(itemTag);
             }
         }
@@ -172,24 +211,30 @@ public class MachineSlotStorage implements Container {
         return nbt;
     }
 
-    public MachineSlotStorage deserializeNBT(CompoundTag nbt) {
-        setSize(nbt.contains("Size") ? nbt.getIntOr("Size", stacks.size()) : stacks.size());
-        ListTag tagList = nbt.getListOrEmpty("Items");
+    public CompoundTag serializeNBT() {
+        return serializeNBT(null);
+    }
+
+    public MachineSlotStorage deserializeNBT(CompoundTag nbt, HolderLookup.Provider lookup) {
+        RegistryOps<Tag> ops = lookup != null ? lookup.createSerializationContext(NbtOps.INSTANCE) : null;
+        setSize(nbt.getInt("Size").orElse(stacks.size()));
+        ListTag tagList = nbt.getList("Items").orElse(new ListTag());
         for (int i = 0; i < tagList.size(); i++) {
-            CompoundTag itemTags = tagList.getCompoundOrEmpty(i);
-            int slot = itemTags.getIntOr("Slot", -1);
-            if (slot >= 0 && slot < stacks.size()) {
-                String idStr = itemTags.getStringOr("id", "");
-                Identifier itemId = idStr.isEmpty() ? null : Identifier.tryParse(idStr);
-                Item item = itemId != null ? BuiltInRegistries.ITEM.getValue(itemId) : null;
-                int count = itemTags.getIntOr("Count", 1);
-                if (item != null) {
-                    stacks.set(slot, new ItemStack(item, count));
+            tagList.getCompound(i).ifPresent(itemTags -> {
+                int slot = itemTags.getInt("Slot").orElse(-1);
+                if (slot >= 0 && slot < stacks.size()) {
+                    ItemStack stack = ItemStack.CODEC.parse(ops != null ? ops : NbtOps.INSTANCE, itemTags)
+                            .resultOrPartial(s -> {}).orElse(ItemStack.EMPTY);
+                    stacks.set(slot, stack);
                 }
-            }
+            });
         }
         onChanged();
         return this;
+    }
+
+    public MachineSlotStorage deserializeNBT(CompoundTag nbt) {
+        return deserializeNBT(nbt, null);
     }
 
     /**
@@ -252,9 +297,7 @@ public class MachineSlotStorage implements Container {
 
     @Override
     public void clearContent() {
-        for (int i = 0; i < stacks.size(); i++) {
-            stacks.set(i, ItemStack.EMPTY);
-        }
+        Collections.fill(stacks, ItemStack.EMPTY);
         onChanged();
     }
 

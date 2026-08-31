@@ -12,11 +12,10 @@ import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -29,7 +28,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -402,27 +400,27 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("liquid", liquid);
         out.putLong("tickCount", tickCount);
         saveTransferFaces(out);
         saveOutputEnabled(out);
         out.putBoolean("placeFluidBelow", placeFluidBelow);
-        out.store("inputSlot", CompoundTag.CODEC, inputSlot.serializeNBT());
-        out.store("outputSlot", CompoundTag.CODEC, outputSlot.serializeNBT());
+        inputSlot.saveTo(out.child("inputSlot"));
+        outputSlot.saveTo(out.child("outputSlot"));
     }
 
     @Override
-    protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
-        output = Tool.suit(in.getLongOr("output", output));
-        liquid = Tool.suit(in.getLongOr("liquid", liquid));
-        tickCount = Tool.suit(in.getLongOr("tickCount", tickCount));
-        loadTransferFaces(in);
-        loadOutputEnabled(in);
-        placeFluidBelow = in.getBooleanOr("placeFluidBelow", placeFluidBelow);
-        in.read("inputSlot", CompoundTag.CODEC).ifPresent(inputSlot::deserializeNBT);
-        in.read("outputSlot", CompoundTag.CODEC).ifPresent(outputSlot::deserializeNBT);
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        liquid = Tool.suit(input.getLongOr("liquid", liquid));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeFluidBelow = input.getBooleanOr("placeFluidBelow", placeFluidBelow);
+        inputSlot.loadFrom(input.childOrEmpty("inputSlot"));
+        outputSlot.loadFrom(input.childOrEmpty("outputSlot"));
     }
 }

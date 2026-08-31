@@ -33,7 +33,7 @@ public final class ItemEnergyIo {
     /**
      * 向位于给定单槽存储视图中的物品充能（上下文保证变更回写），返回实际充入量
      *
-     * @param slot 物品所在的单槽存储视图（如 {@code ContainerStorage.of(container,null).getSlot(i)}）
+     * @param slot 物品所在的单槽存储视图（如 {@code InventoryStorage.of(container,null).getSlot(i)}）
      */
     public static long receive(net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage<net.fabricmc.fabric.api.transfer.v1.item.ItemVariant> slot, long maxAmount) {
         if (maxAmount <= 0) {
