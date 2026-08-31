@@ -10,12 +10,12 @@ import cn.sd.jrz.autoresource.util.Tool;
 import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.player.Inventory;
@@ -28,7 +28,6 @@ import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Blocks;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
-import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
@@ -170,7 +169,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     /**
      * 给上方容器中可容纳流体的物品充入流体
      * <p>说明：直接使用 vanilla {@link Container} 接口（{@code removeItem} / {@code setItem}）操作槽位——
-     * Fabric Transfer API 的 {@code ContainerStorage.of} 对 vanilla Container 的 {@link SingleSlotStorage}
+     * Fabric Transfer API 的 {@link ContainerStorage#of} 对 vanilla Container 的 {@link SingleSlotStorage}
      * 封装器在某些容器（如 Chest）上不稳定，直接读写 Container 更接近 Forge 版
      * {@code ItemStackHandler.extractItem/insertItem} 的语义。
      */
@@ -201,7 +200,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
                 continue;
             }
             // 可容纳流体的物品：经 Fabric Transfer API 的 FluidStorage.ITEM 查找（vanilla Container 通常不暴露）
-            SingleSlotStorage<ItemVariant> slotView = net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage.of(container, null).getSlot(i);
+            SingleSlotStorage<ItemVariant> slotView = ContainerStorage.of(container, null).getSlot(i);
             ContainerItemContext context = ContainerItemContext.ofSingleSlot(slotView);
             Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
             if (storage == null || !storage.supportsInsertion()) {
@@ -401,37 +400,27 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("liquid", liquid);
         out.putLong("tickCount", tickCount);
-        out.putBoolean("transferDown", transferDown);
-        out.putBoolean("transferUp", transferUp);
-        out.putBoolean("transferNorth", transferNorth);
-        out.putBoolean("transferSouth", transferSouth);
-        out.putBoolean("transferWest", transferWest);
-        out.putBoolean("transferEast", transferEast);
-        out.putBoolean("outputEnabled", outputEnabled);
+        saveTransferFaces(out);
+        saveOutputEnabled(out);
         out.putBoolean("placeFluidBelow", placeFluidBelow);
-        out.store("inputSlot", CompoundTag.CODEC, inputSlot.serializeNBT());
-        out.store("outputSlot", CompoundTag.CODEC, outputSlot.serializeNBT());
+        inputSlot.saveTo(out.child("inputSlot"));
+        outputSlot.saveTo(out.child("outputSlot"));
     }
 
     @Override
-    protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
-        output = Tool.suit(in.getLongOr("output", config.getMin()));
-        liquid = Tool.suit(in.getLongOr("liquid", 0));
-        tickCount = Tool.suit(in.getLongOr("tickCount", 0));
-        transferDown = in.getBooleanOr("transferDown", true);
-        transferUp = in.getBooleanOr("transferUp", true);
-        transferNorth = in.getBooleanOr("transferNorth", true);
-        transferSouth = in.getBooleanOr("transferSouth", true);
-        transferWest = in.getBooleanOr("transferWest", true);
-        transferEast = in.getBooleanOr("transferEast", true);
-        outputEnabled = in.getBooleanOr("outputEnabled", true);
-        placeFluidBelow = in.getBooleanOr("placeFluidBelow", false);
-        in.read("inputSlot", CompoundTag.CODEC).ifPresent(ct -> inputSlot.deserializeNBT(ct));
-        in.read("outputSlot", CompoundTag.CODEC).ifPresent(ct -> outputSlot.deserializeNBT(ct));
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        liquid = Tool.suit(input.getLongOr("liquid", liquid));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeFluidBelow = input.getBooleanOr("placeFluidBelow", placeFluidBelow);
+        inputSlot.loadFrom(input.childOrEmpty("inputSlot"));
+        outputSlot.loadFrom(input.childOrEmpty("outputSlot"));
     }
 }

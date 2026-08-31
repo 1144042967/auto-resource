@@ -2,10 +2,11 @@ package cn.sd.jrz.autoresource.network;
 
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.Config;
+import io.netty.buffer.Unpooled;
 import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -20,21 +21,19 @@ import net.minecraft.server.level.ServerPlayer;
  */
 public final class ConfigSync {
 
-    public static final Identifier CHANNEL_ID = Identifier.fromNamespaceAndPath(AutoResource.MODID, "config_sync");
-    public static final CustomPacketPayload.Type<Payload> TYPE = new CustomPacketPayload.Type<>(CHANNEL_ID);
-
+    public static final Identifier CHANNEL = Identifier.fromNamespaceAndPath(AutoResource.MODID, "config_sync");
+    public static final CustomPacketPayload.Type<ConfigPayload> TYPE = new CustomPacketPayload.Type<>(CHANNEL);
     /**
-     * 自定义 payload 类型（MC 26.x Fabric networking v6+ 强制使用 payload 记录传递数据包）
+     * 单纯用于承载配置数据（编码到 buf）的网络包载荷
      */
-    public record Payload(Config.Data data) implements CustomPacketPayload {
-
-        public static final StreamCodec<FriendlyByteBuf, Payload> CODEC = StreamCodec.of(
-                (buf, payload) -> payload.data.encode(buf),
-                buf -> new Payload(Config.Data.decode(buf))
+    public record ConfigPayload(RegistryFriendlyByteBuf data) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ConfigPayload> CODEC = StreamCodec.of(
+                (buf, payload) -> buf.writeBytes(payload.data.readBytes(payload.data.readableBytes())),
+                buf -> new ConfigPayload(new RegistryFriendlyByteBuf(buf.readBytes(buf.readableBytes()), buf.registryAccess()))
         );
 
         @Override
-        public CustomPacketPayload.Type<? extends CustomPacketPayload> type() {
+        public Type<? extends CustomPacketPayload> type() {
             return TYPE;
         }
     }
@@ -43,12 +42,13 @@ public final class ConfigSync {
     }
 
     /**
-     * 挂接 Payload 类型并注册服务端事件：玩家进入游戏时下发最新配置
+     * 挂接服务器事件：注册 payload 类型并下发配置
      */
     public static void init() {
-        // 注册 payload 类型（Fabric networking v6+ 强制要求）
-        PayloadTypeRegistry.serverboundPlay().register(TYPE, Payload.CODEC);
-        PayloadTypeRegistry.clientboundPlay().register(TYPE, Payload.CODEC);
+        // 注册 payload 类型（play 阶段双向；26.1.2 改为 serverboundPlay/clientboundPlay）
+        PayloadTypeRegistry.serverboundPlay().register(TYPE, ConfigPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(TYPE, ConfigPayload.CODEC);
+        // 玩家进入游戏时下发最新配置
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendToPlayer(handler.getPlayer()));
     }
 
@@ -60,7 +60,9 @@ public final class ConfigSync {
             return;
         }
         try {
-            ServerPlayNetworking.send(player, new Payload(Config.get()));
+            RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
+            Config.get().encode(buf);
+            ServerPlayNetworking.send(player, new ConfigPayload(buf));
         } catch (Exception e) {
             AutoResource.LOGGER.warn("[AutoResource] 配置同步失败: {}", e.toString());
         }

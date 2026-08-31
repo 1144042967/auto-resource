@@ -4,7 +4,9 @@ import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
+import net.fabricmc.fabric.api.transfer.v1.item.base.SingleStackStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
+import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.fabricmc.fabric.api.transfer.v1.transaction.Transaction;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.material.Fluid;
@@ -14,13 +16,15 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 物品流体温养读写兼容层（替代 Forge 版对 ForgeCapabilities.FLUID_HANDLER_ITEM 的逐栈查询），
  * 经由 Fabric Transfer API 的 {@code FluidStorage.ITEM} 查找；vanilla 空桶不在其列（由调用方特判）。
- *
+ * <p>
  * 单位换算：Fabric Transfer API 流体数量为 droplets，官方规定 1 mB = 81 droplets、1 桶 = 81000 droplets；
  * 本机内部存储单位即 mB（输出显示除以 1000 折算为桶）。
  */
 public final class ItemFluidIo {
 
-    /** 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000） */
+    /**
+     * 每 mB 对应的 droplet 数（fabric 官方常量等价：FluidConstants.BUCKET=81000）
+     */
     public static final long DROPLETS_PER_MB = 81L;
 
     private ItemFluidIo() {
@@ -34,7 +38,7 @@ public final class ItemFluidIo {
         if (storage == null || !storage.supportsInsertion()) {
             return false;
         }
-        try (Transaction txn = Transaction.openOuter()) {
+        try (Transaction ignored = Transaction.openOuter()) {
             FluidVariant variant = FluidVariant.of(fluid);
             long currentlyHeld = 0;
             boolean hasCompatibleTank = false;
@@ -69,13 +73,15 @@ public final class ItemFluidIo {
      * 向独立物品灌入流体，最多灌入 {@code maxMillibuckets} mB，返回 [实际灌入 mB, 变换后的物品堆栈]；
      * 不能灌入（无能力/不接受该流体）时返回 null。调用方决定结果堆栈的去处（回写输入槽/转入输出槽）。
      */
-    @SuppressWarnings("removal")
     @Nullable
     public static FillResult fill(ItemStack stack, Fluid fluid, long maxMillibuckets) {
         if (stack.isEmpty() || maxMillibuckets <= 0) {
             return null;
         }
-        ContainerItemContext context = ContainerItemContext.withConstant(ItemVariant.of(stack), stack.getCount());
+        // 用可变单槽承载物品：withConstant 只用于模拟、不持久化修改，context.getItemVariant()
+        // 始终返回原始（空）cell，导致灌装后拿到的仍是空物品、机器扣了液体却没效果。
+        SingleSlotStorage<ItemVariant> mutableSlot = new MutableItemStorage(stack.copy());
+        ContainerItemContext context = ContainerItemContext.ofSingleSlot(mutableSlot);
         Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
         if (storage == null || !storage.supportsInsertion()) {
             return null;
@@ -128,7 +134,6 @@ public final class ItemFluidIo {
         }
     }
 
-    @SuppressWarnings("removal")
     private static Storage<FluidVariant> findWithInitial(ItemStack stack) {
         ContainerItemContext context = ContainerItemContext.withConstant(ItemVariant.of(stack), stack.getCount());
         return context.find(FluidStorage.ITEM);
@@ -149,5 +154,27 @@ public final class ItemFluidIo {
      * 灌装结果：实际消耗的机器 mB 与变换后的物品
      */
     public record FillResult(long millibuckets, ItemStack filled) {
+    }
+
+    /**
+     * 承载独立物品的可变单槽（fabric-transfer-api 5.x 无 withInitial，withConstant 只用于模拟）。
+     * 灌装时存储（如 TechReborn cell 的 SingleVariantItemStorage）会经 {@link #setStack} 写回，读取 {@link #getStack} 即得灌装后的物品。
+     */
+    private static final class MutableItemStorage extends SingleStackStorage {
+        private ItemStack stack;
+
+        MutableItemStorage(ItemStack stack) {
+            this.stack = stack;
+        }
+
+        @Override
+        protected ItemStack getStack() {
+            return stack;
+        }
+
+        @Override
+        protected void setStack(ItemStack stack) {
+            this.stack = stack;
+        }
     }
 }

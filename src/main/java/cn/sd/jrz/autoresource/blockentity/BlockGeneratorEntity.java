@@ -13,11 +13,13 @@ import net.minecraft.core.HolderLookup;
 import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.network.protocol.game.ClientboundBlockEntityDataPacket;
+import net.minecraft.server.level.ServerLevel;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.inventory.AbstractContainerMenu;
 import net.minecraft.world.item.BlockItem;
 import net.minecraft.world.item.ItemStack;
+import net.minecraft.world.level.ChunkPos;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.Block;
 import net.minecraft.world.level.block.Blocks;
@@ -50,6 +52,14 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
             Level level = getLevel();
             if (level != null && !level.isClientSide()) {
                 level.sendBlockUpdated(getBlockPos(), getBlockState(), getBlockState(), Block.UPDATE_CLIENTS);
+                // sendBlockUpdated 只发方块状态；标记物品数据还需额外发送 BE 更新包，
+                // 客户端（GUI 标记/输出槽、四周贴图）才能即时读到 markerSlot
+                if (level instanceof ServerLevel serverLevel) {
+                    // 26.1.2：ChunkPos 构造器只接收 (int, int)，由 BlockPos 计算坐标
+                    ChunkPos chunkPos = new ChunkPos(getBlockPos().getX() >> 4, getBlockPos().getZ() >> 4);
+                    ClientboundBlockEntityDataPacket packet = getUpdatePacket();
+                    serverLevel.getChunkSource().chunkMap.getPlayers(chunkPos, false).forEach(p -> p.connection.send(packet));
+                }
             }
         }
     }.setValidator(DataConfig::isBlockGeneratorItem).setSlotLimit(0, 1);
@@ -195,57 +205,26 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         return new BlockGeneratorMenu(id, inv, getBlockPos());
     }
 
-    /**
-     * 把所有字段写入 ValueOutput（MC 26.x 新 API）。
-     * 为保持向后兼容，键名沿用旧版 CompoundTag 的命名。
-     */
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("block", block);
         out.putLong("tickCount", tickCount);
-        out.putBoolean("transferDown", transferDown);
-        out.putBoolean("transferUp", transferUp);
-        out.putBoolean("transferNorth", transferNorth);
-        out.putBoolean("transferSouth", transferSouth);
-        out.putBoolean("transferWest", transferWest);
-        out.putBoolean("transferEast", transferEast);
-        out.putBoolean("outputEnabled", outputEnabled);
+        saveTransferFaces(out);
+        saveOutputEnabled(out);
         out.putBoolean("placeBlockBelow", placeBlockBelow);
-        // 标记槽：用 CompoundTag.CODEC 序列化到 ValueOutput
-        CompoundTag slotTag = markerSlot.serializeNBT();
-        out.store("markerSlot", CompoundTag.CODEC, slotTag);
-    }
-
-    /**
-     * 从 ValueInput 读入字段（MC 26.x 新 API）。
-     */
-    @Override
-    protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
-        output = Tool.suit(in.getLongOr("output", config.getMin()));
-        block = Tool.suit(in.getLongOr("block", 0));
-        tickCount = Tool.suit(in.getLongOr("tickCount", 0));
-        transferDown = in.getBooleanOr("transferDown", true);
-        transferUp = in.getBooleanOr("transferUp", true);
-        transferNorth = in.getBooleanOr("transferNorth", true);
-        transferSouth = in.getBooleanOr("transferSouth", true);
-        transferWest = in.getBooleanOr("transferWest", true);
-        transferEast = in.getBooleanOr("transferEast", true);
-        outputEnabled = in.getBooleanOr("outputEnabled", true);
-        placeBlockBelow = in.getBooleanOr("placeBlockBelow", false);
-        // 标记槽：使用 CompoundTag.CODEC 反序列化
-        in.read("markerSlot", CompoundTag.CODEC).ifPresent(ct -> markerSlot.deserializeNBT(ct));
+        markerSlot.saveTo(out.child("markerSlot"));
     }
 
     /**
      * 初始同步到客户端的数据（含标记槽），保证进游戏后方块机即显示标记物品
+     * 26.1.2：getUpdateTag 仍存在，参数变为 HolderLookup.Provider
      */
     @Override
     @NotNull
-    public CompoundTag getUpdateTag(@NotNull HolderLookup.Provider provider) {
-        return saveCustomOnly(provider);
+    public CompoundTag getUpdateTag(@NotNull HolderLookup.Provider registryLookup) {
+        return saveWithFullMetadata(registryLookup);
     }
 
     /**
@@ -255,5 +234,17 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     @NotNull
     public ClientboundBlockEntityDataPacket getUpdatePacket() {
         return ClientboundBlockEntityDataPacket.create(this);
+    }
+
+    @Override
+    protected void loadAdditional(@NotNull ValueInput input) {
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(input.getLongOr("output", output));
+        block = Tool.suit(input.getLongOr("block", block));
+        tickCount = Tool.suit(input.getLongOr("tickCount", tickCount));
+        loadTransferFaces(input);
+        loadOutputEnabled(input);
+        placeBlockBelow = input.getBooleanOr("placeBlockBelow", placeBlockBelow);
+        markerSlot.loadFrom(input.childOrEmpty("markerSlot"));
     }
 }

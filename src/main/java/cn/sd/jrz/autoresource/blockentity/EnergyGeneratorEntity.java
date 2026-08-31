@@ -6,13 +6,13 @@ import cn.sd.jrz.autoresource.menu.EnergyGeneratorMenu;
 import cn.sd.jrz.autoresource.storage.MachineSlotStorage;
 import cn.sd.jrz.autoresource.util.ItemEnergyIo;
 import cn.sd.jrz.autoresource.util.Tool;
+import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
 import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.item.PlayerInventoryStorage;
 import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -92,6 +92,10 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         super(pos, state, config);
     }
 
+    public EnergyConnection getEnergyConnection() {
+        return energyConnection;
+    }
+
     /**
      * 服务端每 tick 调用（由方块的 ticker 触发）
      */
@@ -147,7 +151,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (stack.isEmpty()) {
             return;
         }
-        SingleSlotStorage<ItemVariant> slotView = net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage.of(chargeSlot, null).getSlot(0);
+        SingleSlotStorage<ItemVariant> slotView = ContainerStorage.of(chargeSlot, null).getSlot(0);
         long received = ItemEnergyIo.receive(slotView, Tool.suitInt(energy));
         if (received > 0) {
             energy -= received;
@@ -223,7 +227,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (!(blockEntity instanceof Container container)) {
             return;
         }
-        net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage storageView = net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage.of(container, null);
+        ContainerStorage storageView = ContainerStorage.of(container, null);
         for (int i = 0; i < storageView.getSlotCount(); i++) {
             if (energy <= 0) {
                 return;
@@ -448,7 +452,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        super.saveAdditional(out);
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("energy", energy);
         out.putLong("tickCount", tickCount);
@@ -457,37 +461,25 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         out.putInt("wirelessInterval", wirelessInterval);
         out.putInt("wirelessRange", wirelessRange);
         out.putInt("transferRepeat", transferRepeat);
-        out.putBoolean("transferDown", transferDown);
-        out.putBoolean("transferUp", transferUp);
-        out.putBoolean("transferNorth", transferNorth);
-        out.putBoolean("transferSouth", transferSouth);
-        out.putBoolean("transferWest", transferWest);
-        out.putBoolean("transferEast", transferEast);
-        out.store("starSlot", CompoundTag.CODEC, starSlot.serializeNBT());
-        out.store("chargeSlot", CompoundTag.CODEC, chargeSlot.serializeNBT());
+        saveTransferFaces(out);
+        starSlot.saveTo(out.child("starSlot"));
+        chargeSlot.saveTo(out.child("chargeSlot"));
     }
 
     @Override
     protected void loadAdditional(@NotNull ValueInput in) {
-        super.loadAdditional(in);
-        output = Tool.suit(in.getLongOr("output", config.getMin()));
-        energy = Tool.suit(in.getLongOr("energy", 0));
-        tickCount = Tool.suit(in.getLongOr("tickCount", 0));
-        // 兼容旧字段 beaconIncrease
-        long nextInc = in.getLong("nextIncrease")
-                .orElseGet(() -> in.getLong("beaconIncrease").orElse(config.getStep()));
-        nextIncrease = Tool.suit(nextInc);
-        wirelessOn = in.getBooleanOr("wirelessOn", false);
-        wirelessInterval = Math.max(1, in.getIntOr("wirelessInterval", 5));
-        wirelessRange = Math.max(1, in.getIntOr("wirelessRange", 1));
-        transferRepeat = Math.max(1, in.getIntOr("transferRepeat", 1));
-        transferDown = in.getBooleanOr("transferDown", true);
-        transferUp = in.getBooleanOr("transferUp", true);
-        transferNorth = in.getBooleanOr("transferNorth", true);
-        transferSouth = in.getBooleanOr("transferSouth", true);
-        transferWest = in.getBooleanOr("transferWest", true);
-        transferEast = in.getBooleanOr("transferEast", true);
-        in.read("starSlot", CompoundTag.CODEC).ifPresent(ct -> starSlot.deserializeNBT(ct));
-        in.read("chargeSlot", CompoundTag.CODEC).ifPresent(ct -> chargeSlot.deserializeNBT(ct));
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
+        output = Tool.suit(in.getLongOr("output", output));
+        energy = Tool.suit(in.getLongOr("energy", energy));
+        tickCount = Tool.suit(in.getLongOr("tickCount", tickCount));
+        // 兼容旧存档字段名 beaconIncrease
+        nextIncrease = Tool.suit(in.getLongOr("nextIncrease", in.getLongOr("beaconIncrease", nextIncrease)));
+        wirelessOn = in.getBooleanOr("wirelessOn", wirelessOn);
+        wirelessInterval = Math.max(1, in.getIntOr("wirelessInterval", wirelessInterval));
+        wirelessRange = Math.max(1, in.getIntOr("wirelessRange", wirelessRange));
+        transferRepeat = Math.max(1, in.getIntOr("transferRepeat", transferRepeat));
+        loadTransferFaces(in);
+        starSlot.loadFrom(in.childOrEmpty("starSlot"));
+        chargeSlot.loadFrom(in.childOrEmpty("chargeSlot"));
     }
 }

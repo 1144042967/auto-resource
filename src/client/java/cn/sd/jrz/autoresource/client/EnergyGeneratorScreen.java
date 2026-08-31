@@ -63,10 +63,8 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
 
     @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        // 26.x 起 AbstractContainerScreen 没有 renderBg/renderLabels 分拆，背景与文字统一在 extractContents 内绘制
-        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
-        // 背景纹理
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, 0.0F, 0.0F, this.imageWidth, this.imageHeight);
+        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
@@ -77,27 +75,35 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
             int fill = (trackRight - trackLeft) * percent / 100;
             guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, 0xFF00AA00);
         }
-        // 文字标签（按原 renderLabels 的相对坐标，与父类一致基于 leftPos/topPos 偏移）
+    }
+
+    @Override
+    protected void extractLabels(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractLabels(guiGraphics, mouseX, mouseY);
         EnergyGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), this.leftPos + 12, this.topPos + 19, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), this.leftPos + 12, this.topPos + 29, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), this.leftPos + 12, this.topPos + 39, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), this.leftPos + 12, this.topPos + 49, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), this.leftPos + 12, this.topPos + 79, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), this.leftPos + 12, this.topPos + 95, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), this.leftPos + 64, this.topPos + 95, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.range"), this.leftPos + 12, this.topPos + 111, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), this.leftPos + 64, this.topPos + 111, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), this.leftPos + 12, this.topPos + 175, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), this.leftPos + 56, this.topPos + 175, TEXT_COLOR, false);
+        // 信息面板（大数值用单位缩写；达最大发电量时下次增长显示"已达最大电量"）
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.energy", Tool.formatLong(menu.getEnergy())), 12, 19, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.output", Tool.formatLong(menu.getOutput())), 12, 29, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.next", maxed ? Component.translatable("screen.autoresource.energy_generator.next_max") : Component.literal(Tool.formatLong(menu.getNextIncrease()))), 12, 39, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        // 无线充电参数（间隔带单位）
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.wireless"), 12, 79, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval"), 12, 95, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.interval_value", menu.getInterval()), 64, 95, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.range"), 12, 111, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.literal(menu.getRange() + "x" + menu.getRange()), 64, 111, TEXT_COLOR);
+        // 重复传电次数（带单位）
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat"), 12, 175, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.energy_generator.repeat_value", menu.getRepeat()), 56, 175, TEXT_COLOR);
+        // 加速槽标签：显示配置的目标物品名
         Item starItem = menu.getStarItem();
         if (starItem != null) {
-            // 26.x 起 Item.getDescription() 移除，且 getName 现在需要 ItemStack 参数
-            guiGraphics.text(this.font, starItem.getName(ItemStack.EMPTY), this.leftPos + 28, this.topPos + 195, TEXT_COLOR, false);
+            guiGraphics.text(this.font, starItem.getName(ItemStack.EMPTY), 28, 195, TEXT_COLOR);
         }
+        // 充电槽标签：右对齐贴近充电槽
         Component chargeLabel = Component.translatable("screen.autoresource.energy_generator.charge_slot");
-        guiGraphics.text(this.font, chargeLabel, this.leftPos + 150 - this.font.width(chargeLabel), this.topPos + 195, TEXT_COLOR, false);
+        guiGraphics.text(this.font, chargeLabel, 150 - this.font.width(chargeLabel), 195, TEXT_COLOR);
     }
 
     @Override
@@ -117,13 +123,13 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
      * 灰色小按钮（+/-）
      */
     private class MiniButton extends SimpleButton {
-        MiniButton(int x, int y, int width, int height, Component label, OnPress onPress) {
+        MiniButton(int x, int y, int width, int height, Component label, AbstractGeneratorScreen.OnPress onPress) {
             super(x, y, width, height, label, onPress);
         }
 
         @Override
         protected void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-            renderButtonInternal(guiGraphics, 0xFF808080);
+            renderButton(guiGraphics, 0xFF808080);
         }
     }
 }

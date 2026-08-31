@@ -2,8 +2,9 @@ package cn.sd.jrz.autoresource.client;
 
 import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.input.KeyEvent;
+import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -66,25 +67,31 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
-    public boolean keyPressed(net.minecraft.client.input.KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_SPACE) {
+    public boolean keyPressed(KeyEvent event) {
+        if (event.input() == GLFW.GLFW_KEY_SPACE) {
             this.spaceDown = true;
         }
         return super.keyPressed(event);
     }
 
+    @Override
+    public boolean keyReleased(KeyEvent event) {
+        if (event.input() == GLFW.GLFW_KEY_SPACE) {
+            this.spaceDown = false;
+        }
+        return super.keyReleased(event);
+    }
+
     /**
      * 拦截输出展示槽的点击：单击提取一个、Shift+单击提取一组、空格+单击提取到背包满
-     * 26.x 起 mouseClicked 改用 MouseButtonEvent 单参数（封装 x/y/buttonInfo/modifiers）
      */
     @Override
-    public boolean mouseClicked(net.minecraft.client.input.MouseButtonEvent event, boolean hasFocus) {
+    public boolean mouseClicked(MouseButtonEvent event, boolean isDoubleClick) {
         if (event.button() == 0) {
             Slot outputSlot = this.menu.slots.get(OUTPUT_SLOT_INDEX);
             if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, event.x(), event.y())) {
                 int id;
-                // 26.x 起 Screen.hasShiftDown() 移除，改用 Minecraft.hasShiftDown()（同样适用于快捷键检测）
-                if (Minecraft.getInstance().hasShiftDown()) {
+                if (event.hasShiftDown()) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_STACK;
                 } else if (this.spaceDown) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_ALL;
@@ -95,14 +102,13 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
                 return true;
             }
         }
-        return super.mouseClicked(event, hasFocus);
+        return super.mouseClicked(event, isDoubleClick);
     }
 
     @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
-        // 背景纹理
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, 0.0F, 0.0F, this.imageWidth, this.imageHeight);
+        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
         // 增长进度条
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
@@ -113,17 +119,24 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
             int fill = (trackRight - trackLeft) * percent / 100;
             guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, 0xFF00AA00);
         }
-        // 文字标签
+    }
+
+    @Override
+    protected void extractLabels(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractLabels(guiGraphics, mouseX, mouseY);
         BlockGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), this.leftPos + 12, this.topPos + 19, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), this.leftPos + 12, this.topPos + 29, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), this.leftPos + 12, this.topPos + 39, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), this.leftPos + 12, this.topPos + 49, TEXT_COLOR, false);
+        // 信息面板（存量/产量/下次增长均以 个 为单位，大数值用单位缩写）
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 39, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        // 标记槽标签（贴近标记槽右侧）
         Component markerLabel = Component.translatable("screen.autoresource.block_generator.marker");
-        guiGraphics.text(this.font, markerLabel, this.leftPos + 28, this.topPos + 116, TEXT_COLOR, false);
+        guiGraphics.text(this.font, markerLabel, 28, 116, TEXT_COLOR);
+        // 输出槽标签：右对齐贴近输出槽
         Component outputLabel = Component.translatable("screen.autoresource.block_generator.output_slot");
-        guiGraphics.text(this.font, outputLabel, this.leftPos + 150 - this.font.width(outputLabel), this.topPos + 116, TEXT_COLOR, false);
+        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR);
     }
 
     @Override

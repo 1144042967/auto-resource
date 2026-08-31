@@ -2,24 +2,29 @@ package cn.sd.jrz.autoresource.client.compat.create;
 
 import cn.sd.jrz.autoresource.compat.create.WaterWheelMotorEntity;
 import com.mojang.blaze3d.vertex.PoseStack;
+import net.minecraft.client.Minecraft;
 import net.minecraft.client.gui.Font;
-import net.minecraft.client.renderer.MultiBufferSource;
+import net.minecraft.client.renderer.SubmitNodeCollector;
 import net.minecraft.client.renderer.blockentity.BlockEntityRenderer;
 import net.minecraft.client.renderer.blockentity.BlockEntityRendererProvider;
+import net.minecraft.client.renderer.feature.ModelFeatureRenderer;
+import net.minecraft.client.renderer.state.level.CameraRenderState;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
-import org.joml.Quaternionf;
-import org.joml.Vector3f;
+import net.minecraft.world.phys.Vec3;
 
 import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
+import org.joml.Quaternionf;
+import org.joml.Vector3f;
 
 /**
  * 水车马达方块实体渲染器（仅 Create 加载时使用）。在垂直于输出方向的四面侧
  * 渲染当前转速文字（叠放在 LCD 显示窗上），文字上方始终指向输出方向。
- * 变换只用标准 PoseStack 方法 + Quaternionf，转速经 currentSpeed() 读取
- * （随 SmartBlockEntity 同步包下发，客户端无需额外网络同步）。
+ * <p>26.1.2 渲染管线：旧 render() 拆分为 createRenderState/extractRenderState/submit 三阶段，
+ * 文字经 SubmitNodeCollector#submitText 提交（替代旧 Font.drawInBatch）。
  */
-public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMotorEntity> {
+public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMotorEntity, WaterWheelMotorRenderState> {
     /**
      * 各面绕 Y 轴旋转倍数（N/S/E/W 用 Y 轴，上下两面用 X 轴，见 faceRotation）
      */
@@ -37,23 +42,36 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
     private final Font font;
 
     public WaterWheelMotorRenderer(BlockEntityRendererProvider.Context context) {
-        this.font = context.getFont();
+        // 26.1.2：BlockEntityRendererProvider.Context 无 getFont，经 Minecraft 获取字体
+        this.font = Minecraft.getInstance().font;
     }
 
     @Override
-    public void render(@NotNull WaterWheelMotorEntity entity, float partialTick, @NotNull PoseStack poseStack, @NotNull MultiBufferSource buffer, int combinedLight, int combinedOverlay) {
-        int speed = entity.currentSpeed();
+    public WaterWheelMotorRenderState createRenderState() {
+        return new WaterWheelMotorRenderState();
+    }
+
+    @Override
+    public void extractRenderState(WaterWheelMotorEntity entity, WaterWheelMotorRenderState state, float partialTick, Vec3 cameraPos,
+                                   @Nullable ModelFeatureRenderer.CrumblingOverlay crumblingOverlay) {
+        BlockEntityRenderer.super.extractRenderState(entity, state, partialTick, cameraPos, crumblingOverlay);
+        state.speed = entity.currentSpeed();
+        state.outputFace = entity.getOutputFace();
+    }
+
+    @Override
+    public void submit(WaterWheelMotorRenderState state, PoseStack poseStack, SubmitNodeCollector nodeCollector, CameraRenderState cameraRenderState) {
+        int speed = state.speed;
         Component text = Component.translatable("screen.autoresource.water_wheel_motor.block_speed", String.format("%03d", speed));
         // 强制至少 15 级方块光照，保留环境天空光
-        int blockLight = Math.max(combinedLight & 0xFFFF, MIN_BLOCK_LIGHT);
-        int light = (combinedLight & 0xFFFF0000) | blockLight;
-        Direction output = entity.getOutputFace();
+        int light = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT) | (state.lightCoords & 0xFFFF0000);
+        Direction output = state.outputFace;
         for (Direction side : Direction.values()) {
             // 只在垂直于输出方向的四个侧面显示（输出面与其对面是水车轮/底座贴图）
             if (side.getAxis() == output.getAxis()) {
                 continue;
             }
-            renderTextOnFace(text, output, side, poseStack, buffer, light);
+            renderTextOnFace(text, output, side, poseStack, nodeCollector, light);
         }
     }
 
@@ -61,7 +79,7 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
      * 在指定侧面绘制居中转速文字，文字上方指向输出方向。
      * 旋转中心必须是方块中心 (0.5,0.5,0.5)：此前误用 y=0 导致上下两面文字错位。
      */
-    private void renderTextOnFace(Component text, Direction output, Direction face, PoseStack poseStack, MultiBufferSource buffer, int light) {
+    private void renderTextOnFace(Component text, Direction output, Direction face, PoseStack poseStack, SubmitNodeCollector nodeCollector, int light) {
         poseStack.pushPose();
         // 绕方块中心旋转，使目标面朝向 +Z
         poseStack.translate(0.5f, 0.5f, 0.5f);
@@ -75,8 +93,10 @@ public class WaterWheelMotorRenderer implements BlockEntityRenderer<WaterWheelMo
         poseStack.scale(TEXT_SCALE, -TEXT_SCALE, TEXT_SCALE);
         // 居中：水平按文字实际宽度，垂直按 8px 字高中心
         float textWidth = this.font.width(text);
-        this.font.drawInBatch(text, -textWidth / 2f, -4f, 0xFFFFFF, true,
-                poseStack.last().pose(), buffer, Font.DisplayMode.NORMAL, 0, light);
+        // 26.1.2：submitText(pose, x, y, text, shadow, mode, light, color, bg, flag)
+        // 4 个 int 顺序为 (light, color, bg, flag)；颜色须 ARGB，flag 传 0 走 Font.drawInBatch 分支
+        nodeCollector.submitText(poseStack, -textWidth / 2f, -4f, text.getVisualOrderText(), true,
+                Font.DisplayMode.NORMAL, light, 0xFFFFFFFF, 0, 0);
         poseStack.popPose();
     }
 

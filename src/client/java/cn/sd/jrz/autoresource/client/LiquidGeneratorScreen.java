@@ -58,10 +58,9 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
 
     @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
-        // 背景纹理
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, this.imageWidth, this.imageHeight, 0.0F, 0.0F, this.imageWidth, this.imageHeight);
-        // 增长进度条（颜色随对应流体变化）
+        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+        // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -71,17 +70,6 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
             int fill = (trackRight - trackLeft) * percent / 100;
             guiGraphics.fill(trackLeft, trackTop, trackLeft + fill, trackTop + 4, progressColor());
         }
-        // 文字标签
-        LiquidGeneratorMenu menu = this.menu;
-        boolean maxed = menu.getOutput() >= menu.getMax();
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.liquid", formatBuckets(menu.getLiquid())), this.leftPos + 12, this.topPos + 19, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.output", formatBuckets(menu.getOutput())), this.leftPos + 12, this.topPos + 29, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.next", maxed ? Component.translatable("screen.autoresource.liquid_generator.next_max") : Component.literal(formatBuckets(menu.getStep()))), this.leftPos + 12, this.topPos + 39, TEXT_COLOR, false);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.growth", growthPercent()), this.leftPos + 12, this.topPos + 49, TEXT_COLOR, false);
-        Component inputLabel = Component.translatable("screen.autoresource.liquid_generator.input");
-        guiGraphics.text(this.font, inputLabel, this.leftPos + 28, this.topPos + 116, TEXT_COLOR, false);
-        Component outputLabel = Component.translatable("screen.autoresource.liquid_generator.output_slot");
-        guiGraphics.text(this.font, outputLabel, this.leftPos + 150 - this.font.width(outputLabel), this.topPos + 116, TEXT_COLOR, false);
     }
 
     /**
@@ -96,6 +84,24 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
             return 0xFFFF8800; // 岩浆橙
         }
         return 0xFF00AA00;
+    }
+
+    @Override
+    protected void extractLabels(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY) {
+        super.extractLabels(guiGraphics, mouseX, mouseY);
+        LiquidGeneratorMenu menu = this.menu;
+        boolean maxed = menu.getOutput() >= menu.getMax();
+        // 信息面板（流体/产量/下次增长均以 B 为单位，大数值用单位缩写）
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.liquid", formatBuckets(menu.getLiquid())), 12, 19, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.output", formatBuckets(menu.getOutput())), 12, 29, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.next", maxed ? Component.translatable("screen.autoresource.liquid_generator.next_max") : Component.literal(formatBuckets(menu.getStep()))), 12, 39, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        // 输入槽标签（贴近输入槽右侧，与发电机槽位标签位置一致）
+        Component inputLabel = Component.translatable("screen.autoresource.liquid_generator.input");
+        guiGraphics.text(this.font, inputLabel, 28, 116, TEXT_COLOR);
+        // 输出槽标签：右对齐贴近输出槽
+        Component outputLabel = Component.translatable("screen.autoresource.liquid_generator.output_slot");
+        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR);
     }
 
     @Override

@@ -4,7 +4,9 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
+import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.EquipmentSlot;
 import net.minecraft.world.entity.player.Player;
@@ -45,7 +47,6 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
     /**
      * 破坏时输入槽与输出槽中的物品掉落
      */
-    @SuppressWarnings("deprecation")
     @Override
     public @NotNull List<ItemStack> getDrops(@NotNull BlockState state, @NotNull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
@@ -62,9 +63,17 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
         return drops;
     }
 
-    @SuppressWarnings("deprecation")
+    /**
+     * 输入/输出槽内容由 {@link #getDrops} 单独掉落，不随 block_entity_data 保留
+     */
     @Override
-    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+    protected void removeDroppedSlots(CompoundTag tag) {
+        tag.remove("inputSlot");
+        tag.remove("outputSlot");
+    }
+
+    @Override
+    protected @NotNull InteractionResult useItemOn(@NotNull ItemStack stack, @NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand handIn, @NotNull BlockHitResult hit) {
         if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
@@ -73,7 +82,7 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
             return InteractionResult.FAIL;
         }
         // 手持空桶右击直接提取一桶液体
-        if (generator.liquid >= 1000 && useBucket(player, generator)) {
+        if (stack.getItem() == Items.BUCKET && generator.liquid >= 1000 && useBucket(player, handIn, generator)) {
             return InteractionResult.SUCCESS;
         }
         // 其他情况打开 GUI（实体自身是 ExtendedMenuProvider，附带坐标数据）
@@ -83,15 +92,23 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
         return InteractionResult.SUCCESS;
     }
 
-    private boolean useBucket(Player player, LiquidGeneratorEntity generator) {
-        EquipmentSlot type;
-        if (player.getMainHandItem().getItem() == Items.BUCKET) {
-            type = EquipmentSlot.MAINHAND;
-        } else if (player.getOffhandItem().getItem() == Items.BUCKET) {
-            type = EquipmentSlot.OFFHAND;
-        } else {
-            return false;
+    @Override
+    protected @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+        if (level.isClientSide()) {
+            return InteractionResult.SUCCESS;
         }
+        LiquidGeneratorEntity generator = (LiquidGeneratorEntity) level.getBlockEntity(pos);
+        if (generator == null) {
+            return InteractionResult.FAIL;
+        }
+        if (player instanceof ServerPlayer serverPlayer) {
+            serverPlayer.openMenu(generator);
+        }
+        return InteractionResult.SUCCESS;
+    }
+
+    private boolean useBucket(Player player, InteractionHand hand, LiquidGeneratorEntity generator) {
+        EquipmentSlot type = hand == InteractionHand.MAIN_HAND ? EquipmentSlot.MAINHAND : EquipmentSlot.OFFHAND;
         int count = player.getItemBySlot(type).getCount();
         if (count == 1) {
             player.setItemSlot(type, getBucket());

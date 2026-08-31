@@ -1,14 +1,13 @@
 package cn.sd.jrz.autoresource.compat.create;
 
 import cn.sd.jrz.autoresource.setup.Registration;
-import com.simibubi.create.content.kinetics.base.DirectionalKineticBlock;
-import com.simibubi.create.foundation.block.IBE;
-import com.simibubi.create.foundation.blockEntity.SmartBlockEntity;
+import com.zurrtum.create.content.kinetics.base.DirectionalKineticBlock;
+import com.zurrtum.create.foundation.block.IBE;
+import com.zurrtum.create.foundation.blockEntity.SmartBlockEntity;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.Direction.Axis;
 import net.minecraft.server.level.ServerPlayer;
-import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
@@ -35,6 +34,7 @@ import java.util.List;
 /**
  * 水车马达方块（仅 Create 加载时注册）。单方向动力源：转速/应力容量由放入的水车数量决定，
  * 输出面（FACING）决定应力输出方向，转速数值由方块实体渲染器显示在四面侧。
+ * <p>26.1.2 移植：Create 包名改 com.zurrtum.create；右键交互改 useWithoutItem（旧 use 已删除）。
  */
 public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE<WaterWheelMotorEntity> {
 
@@ -124,8 +124,8 @@ public class WaterWheelMotorBlock extends DirectionalKineticBlock implements IBE
 
     @SuppressWarnings("deprecation")
     @Override
-    public @NotNull InteractionResult use(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull InteractionHand hand, @NotNull BlockHitResult hit) {
-        if (level.isClientSide) {
+    public @NotNull InteractionResult useWithoutItem(@NotNull BlockState state, Level level, @NotNull BlockPos pos, @NotNull Player player, @NotNull BlockHitResult hit) {
+        if (level.isClientSide()) {
             return InteractionResult.SUCCESS;
         }
         WaterWheelMotorEntity entity = getBlockEntity(level, pos);

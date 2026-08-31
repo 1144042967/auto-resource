@@ -37,7 +37,7 @@ public class AutoResourceClient implements ClientModInitializer {
 
         // 服务端配置快照接收：登录后立即替换本地配置
         ClientPlayNetworking.registerGlobalReceiver(ConfigSync.TYPE, (payload, context) -> {
-            Config.Data data = payload.data();
+            Config.Data data = Config.Data.decode(payload.data());
             context.client().execute(() -> Config.applyRemote(data));
         });
     }
