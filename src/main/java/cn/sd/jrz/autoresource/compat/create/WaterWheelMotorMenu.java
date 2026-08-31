@@ -22,6 +22,8 @@ import java.util.function.IntSupplier;
 /**
  * 水车马达容器：单个水车槽 + 玩家背包，数据槽同步转速/方向/面/容量到客户端，
  * 按钮切换旋转方向与六面输出方向（转速由水车数量决定，不可手动调节）。
+ * <p>26.1.2 移植：容量可能 ≥32768（64 个大水车 × 512 SU），数据槽按 2×16 位拆分同步；
+ * Level.isClientSide 改为方法 isClientSide()；getNeighborStack 加 @Override。
  */
 public class WaterWheelMotorMenu extends AbstractContainerMenu {
     // 按钮 ID
@@ -39,7 +41,9 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     private int clientSpeed;
     private int clientDirection; // 0=顺时针, 1=逆时针
     private int clientFace;
-    private int clientCapacity;
+    // 容量拆 2×16 位（64×512=32768 超过 16 位上限）
+    private int clientCapacityLow;
+    private int clientCapacityHigh;
     private final int[] clientNeighborBlockId = new int[6];
 
     public WaterWheelMotorMenu(int id, Inventory playerInventory, BlockPos pos) {
@@ -60,11 +64,13 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
         // 玩家背包：1-36（纹理中 4 行槽框在 y=96/114/132/150）
         addPlayerInventory(playerInventory, 97);
 
-        // 数据同步
+        // 数据同步（容量拆 2×16 位，避免 ≥32768 时 16 位截断+符号扩展）
         addDataSlot(makeDataSlot(() -> entity.currentSpeed(), v -> clientSpeed = v));
         addDataSlot(makeDataSlot(() -> entity.counterClockwise ? 1 : 0, v -> clientDirection = v));
         addDataSlot(makeDataSlot(() -> entity.getOutputFace().ordinal(), v -> clientFace = v));
-        addDataSlot(makeDataSlot(() -> (int) entity.totalCapacity(), v -> clientCapacity = v));
+        int capacity = (int) entity.totalCapacity();
+        addDataSlot(makeDataSlot(() -> capacity & 0xFFFF, v -> clientCapacityLow = v));
+        addDataSlot(makeDataSlot(() -> (capacity >> 16) & 0xFFFF, v -> clientCapacityHigh = v));
         // 六方向相邻方块注册 id（服务端读实体，客户端读同步值，供 GUI 方向按钮显示图标）
         for (Direction direction : Direction.values()) {
             final int idx = direction.ordinal();
@@ -91,7 +97,10 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     }
 
     public int getCapacity() {
-        return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide() ? (int) entity.totalCapacity() : clientCapacity;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
+            return (int) entity.totalCapacity();
+        }
+        return (clientCapacityHigh << 16) | clientCapacityLow;
     }
 
     /**
@@ -189,10 +198,11 @@ public class WaterWheelMotorMenu extends AbstractContainerMenu {
     /**
      * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
      */
+    @Override
     @NotNull
     public ItemStack getNeighborStack(Direction direction) {
         int id;
-        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
             id = entity.getNeighborBlockId(direction);
         } else {
             id = clientNeighborBlockId[direction.ordinal()];

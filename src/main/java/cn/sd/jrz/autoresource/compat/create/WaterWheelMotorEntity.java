@@ -1,14 +1,12 @@
 package cn.sd.jrz.autoresource.compat.create;
 
 import cn.sd.jrz.autoresource.storage.MachineSlotStorage;
-import com.simibubi.create.content.kinetics.KineticNetwork;
-import com.simibubi.create.content.kinetics.base.GeneratingKineticBlockEntity;
-import net.fabricmc.fabric.api.screenhandler.v1.ExtendedScreenHandlerFactory;
+import com.zurrtum.create.content.kinetics.KineticNetwork;
+import com.zurrtum.create.content.kinetics.base.GeneratingKineticBlockEntity;
+import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
-import net.minecraft.nbt.CompoundTag;
-import net.minecraft.network.FriendlyByteBuf;
 import net.minecraft.network.chat.Component;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
@@ -21,6 +19,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntityType;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -29,8 +29,10 @@ import org.jetbrains.annotations.Nullable;
  * 水车马达实体（仅 Create 加载时使用）。Create 动力源：转速 = 水车数量 × 单件转速
  * （水车 1 / 大水车 4），应力容量 = 数量 × 单件 SU（256/512）；未放水车不产生转速。
  * 旋转方向与输出面经 GUI 调节并持久化到 NBT。
+ * <p>26.1.2 移植：Create 包名改 com.zurrtum.create；持久化改流式 ValueOutput/ValueInput；
+ * ExtendedMenuProvider 泛型化为 {@code <BlockPos>} 并实现 getScreenOpeningData。
  */
-public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implements MenuProvider, ExtendedScreenHandlerFactory {
+public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implements MenuProvider, ExtendedMenuProvider<BlockPos> {
     /**
      * 水车槽位数量（单个槽，可放一组水车/大水车）
      */
@@ -79,7 +81,7 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
      * 导致"增加水车数量"时转速不传播）。
      */
     public void handleWheelContentsChanged() {
-        // 仅服务端处理（客户端 read 时的 deserializeNBT 也会触发 onContentsChanged）
+        // 仅服务端处理（客户端 read 时的 loadFrom 也会触发 onContentsChanged）
         if (level == null || level.isClientSide()) {
             return;
         }
@@ -111,11 +113,11 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
     }
 
     /**
-     * 打开扩展菜单时写入的附加数据：机器坐标
+     * 打开扩展菜单时携带的附加数据：机器坐标（26.1.2 ExtendedScreenHandlerFactory 返回类型化数据）
      */
     @Override
-    public void writeScreenOpeningData(ServerPlayer player, FriendlyByteBuf buf) {
-        buf.writeBlockPos(getBlockPos());
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return getBlockPos();
     }
 
     /**
@@ -207,6 +209,34 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
         setChanged();
     }
 
+    @Override
+    protected void write(ValueOutput view, boolean clientPacket) {
+        super.write(view, clientPacket);
+        view.putBoolean("counterClockwise", counterClockwise);
+        wheelSlots.saveTo(view.child("wheelSlots"));
+    }
+
+    @Override
+    protected void read(ValueInput view, boolean clientPacket) {
+        super.read(view, clientPacket);
+        counterClockwise = view.getBooleanOr("counterClockwise", false);
+        view.child("wheelSlots").ifPresent(wheelSlots::loadFrom);
+        // 记录本次加载后的生成速度，避免加载完成后首次变更槽时多余重建
+        lastPropagatedGenerated = getGeneratedSpeed();
+    }
+
+    @Override
+    @NotNull
+    public Component getDisplayName() {
+        return Component.translatable("block.autoresource.water_wheel_motor");
+    }
+
+    @Nullable
+    @Override
+    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
+        return new WaterWheelMotorMenu(id, inv, getBlockPos());
+    }
+
     /**
      * 指定方向的相邻方块注册 id（用于 GUI 展示实际相邻方块的物品图标）。无世界或方块无物品时返回 0。
      */
@@ -227,37 +257,5 @@ public class WaterWheelMotorEntity extends GeneratingKineticBlockEntity implemen
         //noinspection deprecation
         Item item = BuiltInRegistries.BLOCK.byId(getNeighborBlockId(direction)).asItem();
         return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
-    }
-
-    @Override
-    protected void write(CompoundTag tag, boolean clientPacket) {
-        super.write(tag, clientPacket);
-        tag.putBoolean("counterClockwise", counterClockwise);
-        tag.put("wheelSlots", wheelSlots.serializeNBT());
-    }
-
-    @Override
-    protected void read(CompoundTag tag, boolean clientPacket) {
-        super.read(tag, clientPacket);
-        if (tag.contains("counterClockwise")) {
-            counterClockwise = tag.getBoolean("counterClockwise");
-        }
-        if (tag.contains("wheelSlots")) {
-            wheelSlots.deserializeNBT(tag.getCompound("wheelSlots"));
-        }
-        // 记录本次加载后的生成速度，避免加载完成后首次变更槽时多余重建
-        lastPropagatedGenerated = getGeneratedSpeed();
-    }
-
-    @Override
-    @NotNull
-    public Component getDisplayName() {
-        return Component.translatable("block.autoresource.water_wheel_motor");
-    }
-
-    @Nullable
-    @Override
-    public AbstractContainerMenu createMenu(int id, @NotNull Inventory inv, @NotNull Player player) {
-        return new WaterWheelMotorMenu(id, inv, getBlockPos());
     }
 }

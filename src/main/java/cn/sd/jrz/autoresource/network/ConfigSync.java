@@ -3,9 +3,10 @@ package cn.sd.jrz.autoresource.network;
 import cn.sd.jrz.autoresource.AutoResource;
 import cn.sd.jrz.autoresource.Config;
 import io.netty.buffer.Unpooled;
+import net.fabricmc.fabric.api.networking.v1.PayloadTypeRegistry;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayConnectionEvents;
 import net.fabricmc.fabric.api.networking.v1.ServerPlayNetworking;
-import net.minecraft.network.FriendlyByteBuf;
+import net.minecraft.network.RegistryFriendlyByteBuf;
 import net.minecraft.network.codec.StreamCodec;
 import net.minecraft.network.protocol.common.custom.CustomPacketPayload;
 import net.minecraft.resources.Identifier;
@@ -25,10 +26,10 @@ public final class ConfigSync {
     /**
      * 单纯用于承载配置数据（编码到 buf）的网络包载荷
      */
-    public record ConfigPayload(FriendlyByteBuf data) implements CustomPacketPayload {
-        public static final StreamCodec<FriendlyByteBuf, ConfigPayload> CODEC = StreamCodec.of(
+    public record ConfigPayload(RegistryFriendlyByteBuf data) implements CustomPacketPayload {
+        public static final StreamCodec<RegistryFriendlyByteBuf, ConfigPayload> CODEC = StreamCodec.of(
                 (buf, payload) -> buf.writeBytes(payload.data.readBytes(payload.data.readableBytes())),
-                buf -> new ConfigPayload(new FriendlyByteBuf(buf.readBytes(buf.readableBytes())))
+                buf -> new ConfigPayload(new RegistryFriendlyByteBuf(buf.readBytes(buf.readableBytes()), buf.registryAccess()))
         );
 
         @Override
@@ -41,9 +42,13 @@ public final class ConfigSync {
     }
 
     /**
-     * 挂接服务器事件：玩家进入游戏时下发最新配置
+     * 挂接服务器事件：注册 payload 类型并下发配置
      */
     public static void init() {
+        // 注册 payload 类型（play 阶段双向；26.1.2 改为 serverboundPlay/clientboundPlay）
+        PayloadTypeRegistry.serverboundPlay().register(TYPE, ConfigPayload.CODEC);
+        PayloadTypeRegistry.clientboundPlay().register(TYPE, ConfigPayload.CODEC);
+        // 玩家进入游戏时下发最新配置
         ServerPlayConnectionEvents.JOIN.register((handler, sender, server) -> sendToPlayer(handler.getPlayer()));
     }
 
@@ -55,7 +60,7 @@ public final class ConfigSync {
             return;
         }
         try {
-            FriendlyByteBuf buf = new FriendlyByteBuf(Unpooled.buffer());
+            RegistryFriendlyByteBuf buf = new RegistryFriendlyByteBuf(Unpooled.buffer(), player.registryAccess());
             Config.get().encode(buf);
             ServerPlayNetworking.send(player, new ConfigPayload(buf));
         } catch (Exception e) {

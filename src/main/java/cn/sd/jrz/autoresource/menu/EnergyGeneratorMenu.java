@@ -63,13 +63,19 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
         // 玩家背包：2-37
         addPlayerInventory(playerInventory, 230);
 
-        // 数据同步（long 拆成高低 32 位两个数据槽）
-        addDataSlot(makeDataSlot(() -> hiWord(entity.energy), v -> clientEnergy = mergeLong(v, loWord(clientEnergy))));
-        addDataSlot(makeDataSlot(() -> loWord(entity.energy), v -> clientEnergy = mergeLong(hiWord(clientEnergy), v)));
-        addDataSlot(makeDataSlot(() -> hiWord(entity.output), v -> clientOutput = mergeLong(v, loWord(clientOutput))));
-        addDataSlot(makeDataSlot(() -> loWord(entity.output), v -> clientOutput = mergeLong(hiWord(clientOutput), v)));
-        addDataSlot(makeDataSlot(() -> hiWord(entity.nextIncrease), v -> clientNextIncrease = mergeLong(v, loWord(clientNextIncrease))));
-        addDataSlot(makeDataSlot(() -> loWord(entity.nextIncrease), v -> clientNextIncrease = mergeLong(hiWord(clientNextIncrease), v)));
+        // 数据同步：long 值拆成 4×16 位块（26.1.2 数据槽仅 16 位，见 AbstractGeneratorMenu.w0）
+        addDataSlot(makeDataSlot(() -> w0(entity.energy), v -> clientEnergy = mergeLong4(v, w1(clientEnergy), w2(clientEnergy), w3(clientEnergy))));
+        addDataSlot(makeDataSlot(() -> w1(entity.energy), v -> clientEnergy = mergeLong4(w0(clientEnergy), v, w2(clientEnergy), w3(clientEnergy))));
+        addDataSlot(makeDataSlot(() -> w2(entity.energy), v -> clientEnergy = mergeLong4(w0(clientEnergy), w1(clientEnergy), v, w3(clientEnergy))));
+        addDataSlot(makeDataSlot(() -> w3(entity.energy), v -> clientEnergy = mergeLong4(w0(clientEnergy), w1(clientEnergy), w2(clientEnergy), v)));
+        addDataSlot(makeDataSlot(() -> w0(entity.output), v -> clientOutput = mergeLong4(v, w1(clientOutput), w2(clientOutput), w3(clientOutput))));
+        addDataSlot(makeDataSlot(() -> w1(entity.output), v -> clientOutput = mergeLong4(w0(clientOutput), v, w2(clientOutput), w3(clientOutput))));
+        addDataSlot(makeDataSlot(() -> w2(entity.output), v -> clientOutput = mergeLong4(w0(clientOutput), w1(clientOutput), v, w3(clientOutput))));
+        addDataSlot(makeDataSlot(() -> w3(entity.output), v -> clientOutput = mergeLong4(w0(clientOutput), w1(clientOutput), w2(clientOutput), v)));
+        addDataSlot(makeDataSlot(() -> w0(entity.nextIncrease), v -> clientNextIncrease = mergeLong4(v, w1(clientNextIncrease), w2(clientNextIncrease), w3(clientNextIncrease))));
+        addDataSlot(makeDataSlot(() -> w1(entity.nextIncrease), v -> clientNextIncrease = mergeLong4(w0(clientNextIncrease), v, w2(clientNextIncrease), w3(clientNextIncrease))));
+        addDataSlot(makeDataSlot(() -> w2(entity.nextIncrease), v -> clientNextIncrease = mergeLong4(w0(clientNextIncrease), w1(clientNextIncrease), v, w3(clientNextIncrease))));
+        addDataSlot(makeDataSlot(() -> w3(entity.nextIncrease), v -> clientNextIncrease = mergeLong4(w0(clientNextIncrease), w1(clientNextIncrease), w2(clientNextIncrease), v)));
         addDataSlot(makeDataSlot(() -> (int) Math.min(Integer.MAX_VALUE, entity.tickCount), v -> clientTickCount = v));
         addDataSlot(makeDataSlot(() -> (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()), v -> clientSecond = v));
         addDataSlot(makeDataSlot(() -> entity.wirelessOn ? 1 : 0, v -> clientWirelessOn = v != 0));
@@ -148,6 +154,26 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
             case WEST -> clientTransferWest;
             case EAST -> clientTransferEast;
         };
+    }
+
+    /**
+     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
+     */
+    @NotNull
+    @Override
+    public ItemStack getNeighborStack(Direction direction) {
+        int id;
+        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide()) {
+            id = entity.getNeighborBlockId(direction);
+        } else {
+            id = clientNeighborBlockId[direction.ordinal()];
+        }
+        if (id <= 0) {
+            return ItemStack.EMPTY;
+        }
+        //noinspection deprecation
+        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
+        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 
     /**
@@ -288,24 +314,5 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
     @Nullable
     public Item getStarItem() {
         return entity != null ? entity.config.getStarItem() : null;
-    }
-
-    /**
-     * 指定方向相邻方块的物品栈（数量 1），无方块或方块无物品时返回空，供 GUI 方向按钮图标展示
-     */
-    @NotNull
-    public ItemStack getNeighborStack(Direction direction) {
-        int id;
-        if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
-            id = entity.getNeighborBlockId(direction);
-        } else {
-            id = clientNeighborBlockId[direction.ordinal()];
-        }
-        if (id <= 0) {
-            return ItemStack.EMPTY;
-        }
-        //noinspection deprecation
-        Item item = BuiltInRegistries.BLOCK.byId(id).asItem();
-        return item == Items.AIR ? ItemStack.EMPTY : new ItemStack(item);
     }
 }

@@ -13,8 +13,6 @@ import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import team.reborn.energy.api.EnergyStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
-import net.minecraft.core.HolderLookup;
-import net.minecraft.nbt.CompoundTag;
 import net.minecraft.network.chat.Component;
 import net.minecraft.world.Container;
 import net.minecraft.world.entity.EquipmentSlot;
@@ -34,6 +32,7 @@ import net.minecraft.world.phys.AABB;
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 /**
@@ -91,6 +90,10 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
 
     public EnergyGeneratorEntity(BlockPos pos, BlockState state, DataConfig config) {
         super(pos, state, config);
+    }
+
+    public EnergyConnection getEnergyConnection() {
+        return energyConnection;
     }
 
     /**
@@ -164,7 +167,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (level == null || energy <= 0) {
             return;
         }
-        java.util.List<LivingEntity> entityList = level.getEntitiesOfClass(LivingEntity.class, new AABB(getBlockPos().relative(Direction.UP)));
+        List<LivingEntity> entityList = level.getEntitiesOfClass(LivingEntity.class, new AABB(getBlockPos().relative(Direction.UP)));
         for (LivingEntity livingEntity : entityList) {
             if (energy <= 0) {
                 return;
@@ -449,7 +452,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
 
     @Override
     protected void saveAdditional(@NotNull ValueOutput out) {
-        HolderLookup.Provider lookup = level != null ? level.registryAccess() : null;
+        // 26.1.2：流式 ValueOutput 持久化（与 1.21.11 对齐）
         out.putLong("output", output);
         out.putLong("energy", energy);
         out.putLong("tickCount", tickCount);
@@ -458,37 +461,25 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         out.putInt("wirelessInterval", wirelessInterval);
         out.putInt("wirelessRange", wirelessRange);
         out.putInt("transferRepeat", transferRepeat);
-        out.putBoolean("transferDown", transferDown);
-        out.putBoolean("transferUp", transferUp);
-        out.putBoolean("transferNorth", transferNorth);
-        out.putBoolean("transferSouth", transferSouth);
-        out.putBoolean("transferWest", transferWest);
-        out.putBoolean("transferEast", transferEast);
-        out.putBoolean("outputEnabled", outputEnabled);
-        out.store("starSlot", CompoundTag.CODEC, starSlot.serializeNBT(lookup));
-        out.store("chargeSlot", CompoundTag.CODEC, chargeSlot.serializeNBT(lookup));
+        saveTransferFaces(out);
+        starSlot.saveTo(out.child("starSlot"));
+        chargeSlot.saveTo(out.child("chargeSlot"));
     }
 
     @Override
-    protected void loadAdditional(ValueInput in) {
-        HolderLookup.Provider lookup = level != null ? level.registryAccess() : null;
+    protected void loadAdditional(@NotNull ValueInput in) {
+        // 26.1.2：loadAdditional 参数变为 ValueInput，getXOr(key, 当前值) 缺字段保持当前值
         output = Tool.suit(in.getLongOr("output", output));
         energy = Tool.suit(in.getLongOr("energy", energy));
         tickCount = Tool.suit(in.getLongOr("tickCount", tickCount));
-        // 兼容旧字段名 beaconIncrease
+        // 兼容旧存档字段名 beaconIncrease
         nextIncrease = Tool.suit(in.getLongOr("nextIncrease", in.getLongOr("beaconIncrease", nextIncrease)));
         wirelessOn = in.getBooleanOr("wirelessOn", wirelessOn);
         wirelessInterval = Math.max(1, in.getIntOr("wirelessInterval", wirelessInterval));
         wirelessRange = Math.max(1, in.getIntOr("wirelessRange", wirelessRange));
         transferRepeat = Math.max(1, in.getIntOr("transferRepeat", transferRepeat));
-        transferDown = in.getBooleanOr("transferDown", true);
-        transferUp = in.getBooleanOr("transferUp", true);
-        transferNorth = in.getBooleanOr("transferNorth", true);
-        transferSouth = in.getBooleanOr("transferSouth", true);
-        transferWest = in.getBooleanOr("transferWest", true);
-        transferEast = in.getBooleanOr("transferEast", true);
-        outputEnabled = in.getBooleanOr("outputEnabled", true);
-        starSlot.deserializeNBT(in.read("starSlot", CompoundTag.CODEC).orElseGet(() -> starSlot.serializeNBT(lookup)), lookup);
-        chargeSlot.deserializeNBT(in.read("chargeSlot", CompoundTag.CODEC).orElseGet(() -> chargeSlot.serializeNBT(lookup)), lookup);
+        loadTransferFaces(in);
+        starSlot.loadFrom(in.childOrEmpty("starSlot"));
+        chargeSlot.loadFrom(in.childOrEmpty("chargeSlot"));
     }
 }

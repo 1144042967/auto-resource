@@ -134,21 +134,23 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
         }
 
         protected void renderButton(GuiGraphicsExtractor guiGraphics, int color) {
-            renderButtonBg(guiGraphics, color);
+            renderButtonBg(guiGraphics, this, color);
             guiGraphics.centeredText(AbstractGeneratorScreen.this.font, this.getMessage(), this.getX() + this.getWidth() / 2, this.getY() + (this.getHeight() - 8) / 2, 0xFFFFFFFF);
         }
     }
 
     /**
-     * 渲染按钮底色与 1px 边框（鼠标悬浮时边框变亮，用于指示可交互）
+     * 渲染按钮底色与 1px 边框（鼠标悬浮时边框变亮，用于指示可交互）。
+     * 26.1.2：基类 AbstractGeneratorScreen 不是 AbstractWidget 子类，无法在自身引用按钮位置；
+     * 这里把按钮引用作为参数传入，按钮自身继承 AbstractButton/AbstractWidget，自带 getX/getY/getWidth/getHeight/isHovered。
      */
-    protected void renderButtonBg(GuiGraphicsExtractor guiGraphics, int color) {
-        guiGraphics.fill(this.getX(), this.getY(), this.getX() + this.getWidth(), this.getY() + this.getHeight(), color);
-        int borderColor = this.isHovered() ? 0xFFFFFF00 : 0xFF000000;
-        guiGraphics.fill(this.getX() - 1, this.getY() - 1, this.getX() + this.getWidth() + 1, this.getY(), borderColor);
-        guiGraphics.fill(this.getX() - 1, this.getY() + this.getHeight(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight() + 1, borderColor);
-        guiGraphics.fill(this.getX() - 1, this.getY(), this.getX(), this.getY() + this.getHeight(), borderColor);
-        guiGraphics.fill(this.getX() + this.getWidth(), this.getY(), this.getX() + this.getWidth() + 1, this.getY() + this.getHeight(), borderColor);
+    protected void renderButtonBg(GuiGraphicsExtractor guiGraphics, AbstractButton button, int color) {
+        guiGraphics.fill(button.getX(), button.getY(), button.getX() + button.getWidth(), button.getY() + button.getHeight(), color);
+        int borderColor = button.isHovered() ? 0xFFFFFF00 : 0xFF000000;
+        guiGraphics.fill(button.getX() - 1, button.getY() - 1, button.getX() + button.getWidth() + 1, button.getY(), borderColor);
+        guiGraphics.fill(button.getX() - 1, button.getY() + button.getHeight(), button.getX() + button.getWidth() + 1, button.getY() + button.getHeight() + 1, borderColor);
+        guiGraphics.fill(button.getX() - 1, button.getY(), button.getX(), button.getY() + button.getHeight(), borderColor);
+        guiGraphics.fill(button.getX() + button.getWidth(), button.getY(), button.getX() + button.getWidth() + 1, button.getY() + button.getHeight(), borderColor);
     }
 
     /**
@@ -170,7 +172,7 @@ public abstract class AbstractGeneratorScreen<M extends AbstractGeneratorMenu<?>
 
         @Override
         protected void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-            renderButtonBg(guiGraphics, this.state ? 0xFF00AA00 : 0xFFAA0000);
+            renderButtonBg(guiGraphics, this, this.state ? 0xFF00AA00 : 0xFFAA0000);
             ItemStack neighbor = AbstractGeneratorScreen.this.menu.getNeighborStack(this.direction);
             if (!neighbor.isEmpty()) {
                 renderFaceIcon(guiGraphics, this.getX(), this.getY(), this.getWidth(), this.getHeight(), neighbor);

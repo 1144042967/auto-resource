@@ -4,6 +4,7 @@ import cn.sd.jrz.autoresource.DataConfig;
 import cn.sd.jrz.autoresource.blockentity.LiquidGeneratorEntity;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.core.BlockPos;
+import net.minecraft.nbt.CompoundTag;
 import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.InteractionHand;
 import net.minecraft.world.InteractionResult;
@@ -60,6 +61,15 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
             }
         }
         return drops;
+    }
+
+    /**
+     * 输入/输出槽内容由 {@link #getDrops} 单独掉落，不随 block_entity_data 保留
+     */
+    @Override
+    protected void removeDroppedSlots(CompoundTag tag) {
+        tag.remove("inputSlot");
+        tag.remove("outputSlot");
     }
 
     @Override

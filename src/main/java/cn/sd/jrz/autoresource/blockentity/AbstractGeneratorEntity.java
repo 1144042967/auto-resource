@@ -2,11 +2,11 @@ package cn.sd.jrz.autoresource.blockentity;
 
 import cn.sd.jrz.autoresource.DataConfig;
 import net.fabricmc.fabric.api.menu.v1.ExtendedMenuProvider;
-import net.fabricmc.fabric.api.menu.v1.FabricMenuProvider;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.core.registries.BuiltInRegistries;
 import net.minecraft.network.chat.Component;
+import net.minecraft.server.level.ServerPlayer;
 import net.minecraft.world.MenuProvider;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.entity.player.Player;
@@ -17,6 +17,8 @@ import net.minecraft.world.item.Items;
 import net.minecraft.world.level.Level;
 import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
+import net.minecraft.world.level.storage.ValueInput;
+import net.minecraft.world.level.storage.ValueOutput;
 
 import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
@@ -24,10 +26,16 @@ import org.jetbrains.annotations.Nullable;
 /**
  * 机器方块实体基类：持有三种机器共有的产量（output）、增长 tick（tickCount）、
  * 六面传输开关与轮询索引（findIndex），提供面的开关判断、六面开关 NBT 读写与 setChanged 节流。
- * 同时实现 {@link ExtendedMenuProvider}：打开 GUI 时向客户端附带机器坐标
- * （对应 Forge 版 NetworkHooks.openScreen 携带的附加数据）。
+ * <p>
+ * 实现 {@link ExtendedMenuProvider}：打开 GUI 时向客户端附带机器坐标
+ * （对应 Forge 版 NetworkHooks.openScreen 携带的附加数据），客户端据此定位实体而非玩家位置。
+ * <p>
+ * 26.1.2 适配：与 1.21.11 一致采用流式 ValueOutput/ValueInput 持久化；
+ * 六面开关与 outputEnabled 通过 saveTransferFaces/saveOutputEnabled 子方法序列化，子类 saveAdditional 调用。
+ * <p>
+ * 26.x 系列 fabric-api 把 ExtendedScreenHandlerFactory 重命名为 ExtendedMenuProvider（位于 fabric-menu-api-v1）。
  */
-public abstract class AbstractGeneratorEntity extends BlockEntity implements MenuProvider, ExtendedMenuProvider<BlockPos>, FabricMenuProvider {
+public abstract class AbstractGeneratorEntity extends BlockEntity implements MenuProvider, ExtendedMenuProvider<BlockPos> {
     public final DataConfig config;
 
     // 核心数据（output 单位因机器而异：FE 能量 / mB 流体 / 方块×1000）
@@ -58,14 +66,6 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
     }
 
     /**
-     * 打开扩展菜单时向客户端发送的附加数据：机器坐标（客户端工厂据此构造同名菜单）
-     */
-    @Override
-    public BlockPos getScreenOpeningData(net.minecraft.server.level.ServerPlayer player) {
-        return getBlockPos();
-    }
-
-    /**
      * 指定面是否允许传输
      */
     public boolean isTransferEnabled(Direction direction) {
@@ -87,6 +87,52 @@ public abstract class AbstractGeneratorEntity extends BlockEntity implements Men
             dirtyTicks = 0;
             setChanged();
         }
+    }
+
+    /**
+     * 六面开关写入（流式持久化 ValueOutput）
+     */
+    protected void saveTransferFaces(ValueOutput output) {
+        output.putBoolean("transferDown", transferDown);
+        output.putBoolean("transferUp", transferUp);
+        output.putBoolean("transferNorth", transferNorth);
+        output.putBoolean("transferSouth", transferSouth);
+        output.putBoolean("transferWest", transferWest);
+        output.putBoolean("transferEast", transferEast);
+    }
+
+    /**
+     * 六面开关读取（缺字段保持当前值，等价旧版 contains 判断）
+     */
+    protected void loadTransferFaces(ValueInput input) {
+        transferDown = input.getBooleanOr("transferDown", transferDown);
+        transferUp = input.getBooleanOr("transferUp", transferUp);
+        transferNorth = input.getBooleanOr("transferNorth", transferNorth);
+        transferSouth = input.getBooleanOr("transferSouth", transferSouth);
+        transferWest = input.getBooleanOr("transferWest", transferWest);
+        transferEast = input.getBooleanOr("transferEast", transferEast);
+    }
+
+    /**
+     * 主动输出总开关写入
+     */
+    protected void saveOutputEnabled(ValueOutput output) {
+        output.putBoolean("outputEnabled", outputEnabled);
+    }
+
+    /**
+     * 主动输出总开关读取
+     */
+    protected void loadOutputEnabled(ValueInput input) {
+        outputEnabled = input.getBooleanOr("outputEnabled", outputEnabled);
+    }
+
+    /**
+     * 打开扩展菜单时向客户端同步的附加数据：机器坐标（客户端工厂据此构造同名菜单）
+     */
+    @Override
+    public BlockPos getScreenOpeningData(ServerPlayer player) {
+        return getBlockPos();
     }
 
     /**
