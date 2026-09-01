@@ -3,6 +3,7 @@ package cn.sd.jrz.autoresource.client;
 import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
@@ -57,10 +58,17 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
     }
 
     @Override
+    public void extractBackground(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        // 面板纹理：背景层用绝对坐标；须用带 RenderPipelines 的 10 参 blit（9 参 float 版本是 UV 语义）
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0f, 0.0f, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+    }
+
+    @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        // 增长进度条（颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
+        // 必须先调 super：父类在其中 pushMatrix+translate(leftPos,topPos) 渲染按钮/槽位/标签并 popMatrix 还原
+        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
+        // 增长进度条（super 已还原到绝对坐标，用 leftPos/topPos 定位；颜色随对应流体变化：水源机蓝色、岩浆机岩浆橙）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -92,16 +100,16 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
         LiquidGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（流体/产量/下次增长均以 B 为单位，大数值用单位缩写）
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.liquid", formatBuckets(menu.getLiquid())), 12, 19, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.output", formatBuckets(menu.getOutput())), 12, 29, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.next", maxed ? Component.translatable("screen.autoresource.liquid_generator.next_max") : Component.literal(formatBuckets(menu.getStep()))), 12, 39, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.liquid", formatBuckets(menu.getLiquid())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.output", formatBuckets(menu.getOutput())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.next", maxed ? Component.translatable("screen.autoresource.liquid_generator.next_max") : Component.literal(formatBuckets(menu.getStep()))), 12, 39, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.liquid_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 输入槽标签（贴近输入槽右侧，与发电机槽位标签位置一致）
         Component inputLabel = Component.translatable("screen.autoresource.liquid_generator.input");
-        guiGraphics.text(this.font, inputLabel, 28, 116, TEXT_COLOR);
+        guiGraphics.text(this.font, inputLabel, 28, 116, TEXT_COLOR, false);
         // 输出槽标签：右对齐贴近输出槽
         Component outputLabel = Component.translatable("screen.autoresource.liquid_generator.output_slot");
-        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR);
+        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR, false);
     }
 
     @Override
@@ -114,6 +122,13 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
         this.placeButton.setState(this.menu.isPlaceFluidBelow());
         this.outputButton.setState(this.menu.isOutputEnabled());
+        // 悬浮提示：显示图标时提示相邻方块名称
+        this.faceDown.refreshTooltip();
+        this.faceUp.refreshTooltip();
+        this.faceNorth.refreshTooltip();
+        this.faceSouth.refreshTooltip();
+        this.faceWest.refreshTooltip();
+        this.faceEast.refreshTooltip();
     }
 
     /**

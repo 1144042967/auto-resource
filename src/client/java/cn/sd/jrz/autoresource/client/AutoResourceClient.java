@@ -17,7 +17,10 @@ public class AutoResourceClient implements ClientModInitializer {
     @Override
     public void onInitializeClient() {
         // 屏幕注册（扩展菜单类型的附加数据已在网络层读取）
-        MenuScreens.register(Registration.ENERGY_GENERATOR_MENU, EnergyGeneratorScreen::new);
+        // FE 发电机屏幕：仅当前置 teamreborn energy 加载（菜单类型存在）时注册，否则 null 注册会崩
+        if (Registration.ENERGY_GENERATOR_MENU != null) {
+            MenuScreens.register(Registration.ENERGY_GENERATOR_MENU, EnergyGeneratorScreen::new);
+        }
         MenuScreens.register(Registration.LIQUID_GENERATOR_MENU, LiquidGeneratorScreen::new);
         MenuScreens.register(Registration.BLOCK_GENERATOR_MENU, BlockGeneratorScreen::new);
 

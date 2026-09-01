@@ -7,13 +7,9 @@ import cn.sd.jrz.autoresource.menu.LiquidGeneratorMenu;
 import cn.sd.jrz.autoresource.storage.MachineSlotStorage;
 import cn.sd.jrz.autoresource.util.ItemFluidIo;
 import cn.sd.jrz.autoresource.util.Tool;
-import net.fabricmc.fabric.api.transfer.v1.context.ContainerItemContext;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidStorage;
 import net.fabricmc.fabric.api.transfer.v1.fluid.FluidVariant;
-import net.fabricmc.fabric.api.transfer.v1.item.ContainerStorage;
-import net.fabricmc.fabric.api.transfer.v1.item.ItemVariant;
 import net.fabricmc.fabric.api.transfer.v1.storage.Storage;
-import net.fabricmc.fabric.api.transfer.v1.storage.base.SingleSlotStorage;
 import net.minecraft.core.BlockPos;
 import net.minecraft.core.Direction;
 import net.minecraft.network.chat.Component;
@@ -169,9 +165,8 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     /**
      * 给上方容器中可容纳流体的物品充入流体
      * <p>说明：直接使用 vanilla {@link Container} 接口（{@code removeItem} / {@code setItem}）操作槽位——
-     * Fabric Transfer API 的 {@link ContainerStorage#of} 对 vanilla Container 的 {@link SingleSlotStorage}
-     * 封装器在某些容器（如 Chest）上不稳定，直接读写 Container 更接近 Forge 版
-     * {@code ItemStackHandler.extractItem/insertItem} 的语义。
+     * Fabric Transfer API 的 ContainerStorage#of 对 vanilla Container 的槽位封装在某些容器（如 Chest）上
+     * 不稳定，直接读写 Container 更接近 Forge 版 {@code ItemStackHandler.extractItem/insertItem} 的语义。
      */
     private void fillContainersAbove() {
         Level level = getLevel();
@@ -199,32 +194,67 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
                 }
                 continue;
             }
-            // 可容纳流体的物品：经 Fabric Transfer API 的 FluidStorage.ITEM 查找（vanilla Container 通常不暴露）
-            SingleSlotStorage<ItemVariant> slotView = ContainerStorage.of(container, null).getSlot(i);
-            ContainerItemContext context = ContainerItemContext.ofSingleSlot(slotView);
-            Storage<FluidVariant> storage = context.find(FluidStorage.ITEM);
-            if (storage == null || !storage.supportsInsertion()) {
+            // 可堆叠的空 cell：整堆原地灌装会丢 cell（SingleVariantItemStorage 把整堆当单个容器），
+            // 因此若有空槽，取 1 个放到空槽单独灌装；无空槽则跳过（不灌整堆）。
+            if (stack.getCount() > 1 && ItemFluidIo.accepts(stack, config.getFluid())) {
+                int emptySlot = findEmptySlot(container, i);
+                if (emptySlot >= 0) {
+                    // 从堆叠中取 1 个放到空槽
+                    ItemStack one = container.removeItem(i, 1);
+                    container.setItem(emptySlot, one);
+                    fillCellInContainer(container, emptySlot, blockEntity);
+                }
                 continue;
             }
-            long requestedDroplets = ItemFluidIo.safeMul(Tool.suitInt(liquid), ItemFluidIo.DROPLETS_PER_MB);
-            if (requestedDroplets <= 0) {
-                return;
-            }
-            try (var txn = net.fabricmc.fabric.api.transfer.v1.transaction.Transaction.openOuter()) {
-                long filledDroplets = storage.insert(FluidVariant.of(config.getFluid()), requestedDroplets, txn);
-                if (filledDroplets <= 0) {
-                    continue;
-                }
-                txn.commit();
-                long millibuckets = filledDroplets / ItemFluidIo.DROPLETS_PER_MB;
-                if (millibuckets > 0) {
-                    liquid -= millibuckets;
-                    // 物品流体内存被修改，标记容器已改变以便落盘/同步
-                    blockEntity.setChanged();
-                }
-            } catch (Exception ignored) {
+            // 单件可容纳流体物品：原地灌装
+            if (ItemFluidIo.accepts(stack, config.getFluid())) {
+                fillCellInContainer(container, i, blockEntity);
             }
         }
+    }
+
+    /**
+     * 查找容器中第一个空槽（用于放置从堆叠中单独取出的 cell），排除指定槽位
+     */
+    private int findEmptySlot(Container container, int exclude) {
+        for (int j = 0; j < container.getContainerSize(); j++) {
+            if (j == exclude) {
+                continue;
+            }
+            if (container.getItem(j).isEmpty()) {
+                return j;
+            }
+        }
+        return -1;
+    }
+
+    /**
+     * 灌装容器内指定槽位的单件可容纳流体物品。直接用 vanilla Container 读写（ContainerStorage#of
+     * 对 Chest 的槽位封装不稳定，见 {@link #fillContainersAbove} 注释），灌装结果经 ItemFluidIo.fill 取得后写回。
+     */
+    private void fillCellInContainer(Container container, int slot, BlockEntity blockEntity) {
+        ItemStack stack = container.getItem(slot);
+        if (stack.isEmpty() || liquid <= 0) {
+            return;
+        }
+        long maxFill = Tool.suitInt(liquid);
+        if (maxFill <= 0) {
+            return;
+        }
+        ItemFluidIo.FillResult fillResult = ItemFluidIo.fill(stack, config.getFluid(), maxFill);
+        if (fillResult == null) {
+            return;
+        }
+        int filled = (int) Math.min(fillResult.millibuckets(), maxFill);
+        if (filled <= 0) {
+            return;
+        }
+        ItemStack result = fillResult.filled();
+        // 保持原堆叠数（此处调用方保证是单件，count=1）
+        result.setCount(stack.getCount());
+        container.setItem(slot, result);
+        liquid -= filled;
+        blockEntity.setChanged();
     }
 
     /**

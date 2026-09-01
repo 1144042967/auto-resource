@@ -22,12 +22,9 @@
 			"cn.sd.jrz.autoresource.client.AutoResourceClient"
 		]
 	},
-	"suggests": {
-		"create": ">=6.0.0"
-	},
 	"depends": {
 		"fabricloader": ">=0.19.3",
-		"minecraft": "~26.3-snapshot-10",
+		"minecraft": "~26.3-alpha.10",
 		"java": ">=25",
 		"fabric-api": "*"
 	}

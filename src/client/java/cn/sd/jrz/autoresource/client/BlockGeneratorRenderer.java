@@ -22,7 +22,6 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.jetbrains.annotations.Nullable;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 
 /**
  * 方块生成机的方块实体渲染器：标记槽有物品时，在四个侧面（北/南/东/西）各画一个标记方块贴图矩形。
@@ -79,8 +78,8 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         // 强制从当前方块图集重新解析精灵，确保首次渲染时贴图已加载
         // 26.1.2：AtlasManager 查找键用 AtlasIds.*（不带 .png 后缀），而 TextureAtlas.LOCATION_BLOCKS 带 .png 会抛 Invalid atlas id
         sprite = Minecraft.getInstance().getAtlasManager().getAtlasOrThrow(AtlasIds.BLOCKS).getSprite(sprite.contents().name());
-        // 强制至少 15 级方块光照，保留环境天空光
-        int light = Math.max(state.lightCoords & 0xFFFF, MIN_BLOCK_LIGHT) | (state.lightCoords & 0xFFFF0000);
+        // 自发光：方块光与天空光均强制 15 级全亮，标记贴图不随环境（夜晚/地下）变暗
+        int light = MIN_BLOCK_LIGHT | (15 << 20);
         // RenderType 的纹理绑定（Sampler0）用带 .png 的图集位置；getAtlasOrThrow 才用 AtlasIds（不带 .png）
         RenderType renderType = RenderTypes.entityCutout(TextureAtlas.LOCATION_BLOCKS);
         for (Direction side : SIDES) {

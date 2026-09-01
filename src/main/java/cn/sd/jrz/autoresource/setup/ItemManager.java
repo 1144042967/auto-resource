@@ -10,8 +10,8 @@ import net.minecraft.world.item.CreativeModeTab;
 import net.minecraft.world.item.ItemStack;
 
 /**
- * 创造模式标签页注册：顺序 FE 发电 → 水生成 → 岩浆生成 → 方块生成
- * <p>26.3 不含水车马达（机械动力飞越版无对应版本）
+ * 创造模式标签页注册：顺序 FE 发电 → 水生成 → 岩浆生成 → 方块生成。
+ * 主题图标为方块生成机（不能用 FE 发电机做图标：前置未装时其物品为 null）。
  */
 public class ItemManager {
     private static CreativeModeTab TAB;
@@ -20,9 +20,12 @@ public class ItemManager {
         Identifier tabId = Identifier.fromNamespaceAndPath(AutoResource.MODID, "autoresource");
         TAB = FabricCreativeModeTab.builder()
                 .title(Component.translatable("itemGroup.autoresource"))
-                .icon(() -> new ItemStack(Registration.ENERGY_GENERATOR_FE_ITEM))
+                .icon(() -> new ItemStack(Registration.BLOCK_GENERATOR_ITEM))
                 .displayItems((parameters, output) -> {
-                    output.accept(Registration.ENERGY_GENERATOR_FE_ITEM);
+                    // FE 发电：仅当 teamreborn energy 加载时显示
+                    if (Registration.ENERGY_GENERATOR_FE_ITEM != null) {
+                        output.accept(Registration.ENERGY_GENERATOR_FE_ITEM);
+                    }
                     output.accept(Registration.LIQUID_GENERATOR_WATER_ITEM);
                     output.accept(Registration.LIQUID_GENERATOR_LAVA_ITEM);
                     output.accept(Registration.BLOCK_GENERATOR_ITEM);

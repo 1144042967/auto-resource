@@ -4,6 +4,7 @@ import cn.sd.jrz.autoresource.menu.BlockGeneratorMenu;
 import cn.sd.jrz.autoresource.util.Tool;
 import com.mojang.blaze3d.platform.InputConstants;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
+import net.minecraft.client.renderer.RenderPipelines;
 import net.minecraft.client.input.KeyEvent;
 import net.minecraft.client.input.MouseButtonEvent;
 import net.minecraft.core.Direction;
@@ -107,10 +108,17 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
     }
 
     @Override
+    public void extractBackground(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
+        super.extractBackground(guiGraphics, mouseX, mouseY, partialTick);
+        // 面板纹理：背景层用绝对坐标；须用带 RenderPipelines 的 10 参 blit（9 参 float 版本是 UV 语义）
+        guiGraphics.blit(RenderPipelines.GUI_TEXTURED, TEXTURE, this.leftPos, this.topPos, 0.0f, 0.0f, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
+    }
+
+    @Override
     public void extractContents(@NotNull GuiGraphicsExtractor guiGraphics, int mouseX, int mouseY, float partialTick) {
-        extractBackground(guiGraphics, mouseX, mouseY, partialTick);
-        guiGraphics.blit(TEXTURE, this.leftPos, this.topPos, 0, 0, this.imageWidth, this.imageHeight, this.imageWidth, this.imageHeight);
-        // 增长进度条
+        // 必须先调 super：父类在其中 pushMatrix+translate(leftPos,topPos) 渲染按钮/槽位/标签并 popMatrix 还原
+        super.extractContents(guiGraphics, mouseX, mouseY, partialTick);
+        // 增长进度条（super 已还原到绝对坐标，用 leftPos/topPos 定位）
         int trackLeft = this.leftPos + 12;
         int trackRight = this.leftPos + 164;
         int trackTop = this.topPos + 60;
@@ -128,16 +136,16 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         BlockGeneratorMenu menu = this.menu;
         boolean maxed = menu.getOutput() >= menu.getMax();
         // 信息面板（存量/产量/下次增长均以 个 为单位，大数值用单位缩写）
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 39, TEXT_COLOR);
-        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 49, TEXT_COLOR);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.block", formatBlocks(menu.getBlock())), 12, 19, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.output", formatBlocks(menu.getOutput())), 12, 29, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.next", maxed ? Component.translatable("screen.autoresource.block_generator.next_max") : Component.literal(formatBlocks(menu.getStep()))), 12, 39, TEXT_COLOR, false);
+        guiGraphics.text(this.font, Component.translatable("screen.autoresource.block_generator.growth", growthPercent()), 12, 49, TEXT_COLOR, false);
         // 标记槽标签（贴近标记槽右侧）
         Component markerLabel = Component.translatable("screen.autoresource.block_generator.marker");
-        guiGraphics.text(this.font, markerLabel, 28, 116, TEXT_COLOR);
+        guiGraphics.text(this.font, markerLabel, 28, 116, TEXT_COLOR, false);
         // 输出槽标签：右对齐贴近输出槽
         Component outputLabel = Component.translatable("screen.autoresource.block_generator.output_slot");
-        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR);
+        guiGraphics.text(this.font, outputLabel, 150 - this.font.width(outputLabel), 116, TEXT_COLOR, false);
     }
 
     @Override
@@ -150,6 +158,13 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         this.faceEast.setState(this.menu.isFaceEnabled(Direction.EAST));
         this.placeButton.setState(this.menu.isPlaceBlockBelow());
         this.outputButton.setState(this.menu.isOutputEnabled());
+        // 悬浮提示：显示图标时提示相邻方块名称
+        this.faceDown.refreshTooltip();
+        this.faceUp.refreshTooltip();
+        this.faceNorth.refreshTooltip();
+        this.faceSouth.refreshTooltip();
+        this.faceWest.refreshTooltip();
+        this.faceEast.refreshTooltip();
     }
 
     /**
