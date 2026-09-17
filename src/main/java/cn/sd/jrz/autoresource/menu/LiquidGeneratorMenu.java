@@ -119,7 +119,8 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? (int) Math.min(Integer.MAX_VALUE, entity.config.getSecond()) : clientSecond;
     }
 
-    public boolean isFaceEnabled(Direction direction) {
+    @Override
+    public boolean isFaceEnabled(@Nonnull Direction direction) {
         if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
             return entity.isTransferEnabled(direction);
         }

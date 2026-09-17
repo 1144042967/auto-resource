@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Lõuna",
   "screen.autoresource.energy_generator.face.west": "Lääs",
   "screen.autoresource.energy_generator.face.east": "Ida",
+  "screen.autoresource.output.direction": "§7Suund: §e%s",
+  "screen.autoresource.output.disabled": "Välja lülitatud",
+  "screen.autoresource.output.enabled": "Sisse lülitatud",
+  "screen.autoresource.output.no_target": "§7Sihtmärk: §8Puudub",
+  "screen.autoresource.output.target": "§7Sihtmärk: §e%s",
+  "screen.autoresource.output.selected": "Valitud",
+  "screen.autoresource.output.unselected": "Valimata",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bVedelik: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bVäljund: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aKasv: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Märgi",
   "screen.autoresource.block_generator.output_slot": "Väljund",
   "screen.autoresource.block_generator.place_below": "Aseta allapoole",
-  "screen.autoresource.block_generator.output_toggle": "Väljund"
+  "screen.autoresource.block_generator.output_toggle": "Väljund",
+  "jei.autoresource.block_generator.page": "Lehekülg %s/%s",
+  "jei.autoresource.block_generator.total": "%s plokki"
 }

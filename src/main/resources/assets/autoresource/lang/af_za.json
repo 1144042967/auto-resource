@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Suid",
   "screen.autoresource.energy_generator.face.west": "Wes",
   "screen.autoresource.energy_generator.face.east": "Oos",
+  "screen.autoresource.output.direction": "§7Rigting: §e%s",
+  "screen.autoresource.output.disabled": "Gedeaktiveer",
+  "screen.autoresource.output.enabled": "Geaktiveer",
+  "screen.autoresource.output.no_target": "§7Teiken: §8Geen",
+  "screen.autoresource.output.target": "§7Teiken: §e%s",
+  "screen.autoresource.output.selected": "Gekies",
+  "screen.autoresource.output.unselected": "Nie gekies",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bVloeistof: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bUitset: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aGroei: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Merk",
   "screen.autoresource.block_generator.output_slot": "Uitset",
   "screen.autoresource.block_generator.place_below": "Plaas onder",
-  "screen.autoresource.block_generator.output_toggle": "Uitset"
+  "screen.autoresource.block_generator.output_toggle": "Uitset",
+  "jei.autoresource.block_generator.page": "Bladsy %s/%s",
+  "jei.autoresource.block_generator.total": "%s blokke"
 }

@@ -137,7 +137,8 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
         return entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide ? entity.transferRepeat : clientRepeat;
     }
 
-    public boolean isFaceEnabled(Direction direction) {
+    @Override
+    public boolean isFaceEnabled(@Nonnull Direction direction) {
         if (entity != null && entity.getLevel() != null && !entity.getLevel().isClientSide) {
             return entity.isTransferEnabled(direction);
         }

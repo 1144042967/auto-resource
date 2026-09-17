@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "南",
   "screen.autoresource.energy_generator.face.west": "西",
   "screen.autoresource.energy_generator.face.east": "东",
+  "screen.autoresource.output.direction": "§7输出方向：§e%s",
+  "screen.autoresource.output.disabled": "禁用",
+  "screen.autoresource.output.enabled": "启用",
+  "screen.autoresource.output.no_target": "§7输出目标：§8无",
+  "screen.autoresource.output.target": "§7输出目标：§e%s",
+  "screen.autoresource.output.selected": "选中",
+  "screen.autoresource.output.unselected": "未选中",
   "item.autoresource.liquid_generator.tooltip.liquid": "§b流体: §r%1$s 桶",
   "item.autoresource.liquid_generator.tooltip.output": "§b产量: §r%1$s 桶/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§a成长: §e%1$s%%",
@@ -95,5 +102,7 @@
   "screen.autoresource.water_wheel_motor.face.north": "北",
   "screen.autoresource.water_wheel_motor.face.south": "南",
   "screen.autoresource.water_wheel_motor.face.west": "西",
-  "screen.autoresource.water_wheel_motor.face.east": "东"
+  "screen.autoresource.water_wheel_motor.face.east": "东",
+  "jei.autoresource.block_generator.page": "第 %s/%s 页",
+  "jei.autoresource.block_generator.total": "共 %s 个可生成方块"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "جنوب",
   "screen.autoresource.energy_generator.face.west": "غرب",
   "screen.autoresource.energy_generator.face.east": "شرق",
+  "screen.autoresource.output.direction": "§7جهت: §e%s",
+  "screen.autoresource.output.disabled": "غیرفعال",
+  "screen.autoresource.output.enabled": "فعال",
+  "screen.autoresource.output.no_target": "§7هدف: §8هیچ",
+  "screen.autoresource.output.target": "§7هدف: §e%s",
+  "screen.autoresource.output.selected": "انتخاب‌شده",
+  "screen.autoresource.output.unselected": "انتخاب‌نشده",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bمایع: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bخروجی: §e%1$s§r B/تیک",
   "item.autoresource.liquid_generator.tooltip.growth": "§aرشد: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "نشانگر",
   "screen.autoresource.block_generator.output_slot": "خروجی",
   "screen.autoresource.block_generator.place_below": "قرار دادن در پایین",
-  "screen.autoresource.block_generator.output_toggle": "خروجی"
+  "screen.autoresource.block_generator.output_toggle": "خروجی",
+  "jei.autoresource.block_generator.page": "صفحه %s/%s",
+  "jei.autoresource.block_generator.total": "%s بلوک"
 }

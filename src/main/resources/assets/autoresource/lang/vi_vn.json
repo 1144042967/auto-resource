@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Nam",
   "screen.autoresource.energy_generator.face.west": "Tây",
   "screen.autoresource.energy_generator.face.east": "Đông",
+  "screen.autoresource.output.direction": "§7Hướng xuất: §e%s",
+  "screen.autoresource.output.disabled": "Tắt",
+  "screen.autoresource.output.enabled": "Bật",
+  "screen.autoresource.output.no_target": "§7Mục tiêu xuất: §8không có",
+  "screen.autoresource.output.target": "§7Mục tiêu xuất: §e%s",
+  "screen.autoresource.output.selected": "Đã chọn",
+  "screen.autoresource.output.unselected": "Chưa chọn",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bChất lỏng: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bSản lượng: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aTăng trưởng: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Đánh dấu",
   "screen.autoresource.block_generator.output_slot": "Đầu ra",
   "screen.autoresource.block_generator.place_below": "Đặt khối bên dưới",
-  "screen.autoresource.block_generator.output_toggle": "Đầu ra"
+  "screen.autoresource.block_generator.output_toggle": "Đầu ra",
+  "jei.autoresource.block_generator.page": "Trang %s/%s",
+  "jei.autoresource.block_generator.total": "%s khối"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "דרום",
   "screen.autoresource.energy_generator.face.west": "מערב",
   "screen.autoresource.energy_generator.face.east": "מזרח",
+  "screen.autoresource.output.direction": "§7כיוון: §e%s",
+  "screen.autoresource.output.disabled": "מושבת",
+  "screen.autoresource.output.enabled": "מופעל",
+  "screen.autoresource.output.no_target": "§7מטרה: §8אין",
+  "screen.autoresource.output.target": "§7מטרה: §e%s",
+  "screen.autoresource.output.selected": "נבחר",
+  "screen.autoresource.output.unselected": "לא נבחר",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bנוזל: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bתפוקה: §e%1$s§r B/טיק",
   "item.autoresource.liquid_generator.tooltip.growth": "§aגידול: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "סימון",
   "screen.autoresource.block_generator.output_slot": "פלט",
   "screen.autoresource.block_generator.place_below": "הצבה מתחת",
-  "screen.autoresource.block_generator.output_toggle": "פלט"
+  "screen.autoresource.block_generator.output_toggle": "פלט",
+  "jei.autoresource.block_generator.page": "עמוד %s/%s",
+  "jei.autoresource.block_generator.total": "%s בלוקים"
 }

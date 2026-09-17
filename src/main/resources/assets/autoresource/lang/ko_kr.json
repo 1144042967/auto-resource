@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "남쪽",
   "screen.autoresource.energy_generator.face.west": "서쪽",
   "screen.autoresource.energy_generator.face.east": "동쪽",
+  "screen.autoresource.output.direction": "§7출력 방향: §e%s",
+  "screen.autoresource.output.disabled": "비활성화",
+  "screen.autoresource.output.enabled": "활성화",
+  "screen.autoresource.output.no_target": "§7출력 대상: §8없음",
+  "screen.autoresource.output.target": "§7출력 대상: §e%s",
+  "screen.autoresource.output.selected": "선택됨",
+  "screen.autoresource.output.unselected": "선택 안 됨",
   "item.autoresource.liquid_generator.tooltip.liquid": "§b액체: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§b출력: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§a성장: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "표시",
   "screen.autoresource.block_generator.output_slot": "출력",
   "screen.autoresource.block_generator.place_below": "아래에 블록 놓기",
-  "screen.autoresource.block_generator.output_toggle": "출력"
+  "screen.autoresource.block_generator.output_toggle": "출력",
+  "jei.autoresource.block_generator.page": "%s/%s 페이지",
+  "jei.autoresource.block_generator.total": "%s종 블록"
 }

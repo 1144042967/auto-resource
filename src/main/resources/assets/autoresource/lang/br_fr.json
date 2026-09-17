@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Su",
   "screen.autoresource.energy_generator.face.west": "Kornôg",
   "screen.autoresource.energy_generator.face.east": "Reter",
+  "screen.autoresource.output.direction": "§7Tu: §e%s",
+  "screen.autoresource.output.disabled": "Diweredekaet",
+  "screen.autoresource.output.enabled": "Gweredekaet",
+  "screen.autoresource.output.no_target": "§7Pal: §8Hini ebet",
+  "screen.autoresource.output.target": "§7Pal: §e%s",
+  "screen.autoresource.output.selected": "Diuzet",
+  "screen.autoresource.output.unselected": "Diuzet ket",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bLiñvenn: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bProduktadur: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aKresk: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Merkañ",
   "screen.autoresource.block_generator.output_slot": "Ezank",
   "screen.autoresource.block_generator.place_below": "Lakaat d'an traoñ",
-  "screen.autoresource.block_generator.output_toggle": "Ezank"
+  "screen.autoresource.block_generator.output_toggle": "Ezank",
+  "jei.autoresource.block_generator.page": "Pajenn %s/%s",
+  "jei.autoresource.block_generator.total": "%s bloc'hoù"
 }

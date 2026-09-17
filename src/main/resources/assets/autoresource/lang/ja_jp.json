@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "南",
   "screen.autoresource.energy_generator.face.west": "西",
   "screen.autoresource.energy_generator.face.east": "東",
+  "screen.autoresource.output.direction": "§7出力方向: §e%s",
+  "screen.autoresource.output.disabled": "無効",
+  "screen.autoresource.output.enabled": "有効",
+  "screen.autoresource.output.no_target": "§7出力対象: §8なし",
+  "screen.autoresource.output.target": "§7出力対象: §e%s",
+  "screen.autoresource.output.selected": "選択中",
+  "screen.autoresource.output.unselected": "未選択",
   "item.autoresource.liquid_generator.tooltip.liquid": "§b液体: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§b出力: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§a成長: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "マーク",
   "screen.autoresource.block_generator.output_slot": "出力",
   "screen.autoresource.block_generator.place_below": "下にブロックを設置",
-  "screen.autoresource.block_generator.output_toggle": "出力"
+  "screen.autoresource.block_generator.output_toggle": "出力",
+  "jei.autoresource.block_generator.page": "%s/%s ページ",
+  "jei.autoresource.block_generator.total": "%s 種のブロック"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Południe",
   "screen.autoresource.energy_generator.face.west": "Zachód",
   "screen.autoresource.energy_generator.face.east": "Wschód",
+  "screen.autoresource.output.direction": "§7Kierunek wyjścia: §e%s",
+  "screen.autoresource.output.disabled": "Wyłączone",
+  "screen.autoresource.output.enabled": "Włączone",
+  "screen.autoresource.output.no_target": "§7Cel wyjścia: §8brak",
+  "screen.autoresource.output.target": "§7Cel wyjścia: §e%s",
+  "screen.autoresource.output.selected": "Wybrano",
+  "screen.autoresource.output.unselected": "Nie wybrano",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bCiecz: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bWydajność: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aWzrost: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Znacznik",
   "screen.autoresource.block_generator.output_slot": "Wyjście",
   "screen.autoresource.block_generator.place_below": "Umieść poniżej",
-  "screen.autoresource.block_generator.output_toggle": "Wyjście"
+  "screen.autoresource.block_generator.output_toggle": "Wyjście",
+  "jei.autoresource.block_generator.page": "Strona %s/%s",
+  "jei.autoresource.block_generator.total": "Bloki: %s"
 }

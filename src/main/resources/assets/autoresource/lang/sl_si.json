@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Jug",
   "screen.autoresource.energy_generator.face.west": "Zahod",
   "screen.autoresource.energy_generator.face.east": "Vzhod",
+  "screen.autoresource.output.direction": "§7Smer izhoda: §e%s",
+  "screen.autoresource.output.disabled": "Izklopljeno",
+  "screen.autoresource.output.enabled": "Vklopljeno",
+  "screen.autoresource.output.no_target": "§7Cilj izhoda: §8ni",
+  "screen.autoresource.output.target": "§7Cilj izhoda: §e%s",
+  "screen.autoresource.output.selected": "Izbrano",
+  "screen.autoresource.output.unselected": "Ni izbrano",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bTekočina: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bIzhod: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aRast: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Označi",
   "screen.autoresource.block_generator.output_slot": "Izhod",
   "screen.autoresource.block_generator.place_below": "Postavi spodaj",
-  "screen.autoresource.block_generator.output_toggle": "Izhod"
+  "screen.autoresource.block_generator.output_toggle": "Izhod",
+  "jei.autoresource.block_generator.page": "Stran %s/%s",
+  "jei.autoresource.block_generator.total": "Skupaj blokov: %s"
 }

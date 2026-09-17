@@ -1,5 +1,6 @@
 package cn.sd.jrz.autoresource.compat.create;
 
+import cn.sd.jrz.autoresource.client.FaceTooltip;
 import com.mojang.blaze3d.vertex.PoseStack;
 import net.minecraft.client.gui.GuiGraphics;
 import net.minecraft.client.gui.components.Button;
@@ -14,6 +15,9 @@ import net.minecraftforge.api.distmarker.Dist;
 import net.minecraftforge.api.distmarker.OnlyIn;
 
 import javax.annotation.Nonnull;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Optional;
 
 /**
  * 水车马达 GUI。布局：上部大框放六面输出方向按钮；中部左侧水车槽位、右侧旋转方向开关；
@@ -35,6 +39,11 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     private FaceButton faceSouth;
     private FaceButton faceWest;
     private FaceButton faceEast;
+    /**
+     * 已登记的六方向按钮：render 里逐个判 hover 以渲染 tooltip。
+     * <b>每次 {@link #init()} 都会清空重来</b>——它在窗口缩放时会被重复调用，不清会越积越多、留下收不到鼠标事件的幽灵按钮
+     */
+    private final List<FaceButton> faceButtons = new ArrayList<>();
 
     public WaterWheelMotorScreen(WaterWheelMotorMenu menu, Inventory playerInventory, Component title) {
         super(menu, playerInventory, title);
@@ -61,22 +70,31 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     @Override
     protected void init() {
         super.init();
+        this.faceButtons.clear();
         // 旋转方向开关（水车槽同一行右侧，无标签）
         this.directionButton = new StateButton(this.leftPos + 112, this.topPos + 58, 56, 12, this.menu.isCounterClockwise(), Component.empty(), button -> sendButton(WaterWheelMotorMenu.BUTTON_DIRECTION));
         this.addRenderableWidget(this.directionButton);
-        // 六面输出方向：位于上部大框正中（两行三列，框 y=16~51）；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名
+        // 六面输出方向：位于上部大框正中（两行三列，框 y=16~51）；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名；hover 显示三行提示
         this.faceDown = new FaceButton(this.leftPos + 14, this.topPos + 20, 44, 12, Direction.DOWN, this.menu.getFace() == Direction.DOWN, faceLabel(Direction.DOWN), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_DOWN));
         this.faceUp = new FaceButton(this.leftPos + 66, this.topPos + 20, 44, 12, Direction.UP, this.menu.getFace() == Direction.UP, faceLabel(Direction.UP), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_UP));
         this.faceNorth = new FaceButton(this.leftPos + 118, this.topPos + 20, 44, 12, Direction.NORTH, this.menu.getFace() == Direction.NORTH, faceLabel(Direction.NORTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_NORTH));
         this.faceSouth = new FaceButton(this.leftPos + 14, this.topPos + 36, 44, 12, Direction.SOUTH, this.menu.getFace() == Direction.SOUTH, faceLabel(Direction.SOUTH), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_SOUTH));
         this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 36, 44, 12, Direction.WEST, this.menu.getFace() == Direction.WEST, faceLabel(Direction.WEST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_WEST));
         this.faceEast = new FaceButton(this.leftPos + 118, this.topPos + 36, 44, 12, Direction.EAST, this.menu.getFace() == Direction.EAST, faceLabel(Direction.EAST), button -> sendButton(WaterWheelMotorMenu.BUTTON_FACE_EAST));
-        this.addRenderableWidget(this.faceDown);
-        this.addRenderableWidget(this.faceUp);
-        this.addRenderableWidget(this.faceNorth);
-        this.addRenderableWidget(this.faceSouth);
-        this.addRenderableWidget(this.faceWest);
-        this.addRenderableWidget(this.faceEast);
+        addFaceButton(this.faceDown);
+        addFaceButton(this.faceUp);
+        addFaceButton(this.faceNorth);
+        addFaceButton(this.faceSouth);
+        addFaceButton(this.faceWest);
+        addFaceButton(this.faceEast);
+    }
+
+    /**
+     * 登记一个六方向按钮：既加入渲染列表，也记进 tooltip 集合
+     */
+    private void addFaceButton(@Nonnull FaceButton button) {
+        this.faceButtons.add(button);
+        this.addRenderableWidget(button);
     }
 
     /**
@@ -116,6 +134,12 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     @Override
     public void render(@Nonnull GuiGraphics guiGraphics, int mouseX, int mouseY, float partialTick) {
         super.render(guiGraphics, mouseX, mouseY, partialTick);
+        // 六方向按钮的 hover tooltip（排在槽位提示之前）
+        for (FaceButton faceButton : this.faceButtons) {
+            if (faceButton != null && faceButton.isHovered()) {
+                guiGraphics.renderTooltip(this.font, faceButton.buildTooltip(), Optional.empty(), mouseX, mouseY);
+            }
+        }
         super.renderTooltip(guiGraphics, mouseX, mouseY);
         refreshButtonStates();
     }
@@ -159,7 +183,7 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
     }
 
     /**
-     * 六方向按钮：该方向有相邻方块时只显示物品图标（居中）；无相邻方块时显示方向名（居中）。绿=生效/红=禁用
+     * 六方向按钮：该方向有相邻方块时只显示物品图标（居中）；无相邻方块时显示方向名（居中）。绿=选中/红=未选
      */
     private class FaceButton extends SimpleButton {
         private final Direction direction;
@@ -173,6 +197,23 @@ public class WaterWheelMotorScreen extends AbstractContainerScreen<WaterWheelMot
 
         void setState(boolean state) {
             this.state = state;
+        }
+
+        /**
+         * hover tooltip：内容行（选中/未选中）、输出方向、输出目标三行，版式见 {@link FaceTooltip}
+         * <p>
+         * 选中状态直接读菜单而不是缓存的 {@code state} 字段——后者在 {@code render()} 里晚于 tooltip 渲染才刷新，用它慢一帧
+         */
+        @Nonnull
+        List<Component> buildTooltip() {
+            Direction direction = this.direction;
+            String directionName = faceLabel(direction).getString();
+            String content = Component.translatable(WaterWheelMotorScreen.this.menu.getFace() == direction
+                    ? "screen.autoresource.output.selected"
+                    : "screen.autoresource.output.unselected").getString();
+            ItemStack neighbor = WaterWheelMotorScreen.this.menu.getNeighborStack(direction);
+            String target = neighbor.isEmpty() ? null : neighbor.getHoverName().getString();
+            return FaceTooltip.build(directionName, target, content);
         }
 
         @Override

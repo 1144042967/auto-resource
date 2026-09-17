@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Juh",
   "screen.autoresource.energy_generator.face.west": "Západ",
   "screen.autoresource.energy_generator.face.east": "Východ",
+  "screen.autoresource.output.direction": "§7Smer výstupu: §e%s",
+  "screen.autoresource.output.disabled": "Vypnuté",
+  "screen.autoresource.output.enabled": "Zapnuté",
+  "screen.autoresource.output.no_target": "§7Cieľ výstupu: §8žiadny",
+  "screen.autoresource.output.target": "§7Cieľ výstupu: §e%s",
+  "screen.autoresource.output.selected": "Vybraté",
+  "screen.autoresource.output.unselected": "Nevybraté",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bKvapalina: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bVýkon: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aRast: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Značka",
   "screen.autoresource.block_generator.output_slot": "Výstup",
   "screen.autoresource.block_generator.place_below": "Umiestniť pod",
-  "screen.autoresource.block_generator.output_toggle": "Výstup"
+  "screen.autoresource.block_generator.output_toggle": "Výstup",
+  "jei.autoresource.block_generator.page": "Strana %s/%s",
+  "jei.autoresource.block_generator.total": "Celkom blokov: %s"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "جنوب",
   "screen.autoresource.energy_generator.face.west": "غرب",
   "screen.autoresource.energy_generator.face.east": "شرق",
+  "screen.autoresource.output.direction": "§7الاتجاه: §e%s",
+  "screen.autoresource.output.disabled": "معطّل",
+  "screen.autoresource.output.enabled": "مفعّل",
+  "screen.autoresource.output.no_target": "§7الهدف: §8لا شيء",
+  "screen.autoresource.output.target": "§7الهدف: §e%s",
+  "screen.autoresource.output.selected": "محدد",
+  "screen.autoresource.output.unselected": "غير محدد",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bالسائل: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bالإنتاج: §e%1$s§r B/تيك",
   "item.autoresource.liquid_generator.tooltip.growth": "§aالنمو: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "علامة",
   "screen.autoresource.block_generator.output_slot": "الإخراج",
   "screen.autoresource.block_generator.place_below": "الوضع بالأسفل",
-  "screen.autoresource.block_generator.output_toggle": "الإخراج"
+  "screen.autoresource.block_generator.output_toggle": "الإخراج",
+  "jei.autoresource.block_generator.page": "صفحة %s/%s",
+  "jei.autoresource.block_generator.total": "%s كتلة"
 }

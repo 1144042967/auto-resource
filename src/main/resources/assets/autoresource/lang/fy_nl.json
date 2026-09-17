@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Suden",
   "screen.autoresource.energy_generator.face.west": "Westen",
   "screen.autoresource.energy_generator.face.east": "Easten",
+  "screen.autoresource.output.direction": "§7Rjochting: §e%s",
+  "screen.autoresource.output.disabled": "Útskeakele",
+  "screen.autoresource.output.enabled": "Oan",
+  "screen.autoresource.output.no_target": "§7Doel: §8Gjin",
+  "screen.autoresource.output.target": "§7Doel: §e%s",
+  "screen.autoresource.output.selected": "Selektearre",
+  "screen.autoresource.output.unselected": "Net selektearre",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bFloeistof: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bÚtfier: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aGroei: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Markearje",
   "screen.autoresource.block_generator.output_slot": "Útfier",
   "screen.autoresource.block_generator.place_below": "Hjirûnder pleatse",
-  "screen.autoresource.block_generator.output_toggle": "Útfier"
+  "screen.autoresource.block_generator.output_toggle": "Útfier",
+  "jei.autoresource.block_generator.page": "Side %s/%s",
+  "jei.autoresource.block_generator.total": "%s blokken"
 }

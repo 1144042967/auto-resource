@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Söder",
   "screen.autoresource.energy_generator.face.west": "Väster",
   "screen.autoresource.energy_generator.face.east": "Öster",
+  "screen.autoresource.output.direction": "§7Riktning: §e%s",
+  "screen.autoresource.output.disabled": "Avstängd",
+  "screen.autoresource.output.enabled": "Aktiverad",
+  "screen.autoresource.output.no_target": "§7Mål: §8Inget",
+  "screen.autoresource.output.target": "§7Mål: §e%s",
+  "screen.autoresource.output.selected": "Vald",
+  "screen.autoresource.output.unselected": "Ej vald",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bVätska: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bProduktion: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aTillväxt: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Markera",
   "screen.autoresource.block_generator.output_slot": "Utdata",
   "screen.autoresource.block_generator.place_below": "Placera nedanför",
-  "screen.autoresource.block_generator.output_toggle": "Utdata"
+  "screen.autoresource.block_generator.output_toggle": "Utdata",
+  "jei.autoresource.block_generator.page": "Sida %s/%s",
+  "jei.autoresource.block_generator.total": "%s block"
 }

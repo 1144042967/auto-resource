@@ -63,7 +63,8 @@ src/main/java/cn/sd/jrz/autoresource/
 │   └── BlockGeneratorMenu.java     # 方块生成器容器（标记槽 + 输出展示槽 + 提取按钮）
 ├── client/                         # 客户端
 │   ├── ClientSetup.java            # 客户端初始化（注册 GUI）
-│   ├── AbstractGeneratorScreen.java# 机器 GUI 基类（sendButton/growthPercent/开关按钮/渲染循环）
+│   ├── AbstractGeneratorScreen.java# 机器 GUI 基类（sendButton/growthPercent/开关按钮/六方向按钮与 tooltip/渲染循环）
+│   ├── FaceTooltip.java            # 六方向按钮 hover tooltip 的统一构建（三行版式）
 │   ├── EnergyGeneratorScreen.java  # FE发电机 GUI
 │   ├── LiquidGeneratorScreen.java  # 流体生成器 GUI
 │   ├── BlockGeneratorScreen.java   # 方块生成器 GUI（输出槽点击提取）
@@ -76,6 +77,12 @@ src/main/java/cn/sd/jrz/autoresource/
 │   ├── WaterWheelMotorMenu.java    # 水车马达容器（32 水车槽 + 转速/方向/六面按钮）
 │   ├── WaterWheelMotorScreen.java  # 水车马达 GUI（客户端）
 │   └── WaterWheelMotorRenderer.java# 水车马达方块实体渲染（四面侧显示转速文字）
+├── compat/jei/                     # JEI 联动（仅编译期依赖，JEI 未安装则该插件类根本不会被加载）
+│   ├── AutoResourceJeiPlugin.java  # JEI 插件入口（@JeiPlugin，注册类别/配方/催化剂）
+│   ├── JeiRecipeTypes.java         # 配方类型常量（BLOCK_GENERATOR）
+│   ├── BlockGeneratorRecipe.java   # 配方数据模型（一页可生成方块 + 底部说明行）
+│   ├── BlockGeneratorRecipeCategory.java # 方块生成机配方页（8×6 网格分页，无输入列）
+│   └── JeiText.java                # 说明文字按像素宽折行的排版工具
 ├── compat/energybypass/            # 第三方MOD能量反射绕过（零编译期依赖）
 │   └── EnergyBypass.java           # 反射补满第三方MOD机器能量到容量（龙之研究反射按类缓存）
 ├── setup/                          # 注册
@@ -220,6 +227,36 @@ src/main/java/cn/sd/jrz/autoresource/
 - **破坏掉落**：`data/autoresource/loot_tables/blocks/water_wheel_motor.json`（掉落方块自身）；`WaterWheelMotorBlock.getDrops` 覆写把水车槽内放入的水车/大水车一并掉落（不随物品 NBT 保留槽内容，避免重复）。
 - 语言键：`block.autoresource.water_wheel_motor`、`screen.autoresource.water_wheel_motor.*`（目前仅 en_us/zh_cn 两个语言文件加入，其余语言后续同步）。
 
+## 六方向按钮的 hover tooltip
+
+四个带六方向按钮的界面（FE 发电机 / 流体生成机 / 方块生成机 / 水车马达）一律走 `client/FaceTooltip.java`，不要各自拼装。版式与 alltheimbaium 的同名类**逐行一致**：
+
+```
+§f<当前状态>                  ① 无标签，最亮白色（启用 / 禁用 / 选中 / 未选中）
+§7输出方向：§e<方向>            ②
+§7输出目标：§e<指向的方块>       ③ 无目标时显示 §8无
+```
+
+- 共用键 `screen.autoresource.output.*`（`direction` / `target` / `no_target` / `enabled` / `disabled` / `selected` / `unselected`），48 份语言文件都有。
+- 三个生成机的面是**开/关**，内容行用 `.enabled` / `.disabled`；水车马达的面是**单选输出面**，内容行用 `.selected` / `.unselected`。
+- 方向名沿用各界面已有的键：三个生成机共用 `screen.autoresource.energy_generator.face.*`（**没有**单独的 liquid/block 组），水车马达用 `screen.autoresource.water_wheel_motor.face.*`。
+- 目标名取 `menu.getNeighborStack(dir).getHoverName()`；相邻是空气 / 无物品方块时走 `.no_target`，**仍然显示第三行**。
+- 拼装一律字符串拼接，不用 `Component.append`——`§` 的格式状态不跨兄弟组件传递，放进独立组件的前缀会被丢弃。
+- 开关状态要**直接读 `menu.isFaceEnabled(dir)`**（水车马达读 `menu.getFace()`），不要用 `FaceButton.state` 缓存字段：那个字段在 `render()` 里晚于 tooltip 渲染才刷新，用它会慢一帧。
+- 实现上，六方向按钮由 `addFaceButton(...)` 登记（既 `addRenderableWidget` 也进 tooltip 集合），tooltip 在 `render()` 里 `super.renderTooltip(...)` **之前**逐个判 hover 渲染。集合在 `init()` 里清空——`init()` 会被窗口缩放重复调用，不清会积出收不到鼠标事件的幽灵按钮。
+- `AbstractGeneratorMenu` 为此把 `isFaceEnabled(Direction)` 提成了抽象方法（三个菜单各自实现，服务端读实体、客户端读数据槽）。
+
+## JEI 联动（可选）
+
+JEI 是**可选**联动，不能变成硬依赖：`build.gradle` 只声明编译期的 `jei-<mc>-common-api` 与 `jei-<mc>-forge-api`（`common-api` 才是 API 本体，`forge-api` 只有 `ForgeTypes` 一个壳），**不打包、不进运行时**。插件类 `compat/jei/AutoResourceJeiPlugin`（`@JeiPlugin`）只会被 JEI 自己加载，没装 JEI 的整合包里本模组照常运行。
+
+- **只做方块生成机一类**（`autoresource:block_generator`），样式对齐 alltheimbaium 的存储方块制造机：**没有输入列、没有箭头**，一整片 8×6 = 48 件一页的方块网格，底部两行说明（先"共 N 个可生成方块"、再"第 X/Y 页"），超过一页拆成多条配方（上限 128 页，超出时打 warn 并截断）。FE / 流体机没有"可列出的物品集合"，不建类别。
+- **数据源与标记槽判定同源**：`BlockGeneratorItem.getSupportedItems()`（配置 `block_generator.items` 的展开结果，含 `#` 标签，按配置内容缓存）。这个方法是 public static，**物品 tooltip 与 JEI 读同一份缓存**，两边列出的东西永远一致。JEI 跑在客户端而这是 SERVER 配置——Forge 会把 SERVER 配置同步给客户端，所以客户端读得到；"改完配置没重启客户端"是唯一读不到新值的场景，此时会打一条 warn。
+- **三个跨版本坑**（与 alltheimbaium 完全一致，改这个类前务必先读）：① 必须显式覆写 `getBackground()` 返回 `createBlankDrawable(w, h)`（配 `@SuppressWarnings("removal")`），该方法虽自 15.20 起标记待删除，老版本仍靠它确定卡片范围；② 说明文字**不能用 `extras.addText(...)`**——`addText(List, int, int)` 的后两个参数在 15.20 是"最大宽/高"、在 15.59 是"x/y"，含义相反，一律在 `draw(...)` 里 `drawString` 自己画；③ 槽位背景一律 `setStandardSlotBackground()`（18×18），**不要用 `setOutputSlotBackground()`**（26×26，会与 18px 网格重叠并画出卡片）。
+- **`jei_version` 取"要支持的最老版本"`15.20.0.112`，不要随手升**：JEI 的 api 一路在加方法，按新版本编译出来的 jar 装进老版本 JEI 就是 `NoSuchMethodError`。与 alltheimbaium 保持同一基线，两边同步升级。
+- 数据收集包 try-catch（`AutoResourceJeiPlugin.safe`）：解析失败只让该分类空着，不让 JEI 崩在配方页上。
+- 语言键：`jei.autoresource.block_generator.total` / `.page`，48 份语言文件都有（`.page` 的译文与 alltheimbaium 的 `storage_fountain.page` 逐语言一致）。
+
 ## Capability 系统
 
 使用 Forge Capability 实现与其他 Mod 的互操作：
@@ -282,7 +319,9 @@ src/main/java/cn/sd/jrz/autoresource/
 ## 依赖
 
 - **Forge** 1.20.1-47.x (唯一硬依赖)
-- 无其他 Mod 依赖
+- 可选联动（均为 `compileOnly`，未安装时对应功能整体不存在、模组照常运行）：
+  - **Create** — 水车马达（`libs/create-1.20.1-0.5.1.j.jar`，见 `compat/create/`）
+  - **JEI** — 方块生成机的配方页（`maven.blamejared.com`，见 `compat/jei/`）
 
 ## 命名规范
 

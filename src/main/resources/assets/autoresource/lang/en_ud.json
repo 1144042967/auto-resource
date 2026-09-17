@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Sonʇɥ",
   "screen.autoresource.energy_generator.face.west": "Mǝsʇ",
   "screen.autoresource.energy_generator.face.east": "Ǝɐsʇ",
+  "screen.autoresource.output.direction": "§7ᗡᴉɹǝɔʇᴉou: §e%s",
+  "screen.autoresource.output.disabled": "ᗡᴉsɐqlǝp",
+  "screen.autoresource.output.enabled": "Ǝuɐqlǝp",
+  "screen.autoresource.output.no_target": "§7⊥ɐɹƃǝʇ: §8Nouǝ",
+  "screen.autoresource.output.target": "§7⊥ɐɹƃǝʇ: §e%s",
+  "screen.autoresource.output.selected": "Sǝlǝɔʇǝp",
+  "screen.autoresource.output.unselected": "Noʇ sǝlǝɔʇǝp",
   "item.autoresource.liquid_generator.tooltip.liquid": "§b˥ᴉbnᴉp: §e%1$s§r ᒰ",
   "item.autoresource.liquid_generator.tooltip.output": "§bOnʇdnʇ: §e%1$s§r ᒰ\\ʇᴉɔʞ",
   "item.autoresource.liquid_generator.tooltip.growth": "§a⅁ɹoʍʇɥ: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Wɐɹʞ",
   "screen.autoresource.block_generator.output_slot": "Onʇdnʇ",
   "screen.autoresource.block_generator.place_below": "Ԁlɐɔǝ ᒰǝloʍ",
-  "screen.autoresource.block_generator.output_toggle": "Onʇdnʇ"
+  "screen.autoresource.block_generator.output_toggle": "Onʇdnʇ",
+  "jei.autoresource.block_generator.page": "Ԁɐƃǝ %s\\%s",
+  "jei.autoresource.block_generator.total": "%s qloɔʞs"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Pietūs",
   "screen.autoresource.energy_generator.face.west": "Vakarai",
   "screen.autoresource.energy_generator.face.east": "Rytai",
+  "screen.autoresource.output.direction": "§7Išvesties kryptis: §e%s",
+  "screen.autoresource.output.disabled": "Išjungta",
+  "screen.autoresource.output.enabled": "Įjungta",
+  "screen.autoresource.output.no_target": "§7Išvesties taikinys: §8nėra",
+  "screen.autoresource.output.target": "§7Išvesties taikinys: §e%s",
+  "screen.autoresource.output.selected": "Pasirinkta",
+  "screen.autoresource.output.unselected": "Nepasirinkta",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bSkystis: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bGamyba: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aAugimas: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Pažymėti",
   "screen.autoresource.block_generator.output_slot": "Išvestis",
   "screen.autoresource.block_generator.place_below": "Dėti žemiau",
-  "screen.autoresource.block_generator.output_toggle": "Išvestis"
+  "screen.autoresource.block_generator.output_toggle": "Išvestis",
+  "jei.autoresource.block_generator.page": "Puslapis %s/%s",
+  "jei.autoresource.block_generator.total": "%s blokų"
 }

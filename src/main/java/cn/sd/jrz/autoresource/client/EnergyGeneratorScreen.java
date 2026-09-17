@@ -50,19 +50,19 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         // 重复传电次数（两个框下方独立一行）
         this.addRenderableWidget(new MiniButton(this.leftPos + 128, this.topPos + 173, 16, 12, Component.literal("-"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_DOWN)));
         this.addRenderableWidget(new MiniButton(this.leftPos + 148, this.topPos + 173, 16, 12, Component.literal("+"), button -> sendButton(EnergyGeneratorMenu.BUTTON_REPEAT_UP)));
-        // 六个输电面（宽 44 以容纳英文面名；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名）
+        // 六个输电面（宽 44 以容纳英文面名；有相邻方块时按钮居中显示方块图标，无相邻方块时显示方向名；hover 显示三行提示）
         this.faceDown = new FaceButton(this.leftPos + 17, this.topPos + 136, 44, 12, Direction.DOWN, this.menu.isFaceEnabled(Direction.DOWN), Component.translatable("screen.autoresource.energy_generator.face.down"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_DOWN));
         this.faceUp = new FaceButton(this.leftPos + 66, this.topPos + 136, 44, 12, Direction.UP, this.menu.isFaceEnabled(Direction.UP), Component.translatable("screen.autoresource.energy_generator.face.up"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_UP));
         this.faceNorth = new FaceButton(this.leftPos + 115, this.topPos + 136, 44, 12, Direction.NORTH, this.menu.isFaceEnabled(Direction.NORTH), Component.translatable("screen.autoresource.energy_generator.face.north"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_NORTH));
         this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 152, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_SOUTH));
         this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 152, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_WEST));
         this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 152, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), button -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_EAST));
-        this.addRenderableWidget(this.faceDown);
-        this.addRenderableWidget(this.faceUp);
-        this.addRenderableWidget(this.faceNorth);
-        this.addRenderableWidget(this.faceSouth);
-        this.addRenderableWidget(this.faceWest);
-        this.addRenderableWidget(this.faceEast);
+        addFaceButton(this.faceDown);
+        addFaceButton(this.faceUp);
+        addFaceButton(this.faceNorth);
+        addFaceButton(this.faceSouth);
+        addFaceButton(this.faceWest);
+        addFaceButton(this.faceEast);
     }
 
     @Override

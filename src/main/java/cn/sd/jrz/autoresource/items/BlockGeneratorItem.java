@@ -135,9 +135,12 @@ public class BlockGeneratorItem extends BlockItem {
     private static Set<Item> cachedSupportedItems;
 
     /**
-     * 展开配置的产品为实际物品集合（标签展开、去重、保持顺序），按配置内容缓存
+     * 展开配置的产品为实际物品集合（标签展开、去重、保持顺序），按配置内容缓存。
+     * <p>
+     * 除了本物品的 tooltip，JEI 的方块生成机配方页也读这一份（见 {@code compat/jei/AutoResourceJeiPlugin}），
+     * 保证"tooltip 列的"与"JEI 列的"永远一致。
      */
-    private static Set<Item> getSupportedItems() {
+    public static Set<Item> getSupportedItems() {
         List<? extends String> current = DataConfig.getBlockGeneratorItems();
         if (cachedSupportedItems == null || !current.equals(cachedConfigItems)) {
             cachedConfigItems = List.copyOf(current);

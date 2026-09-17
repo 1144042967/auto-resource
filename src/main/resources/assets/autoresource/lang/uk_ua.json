@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Південь",
   "screen.autoresource.energy_generator.face.west": "Захід",
   "screen.autoresource.energy_generator.face.east": "Схід",
+  "screen.autoresource.output.direction": "§7Напрямок виводу: §e%s",
+  "screen.autoresource.output.disabled": "Вимкнено",
+  "screen.autoresource.output.enabled": "Увімкнено",
+  "screen.autoresource.output.no_target": "§7Ціль виводу: §8немає",
+  "screen.autoresource.output.target": "§7Ціль виводу: §e%s",
+  "screen.autoresource.output.selected": "Вибрано",
+  "screen.autoresource.output.unselected": "Не вибрано",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bРідина: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bВихід: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aЗріст: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Маркер",
   "screen.autoresource.block_generator.output_slot": "Вихід",
   "screen.autoresource.block_generator.place_below": "Розмістити знизу",
-  "screen.autoresource.block_generator.output_toggle": "Вихід"
+  "screen.autoresource.block_generator.output_toggle": "Вихід",
+  "jei.autoresource.block_generator.page": "Сторінка %s/%s",
+  "jei.autoresource.block_generator.total": "Усього блоків: %s"
 }

@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Dél",
   "screen.autoresource.energy_generator.face.west": "Nyugat",
   "screen.autoresource.energy_generator.face.east": "Kelet",
+  "screen.autoresource.output.direction": "§7Kimeneti irány: §e%s",
+  "screen.autoresource.output.disabled": "Kikapcsolva",
+  "screen.autoresource.output.enabled": "Bekapcsolva",
+  "screen.autoresource.output.no_target": "§7Kimeneti cél: §8Nincs",
+  "screen.autoresource.output.target": "§7Kimeneti cél: §e%s",
+  "screen.autoresource.output.selected": "Kijelölve",
+  "screen.autoresource.output.unselected": "Nincs kijelölve",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bFolyadék: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bKibocsátás: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aNövekedés: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Jelölés",
   "screen.autoresource.block_generator.output_slot": "Kimenet",
   "screen.autoresource.block_generator.place_below": "Helyezés alá",
-  "screen.autoresource.block_generator.output_toggle": "Kimenet"
+  "screen.autoresource.block_generator.output_toggle": "Kimenet",
+  "jei.autoresource.block_generator.page": "%s/%s. oldal",
+  "jei.autoresource.block_generator.total": "%s blokk"
 }

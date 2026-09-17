@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Etelä",
   "screen.autoresource.energy_generator.face.west": "Länsi",
   "screen.autoresource.energy_generator.face.east": "Itä",
+  "screen.autoresource.output.direction": "§7Suunta: §e%s",
+  "screen.autoresource.output.disabled": "Pois",
+  "screen.autoresource.output.enabled": "Päällä",
+  "screen.autoresource.output.no_target": "§7Kohde: §8Ei mitään",
+  "screen.autoresource.output.target": "§7Kohde: §e%s",
+  "screen.autoresource.output.selected": "Valittu",
+  "screen.autoresource.output.unselected": "Ei valittu",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bNeste: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bTuotto: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aKasvu: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Merkitse",
   "screen.autoresource.block_generator.output_slot": "Ulostulo",
   "screen.autoresource.block_generator.place_below": "Aseta alapuolelle",
-  "screen.autoresource.block_generator.output_toggle": "Ulostulo"
+  "screen.autoresource.block_generator.output_toggle": "Ulostulo",
+  "jei.autoresource.block_generator.page": "Sivu %s/%s",
+  "jei.autoresource.block_generator.total": "%s lohkoa"
 }

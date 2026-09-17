@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Νότος",
   "screen.autoresource.energy_generator.face.west": "Δύση",
   "screen.autoresource.energy_generator.face.east": "Ανατολή",
+  "screen.autoresource.output.direction": "§7Κατεύθυνση: §e%s",
+  "screen.autoresource.output.disabled": "Ανενεργό",
+  "screen.autoresource.output.enabled": "Ενεργό",
+  "screen.autoresource.output.no_target": "§7Στόχος: §8Κανένα",
+  "screen.autoresource.output.target": "§7Στόχος: §e%s",
+  "screen.autoresource.output.selected": "Επιλεγμένο",
+  "screen.autoresource.output.unselected": "Μη επιλεγμένο",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bΥγρό: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bΠαραγωγή: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aΑύξηση: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Σήμανση",
   "screen.autoresource.block_generator.output_slot": "Έξοδος",
   "screen.autoresource.block_generator.place_below": "Τοποθέτηση κάτω",
-  "screen.autoresource.block_generator.output_toggle": "Έξοδος"
+  "screen.autoresource.block_generator.output_toggle": "Έξοδος",
+  "jei.autoresource.block_generator.page": "Σελίδα %s/%s",
+  "jei.autoresource.block_generator.total": "%s μπλοκ"
 }

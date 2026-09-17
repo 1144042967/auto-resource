@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Юг",
   "screen.autoresource.energy_generator.face.west": "Запад",
   "screen.autoresource.energy_generator.face.east": "Восток",
+  "screen.autoresource.output.direction": "§7Направление вывода: §e%s",
+  "screen.autoresource.output.disabled": "Отключено",
+  "screen.autoresource.output.enabled": "Включено",
+  "screen.autoresource.output.no_target": "§7Цель вывода: §8нет",
+  "screen.autoresource.output.target": "§7Цель вывода: §e%s",
+  "screen.autoresource.output.selected": "Выбрано",
+  "screen.autoresource.output.unselected": "Не выбрано",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bЖидкость: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bВыход: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aРост: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Маркер",
   "screen.autoresource.block_generator.output_slot": "Выход",
   "screen.autoresource.block_generator.place_below": "Разместить снизу",
-  "screen.autoresource.block_generator.output_toggle": "Выход"
+  "screen.autoresource.block_generator.output_toggle": "Выход",
+  "jei.autoresource.block_generator.page": "Страница %s/%s",
+  "jei.autoresource.block_generator.total": "Всего блоков: %s"
 }

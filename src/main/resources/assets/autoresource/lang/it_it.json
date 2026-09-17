@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Sud",
   "screen.autoresource.energy_generator.face.west": "Ovest",
   "screen.autoresource.energy_generator.face.east": "Est",
+  "screen.autoresource.output.direction": "§7Direzione di uscita: §e%s",
+  "screen.autoresource.output.disabled": "Disabilitata",
+  "screen.autoresource.output.enabled": "Abilitata",
+  "screen.autoresource.output.no_target": "§7Destinazione: §8Nessuna",
+  "screen.autoresource.output.target": "§7Destinazione: §e%s",
+  "screen.autoresource.output.selected": "Selezionato",
+  "screen.autoresource.output.unselected": "Non selezionato",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bLiquido: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bProduzione: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aCrescita: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Contrassegna",
   "screen.autoresource.block_generator.output_slot": "Uscita",
   "screen.autoresource.block_generator.place_below": "Posiziona sotto",
-  "screen.autoresource.block_generator.output_toggle": "Uscita"
+  "screen.autoresource.block_generator.output_toggle": "Uscita",
+  "jei.autoresource.block_generator.page": "Pagina %s/%s",
+  "jei.autoresource.block_generator.total": "%s blocchi"
 }

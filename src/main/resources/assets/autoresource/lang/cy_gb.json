@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "De",
   "screen.autoresource.energy_generator.face.west": "Gorllewin",
   "screen.autoresource.energy_generator.face.east": "Dwyrain",
+  "screen.autoresource.output.direction": "§7Cyfeiriad: §e%s",
+  "screen.autoresource.output.disabled": "Wedi'i Anablu",
+  "screen.autoresource.output.enabled": "Wedi'i Alluogi",
+  "screen.autoresource.output.no_target": "§7Targed: §8Dim",
+  "screen.autoresource.output.target": "§7Targed: §e%s",
+  "screen.autoresource.output.selected": "Wedi'i ddewis",
+  "screen.autoresource.output.unselected": "Heb ei ddewis",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bHylif: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bAllbwn: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aTwf: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Marcio",
   "screen.autoresource.block_generator.output_slot": "Allbwn",
   "screen.autoresource.block_generator.place_below": "Gosod Islaw",
-  "screen.autoresource.block_generator.output_toggle": "Allbwn"
+  "screen.autoresource.block_generator.output_toggle": "Allbwn",
+  "jei.autoresource.block_generator.page": "Tudalen %s/%s",
+  "jei.autoresource.block_generator.total": "%s bloc"
 }

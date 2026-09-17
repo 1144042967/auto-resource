@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Güney",
   "screen.autoresource.energy_generator.face.west": "Batı",
   "screen.autoresource.energy_generator.face.east": "Doğu",
+  "screen.autoresource.output.direction": "§7Yön: §e%s",
+  "screen.autoresource.output.disabled": "Devre dışı",
+  "screen.autoresource.output.enabled": "Etkin",
+  "screen.autoresource.output.no_target": "§7Hedef: §8Yok",
+  "screen.autoresource.output.target": "§7Hedef: §e%s",
+  "screen.autoresource.output.selected": "Seçili",
+  "screen.autoresource.output.unselected": "Seçili değil",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bSıvı: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bÇıktı: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aBüyüme: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "İşaretle",
   "screen.autoresource.block_generator.output_slot": "Çıktı",
   "screen.autoresource.block_generator.place_below": "Aşağıya Yerleştir",
-  "screen.autoresource.block_generator.output_toggle": "Çıktı"
+  "screen.autoresource.block_generator.output_toggle": "Çıktı",
+  "jei.autoresource.block_generator.page": "Sayfa %s/%s",
+  "jei.autoresource.block_generator.total": "%s blok"
 }

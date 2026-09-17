@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "South",
   "screen.autoresource.energy_generator.face.west": "West",
   "screen.autoresource.energy_generator.face.east": "East",
+  "screen.autoresource.output.direction": "§7Direction: §e%s",
+  "screen.autoresource.output.disabled": "Disabled",
+  "screen.autoresource.output.enabled": "Enabled",
+  "screen.autoresource.output.no_target": "§7Target: §8None",
+  "screen.autoresource.output.target": "§7Target: §e%s",
+  "screen.autoresource.output.selected": "Selected",
+  "screen.autoresource.output.unselected": "Not selected",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bLiquid: §r%1$s B",
   "item.autoresource.liquid_generator.tooltip.output": "§bOutput: §r%1$s B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aGrowth: §e%1$s%%",
@@ -95,5 +102,7 @@
   "screen.autoresource.water_wheel_motor.face.north": "North",
   "screen.autoresource.water_wheel_motor.face.south": "South",
   "screen.autoresource.water_wheel_motor.face.west": "West",
-  "screen.autoresource.water_wheel_motor.face.east": "East"
+  "screen.autoresource.water_wheel_motor.face.east": "East",
+  "jei.autoresource.block_generator.page": "Page %s/%s",
+  "jei.autoresource.block_generator.total": "%s blocks"
 }

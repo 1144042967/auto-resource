@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "Sud",
   "screen.autoresource.energy_generator.face.west": "Oest",
   "screen.autoresource.energy_generator.face.east": "Est",
+  "screen.autoresource.output.direction": "§7Direcció: §e%s",
+  "screen.autoresource.output.disabled": "Desactivat",
+  "screen.autoresource.output.enabled": "Activat",
+  "screen.autoresource.output.no_target": "§7Objectiu: §8Cap",
+  "screen.autoresource.output.target": "§7Objectiu: §e%s",
+  "screen.autoresource.output.selected": "Seleccionat",
+  "screen.autoresource.output.unselected": "No seleccionat",
   "item.autoresource.liquid_generator.tooltip.liquid": "§bLíquid: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§bProducció: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§aCreixement: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "Marcar",
   "screen.autoresource.block_generator.output_slot": "Sortida",
   "screen.autoresource.block_generator.place_below": "Col·locar a sota",
-  "screen.autoresource.block_generator.output_toggle": "Sortida"
+  "screen.autoresource.block_generator.output_toggle": "Sortida",
+  "jei.autoresource.block_generator.page": "Pàgina %s/%s",
+  "jei.autoresource.block_generator.total": "%s blocs"
 }

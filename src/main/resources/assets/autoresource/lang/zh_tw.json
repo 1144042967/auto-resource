@@ -35,6 +35,13 @@
   "screen.autoresource.energy_generator.face.south": "南",
   "screen.autoresource.energy_generator.face.west": "西",
   "screen.autoresource.energy_generator.face.east": "東",
+  "screen.autoresource.output.direction": "§7輸出方向：§e%s",
+  "screen.autoresource.output.disabled": "停用",
+  "screen.autoresource.output.enabled": "啟用",
+  "screen.autoresource.output.no_target": "§7輸出目標：§8無",
+  "screen.autoresource.output.target": "§7輸出目標：§e%s",
+  "screen.autoresource.output.selected": "選中",
+  "screen.autoresource.output.unselected": "未選中",
   "item.autoresource.liquid_generator.tooltip.liquid": "§b流體: §e%1$s§r B",
   "item.autoresource.liquid_generator.tooltip.output": "§b輸出: §e%1$s§r B/tick",
   "item.autoresource.liquid_generator.tooltip.growth": "§a增長: §e%1$s%%",
@@ -75,5 +82,7 @@
   "screen.autoresource.block_generator.marker": "標記",
   "screen.autoresource.block_generator.output_slot": "輸出",
   "screen.autoresource.block_generator.place_below": "下方生成方塊",
-  "screen.autoresource.block_generator.output_toggle": "輸出"
+  "screen.autoresource.block_generator.output_toggle": "輸出",
+  "jei.autoresource.block_generator.page": "第 %s/%s 頁",
+  "jei.autoresource.block_generator.total": "共 %s 個可生成方塊"
 }
