@@ -1,0 +1,34 @@
+{
+  "variants": {
+    "facing=down": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 180,
+      "y": 0
+    },
+    "facing=up": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 0,
+      "y": 0
+    },
+    "facing=north": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 90,
+      "y": 0
+    },
+    "facing=south": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 90,
+      "y": 180
+    },
+    "facing=west": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 90,
+      "y":  270
+    },
+    "facing=east": {
+      "model": "autoresource:block/water_wheel_motor/block",
+      "x": 90,
+      "y": 90
+    }
+  }
+}

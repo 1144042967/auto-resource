@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "autoresource:block/block_generator_top",
+    "down": "autoresource:block/block_generator_btm",
+    "east": "autoresource:block/block_generator_side",
+    "north": "autoresource:block/block_generator_side",
+    "particle": "autoresource:block/block_generator_side",
+    "south": "autoresource:block/block_generator_side",
+    "west": "autoresource:block/block_generator_side"
+  }
+}

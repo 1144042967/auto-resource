@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "autoresource:block/liquid_generator_water_top",
+    "down": "autoresource:block/liquid_generator_water_btm",
+    "east": "autoresource:block/liquid_generator_water_side",
+    "north": "autoresource:block/liquid_generator_water_side",
+    "particle": "autoresource:block/liquid_generator_water_side",
+    "south": "autoresource:block/liquid_generator_water_side",
+    "west": "autoresource:block/liquid_generator_water_side"
+  }
+}

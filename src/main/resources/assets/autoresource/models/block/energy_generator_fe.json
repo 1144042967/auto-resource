@@ -1,0 +1,12 @@
+{
+  "parent": "minecraft:block/cube",
+  "textures": {
+    "up": "autoresource:block/energy_generator_fe_top",
+    "down": "autoresource:block/energy_generator_fe_btm",
+    "east": "autoresource:block/energy_generator_fe_side",
+    "north": "autoresource:block/energy_generator_fe_side",
+    "particle": "autoresource:block/energy_generator_fe_side",
+    "south": "autoresource:block/energy_generator_fe_side",
+    "west": "autoresource:block/energy_generator_fe_side"
+  }
+}

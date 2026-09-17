@@ -7,7 +7,7 @@ plugins {
 version = mod_version
 group = mod_group_id
 base {
-    archivesName = mod_id
+    archivesName = "autoresource-forge${minecraft_version}"
 }
 java.toolchain.languageVersion = JavaLanguageVersion.of(17)
 println "Java: ${System.getProperty 'java.version'}, JVM: ${System.getProperty 'java.vm.version'} (${System.getProperty 'java.vendor'}), Arch: ${System.getProperty 'os.arch'}"
@@ -41,11 +41,23 @@ minecraft {
         }
     }
 }
-sourceSets.main.resources { srcDir 'src/generated/resources' }
 repositories {
+    // JEI 的 maven（仅编译期用到 API，运行期 JEI 是可选的）
+    maven {
+        name = "JEI"
+        url = "https://maven.blamejared.com"
+    }
 }
 dependencies {
     minecraft "net.minecraftforge:forge:${minecraft_version}-${forge_version}"
+    // 机械动力 Create 0.5.1（1.19.2 Forge）编译期依赖（官方映射 jar，本地 libs/ 提供）。
+    // 仅用于编译水车马达的联动代码；不随 mod 分发，运行时由玩家自行安装 Create 及其前置。
+    compileOnly files("libs/create-1.19.2-0.5.1.i.jar")
+    // JEI 是**可选**联动：只用编译期的 api 制品，不打进 jar、也不进运行时依赖，
+    // 因此没装 JEI 的整合包里本模组照常运行（插件类只会被 JEI 自己加载）。
+    // common-api 才是 API 类本体，forge-api 只有 ForgeTypes 那一个壳，两个都要声明。
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-common-api:${jei_version}")
+    compileOnly fg.deobf("mezz.jei:jei-${minecraft_version}-forge-api:${jei_version}")
 }
 tasks.named('processResources', ProcessResources).configure {
     var replaceProperties = [
@@ -88,4 +100,5 @@ publishing {
 }
 tasks.withType(JavaCompile).configureEach {
     options.encoding = 'UTF-8'
+    options.compilerArgs += ['-Xmaxerrs', '1000']
 }
