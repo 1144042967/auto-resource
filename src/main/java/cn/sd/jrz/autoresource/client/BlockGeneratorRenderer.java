@@ -21,7 +21,6 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.phys.Vec3;
 import org.joml.Matrix4f;
-import org.joml.Quaternionf;
 
 import javax.annotation.Nonnull;
 
@@ -85,7 +84,8 @@ public class BlockGeneratorRenderer implements BlockEntityRenderer<BlockGenerato
         poseStack.pushPose();
         // 绕 Y 旋转使目标面朝向 +Z（Y 方向不变，贴图保持竖直）
         poseStack.translate(0.5f, 0, 0.5f);
-        poseStack.mulPose(new Quaternionf().rotateY(SIDE_ROT_Y[face.ordinal()] * 90f * (float) Math.PI / 180f));
+        // 26.3 起 PoseStack#mulPose 不再接受 Quaternionf，需用 Matrix4f 包装
+        poseStack.mulPose(new Matrix4f().rotateY(SIDE_ROT_Y[face.ordinal()] * 90f * (float) Math.PI / 180f));
         poseStack.translate(-0.5f, 0, -0.5f);
         // 在 +Z 面（z=1）绘制居中矩形，略高于面避免 z-fighting
         float x1 = 0.5f - INSET;

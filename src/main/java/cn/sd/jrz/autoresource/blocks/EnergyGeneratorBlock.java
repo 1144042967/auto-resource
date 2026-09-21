@@ -9,6 +9,7 @@ import net.minecraft.world.level.block.entity.BlockEntity;
 import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -46,7 +47,7 @@ public class EnergyGeneratorBlock extends AbstractGeneratorBlock {
     public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof EnergyGeneratorEntity entity) {
-            ItemStack charge = entity.chargeSlot.getStackInSlot(0);
+            ItemStack charge = ItemUtil.getStack(entity.chargeSlot, 0);
             if (!charge.isEmpty()) {
                 drops.add(charge);
             }

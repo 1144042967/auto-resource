@@ -21,12 +21,13 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.fluid.FluidResource;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
@@ -40,8 +41,8 @@ import javax.annotation.Nullable;
  * <p>
  * 26.x 适配：
  * <ul>
- *     <li>实体级暴露的 {@link IFluidHandler} 包装已迁移至 {@link net.neoforged.neoforge.transfer.ResourceHandler} 体系（由 {@code LiquidConnection} 提供方块 Capability），不在此实现</li>
- *     <li>{@link ItemStackHandler} 沿用，但 26.x 仍兼容旧的 {@link IFluidHandlerItem} 物品能力</li>
+ *     <li>实体级暴露的流体处理已迁移至 {@link net.neoforged.neoforge.transfer.ResourceHandler} 体系（由 {@code LiquidConnection} 提供方块 Capability），不在此实现</li>
+ *     <li>物品槽使用 {@link ItemStacksResourceHandler}（26.3 起已无 {@code ItemStackHandler}）</li>
  *     <li>数据持久化使用 26.x 的 {@link ValueInput}/{@link ValueOutput}</li>
  * </ul>
  */
@@ -53,21 +54,22 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
     public boolean placeFluidBelow = false;
 
     // 输入槽：放入空桶或可容纳本机流体的物品，可放一组物品，组的大小由物品自身堆叠上限决定
-    public final ItemStackHandler inputSlot = new ItemStackHandler(1) {
+    // （26.3 起 ItemStackHandler 已移除，改用 ItemStacksResourceHandler；容量默认即物品堆叠上限，无需覆写）
+    public final ItemStacksResourceHandler inputSlot = new ItemStacksResourceHandler(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isValid(int index, @Nonnull ItemResource resource) {
             // 空桶：vanilla 桶无流体能力，需特判
-            if (stack.is(Items.BUCKET)) {
+            if (resource.is(Items.BUCKET)) {
                 return true;
             }
             // 其他物品：通过流体能力判断是否还能容纳本机流体
-            ResourceHandler<FluidResource> handler = ItemAccess.forStack(stack).getCapability(Capabilities.Fluid.ITEM);
+            ResourceHandler<FluidResource> handler = ItemAccess.forStack(resource.toStack(1)).getCapability(Capabilities.Fluid.ITEM);
             if (handler == null) {
                 return false;
             }
-            FluidResource resource = FluidResource.of(config.getFluid());
+            FluidResource fluid = FluidResource.of(config.getFluid());
             for (int tank = 0; tank < handler.size(); tank++) {
-                if (handler.isValid(tank, resource) && handler.getAmountAsLong(tank) < handler.getCapacityAsLong(tank, resource)) {
+                if (handler.isValid(tank, fluid) && handler.getAmountAsLong(tank) < handler.getCapacityAsLong(tank, fluid)) {
                     return true;
                 }
             }
@@ -75,40 +77,25 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         }
 
         @Override
-        public int getSlotLimit(int slot) {
-            return Integer.MAX_VALUE;
-        }
-
-        @Override
-        protected int getStackLimit(int slot, @Nonnull ItemStack stack) {
-            return stack.getMaxStackSize();
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, @Nonnull ItemStack previousContents) {
             setChanged();
         }
     };
 
     // 输出槽：只允许机器放入已填满的物品，玩家/管道不可主动放入；只能放 1 个
-    public final ItemStackHandler outputSlot = new ItemStackHandler(1) {
+    public final ItemStacksResourceHandler outputSlot = new ItemStacksResourceHandler(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isValid(int index, @Nonnull ItemResource resource) {
             return false;
         }
 
         @Override
-        public int getSlotLimit(int slot) {
+        protected int getCapacity(int index, @Nonnull ItemResource resource) {
             return 1;
         }
 
         @Override
-        protected int getStackLimit(int slot, @Nonnull ItemStack stack) {
-            return 1;
-        }
-
-        @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, @Nonnull ItemStack previousContents) {
             setChanged();
         }
     };
@@ -149,7 +136,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
         if (liquid <= 0) {
             return;
         }
-        ItemStack input = inputSlot.getStackInSlot(0);
+        ItemStack input = ItemUtil.getStack(inputSlot, 0);
         if (input.isEmpty()) {
             return;
         }
@@ -191,7 +178,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
                 liquid += filled;
             }
         } else if (input.getCount() == 1) {
-            inputSlot.setStackInSlot(0, copy);
+            Tool.setStack(inputSlot, 0,copy);
         } else {
             liquid += filled;
         }
@@ -321,7 +308,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      * 输入槽中是否有正在等待填充的空桶（此时保留液体、暂不向六面输出，以便积累液体填桶）
      */
     private boolean isBucketPending() {
-        ItemStack input = inputSlot.getStackInSlot(0);
+        ItemStack input = ItemUtil.getStack(inputSlot, 0);
         if (!input.is(Items.BUCKET)) {
             return false;
         }
@@ -342,23 +329,23 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      * 输出槽能否放入该物品
      */
     private boolean canInsertOutput(ItemStack stack) {
-        ItemStack out = outputSlot.getStackInSlot(0);
+        ItemStack out = ItemUtil.getStack(outputSlot, 0);
         if (out.isEmpty()) {
             return true;
         }
-        return out.is(stack.getItem()) && out.getCount() + stack.getCount() <= outputSlot.getSlotLimit(0);
+        return out.is(stack.getItem()) && out.getCount() + stack.getCount() <= outputSlot.getCapacityAsInt(0, ItemResource.EMPTY);
     }
 
     /**
      * 把一个物品放入输出槽
      */
     private void insertOutput(ItemStack stack) {
-        ItemStack out = outputSlot.getStackInSlot(0);
+        ItemStack out = ItemUtil.getStack(outputSlot, 0);
         if (out.isEmpty()) {
-            outputSlot.setStackInSlot(0, stack.copy());
+            Tool.setStack(outputSlot, 0,stack.copy());
         } else {
             out.grow(stack.getCount());
-            outputSlot.setStackInSlot(0, out);
+            Tool.setStack(outputSlot, 0,out);
         }
     }
 
@@ -384,7 +371,7 @@ public class LiquidGeneratorEntity extends AbstractGeneratorEntity {
      */
     private void consumeOne(ItemStack input) {
         input.shrink(1);
-        inputSlot.setStackInSlot(0, input.isEmpty() ? ItemStack.EMPTY : input);
+        Tool.setStack(inputSlot, 0,input.isEmpty() ? ItemStack.EMPTY : input);
     }
 
     @Override

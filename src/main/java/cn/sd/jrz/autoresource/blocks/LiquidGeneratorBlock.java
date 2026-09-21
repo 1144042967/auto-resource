@@ -17,6 +17,7 @@ import net.minecraft.world.level.material.Fluids;
 import net.minecraft.world.level.storage.loot.LootParams;
 import net.minecraft.world.level.storage.loot.parameters.LootContextParams;
 import net.minecraft.world.phys.BlockHitResult;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 
 import javax.annotation.Nonnull;
 import java.util.ArrayList;
@@ -54,11 +55,11 @@ public class LiquidGeneratorBlock extends AbstractGeneratorBlock {
     public @Nonnull List<ItemStack> getDrops(@Nonnull BlockState state, @Nonnull LootParams.Builder builder) {
         List<ItemStack> drops = new ArrayList<>(super.getDrops(state, builder));
         if (builder.getOptionalParameter(LootContextParams.BLOCK_ENTITY) instanceof LiquidGeneratorEntity entity) {
-            ItemStack input = entity.inputSlot.getStackInSlot(0);
+            ItemStack input = ItemUtil.getStack(entity.inputSlot, 0);
             if (!input.isEmpty()) {
                 drops.add(input);
             }
-            ItemStack output = entity.outputSlot.getStackInSlot(0);
+            ItemStack output = ItemUtil.getStack(entity.outputSlot, 0);
             if (!output.isEmpty()) {
                 drops.add(output);
             }

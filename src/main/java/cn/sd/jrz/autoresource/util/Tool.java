@@ -3,8 +3,18 @@ package cn.sd.jrz.autoresource.util;
 import net.minecraft.world.entity.item.ItemEntity;
 import net.minecraft.world.entity.player.Player;
 import net.minecraft.world.item.ItemStack;
+import net.neoforged.neoforge.transfer.StacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemResource;
 
 public class Tool {
+    /**
+     * 把物品栈整体写入资源处理器的指定槽位（等价 26.2 的 {@code ItemStackHandler#setStackInSlot}）。
+     * 26.3 起 ItemStackHandler 已移除，读写改走 Resource/amount 二元组，故需要这层转换。
+     */
+    public static void setStack(StacksResourceHandler<ItemStack, ItemResource> handler, int index, ItemStack stack) {
+        handler.set(index, ItemResource.of(stack), stack.getCount());
+    }
+
     public static long suit(long value) {
         return value < 0 ? Long.MAX_VALUE : value;
     }
@@ -94,7 +104,8 @@ public class Tool {
 
     public static void takeItem(Player player, ItemStack stack) {
         if (!player.addItem(stack)) {
-            ItemEntity entity = player.drop(stack, false);
+            // 26.3 起 LivingEntity#drop 需要 Prediction 参数；SERVER_ONLY 等价旧 drop(stack, throwAround)
+            ItemEntity entity = player.drop(stack, false, net.minecraft.util.Prediction.SERVER_ONLY);
             if (entity != null) {
                 entity.setNoPickUpDelay();
                 entity.setTarget(player.getUUID());

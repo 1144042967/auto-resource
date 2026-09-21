@@ -11,7 +11,7 @@ import net.minecraft.network.chat.Component;
 import net.minecraft.resources.Identifier;
 import net.minecraft.world.entity.player.Inventory;
 import net.minecraft.world.inventory.Slot;
-import org.lwjgl.glfw.GLFW;
+import com.mojang.blaze3d.platform.InputConstants;
 
 import javax.annotation.Nonnull;
 
@@ -53,19 +53,20 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
         this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 92, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), _ -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_SOUTH));
         this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 92, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), _ -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_WEST));
         this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 92, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), _ -> sendButton(BlockGeneratorMenu.BUTTON_TRANSFER_EAST));
-        this.addRenderableWidget(this.faceDown);
-        this.addRenderableWidget(this.faceUp);
-        this.addRenderableWidget(this.faceNorth);
-        this.addRenderableWidget(this.faceSouth);
-        this.addRenderableWidget(this.faceWest);
-        this.addRenderableWidget(this.faceEast);
+        addFaceButton(this.faceDown);
+        addFaceButton(this.faceUp);
+        addFaceButton(this.faceNorth);
+        addFaceButton(this.faceSouth);
+        addFaceButton(this.faceWest);
+        addFaceButton(this.faceEast);
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceBlockBelow(), Component.translatable("screen.autoresource.block_generator.place_below"), _ -> sendButton(BlockGeneratorMenu.BUTTON_PLACE_BLOCK));
         this.addRenderableWidget(this.placeButton);
     }
 
     @Override
     public boolean keyPressed(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_SPACE) {
+        // 26.3 起 GLFW 类不再可用，键值改用 Mojang 自封的 InputConstants（数值仍为 GLFW keycode）
+        if (event.key() == InputConstants.KEY_SPACE) {
             this.spaceDown = true;
         }
         return super.keyPressed(event);
@@ -73,7 +74,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
 
     @Override
     public boolean keyReleased(KeyEvent event) {
-        if (event.key() == GLFW.GLFW_KEY_SPACE) {
+        if (event.key() == InputConstants.KEY_SPACE) {
             this.spaceDown = false;
         }
         return super.keyReleased(event);
@@ -88,7 +89,7 @@ public class BlockGeneratorScreen extends AbstractGeneratorScreen<BlockGenerator
             Slot outputSlot = this.menu.slots.get(OUTPUT_SLOT_INDEX);
             if (this.isHovering(outputSlot.x, outputSlot.y, 16, 16, event.x(), event.y())) {
                 int id;
-                if ((event.modifiers() & GLFW.GLFW_MOD_SHIFT) != 0) {
+                if (event.hasShiftDown()) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_STACK;
                 } else if (this.spaceDown) {
                     id = BlockGeneratorMenu.BUTTON_EXTRACT_ALL;

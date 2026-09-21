@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -23,7 +23,7 @@ import javax.annotation.Nullable;
  * 包含加速槽（0）、充电槽（1）以及玩家背包。
  * 通过数据槽把能量、发电量、下次增长量、无线充电参数、六面开关等同步到客户端用于 GUI 展示，
  * 并在 GUI 中通过按钮（clickMenuButton）修改每台发电机的独立配置。
- * 26.x 适配：使用新传输 API（{@link net.neoforged.neoforge.items.ItemStackHandler}）。
+ * 26.x 适配：使用新传输 API（{@link net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler}）。
  */
 public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEntity> {
     // 按钮 ID
@@ -58,8 +58,9 @@ public class EnergyGeneratorMenu extends AbstractGeneratorMenu<EnergyGeneratorEn
 
         // 机器槽位：0=加速，1=充电
         if (entity != null) {
-            addSlot(new SlotItemHandler(entity.starSlot, 0, 8, 190));
-            addSlot(new SlotItemHandler(entity.chargeSlot, 0, 152, 190));
+            // 26.3 起 SlotItemHandler 已移除，改用 ResourceHandlerSlot（第三参为槽位直写函数）
+            addSlot(new ResourceHandlerSlot(entity.starSlot, entity.starSlot::set, 0, 8, 190));
+            addSlot(new ResourceHandlerSlot(entity.chargeSlot, entity.chargeSlot::set, 0, 152, 190));
         }
         // 玩家背包：2-37
         addPlayerInventory(playerInventory, 230);

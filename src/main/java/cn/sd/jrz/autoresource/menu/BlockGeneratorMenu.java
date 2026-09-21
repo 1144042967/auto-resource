@@ -12,7 +12,7 @@ import net.minecraft.world.inventory.Slot;
 import net.minecraft.world.item.Item;
 import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 import javax.annotation.Nonnull;
 
@@ -51,7 +51,8 @@ public class BlockGeneratorMenu extends AbstractGeneratorMenu<BlockGeneratorEnti
 
         // 机器槽位：0=标记槽（放入后锁定），1=输出展示槽（显示标记物品，单击提取）
         if (entity != null) {
-            addSlot(new SlotItemHandler(entity.markerSlot, 0, 8, 113) {
+            // 26.3 起 SlotItemHandler 已移除，改用 ResourceHandlerSlot（第三参为槽位直写函数）
+            addSlot(new ResourceHandlerSlot(entity.markerSlot, entity.markerSlot::set, 0, 8, 113) {
                 @Override
                 public boolean mayPickup(@Nonnull Player player) {
                     // 一旦放入物品不允许取出/更换

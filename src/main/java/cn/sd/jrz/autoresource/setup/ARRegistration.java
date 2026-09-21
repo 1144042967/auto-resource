@@ -101,7 +101,8 @@ public class ARRegistration {
 
     @NotNull
     private static <T extends Block & EntityBlock> DeferredHolder<Block, @NotNull T> registerBlock(String name, DataConfig config, BiFunction<BlockBehaviour.Properties, DataConfig, T> creator) {
-        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().mapColor(DyeColor.BLUE).pushReaction(PushReaction.DESTROY).strength(0.5f, 3.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)));
+        // 26.3 起 PushReaction 重命名：DESTROY → POPPED（语义同为被活塞推动后直接消失）
+        BlockBehaviour.Properties properties = BlockBehaviour.Properties.of().mapColor(DyeColor.BLUE).pushReaction(PushReaction.POPPED).strength(0.5f, 3.0f).setId(ResourceKey.create(Registries.BLOCK, Identifier.fromNamespaceAndPath(AutoResource.MODID, name)));
         return BLOCKS.register(name, () -> creator.apply(properties, config));
     }
 

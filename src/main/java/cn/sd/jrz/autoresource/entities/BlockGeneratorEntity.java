@@ -25,10 +25,11 @@ import net.minecraft.world.level.block.state.BlockState;
 import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.transfer.ResourceHandler;
 import net.neoforged.neoforge.transfer.ResourceHandlerUtil;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 
 import javax.annotation.Nonnull;
 import javax.annotation.Nullable;
@@ -48,19 +49,19 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
     public boolean placeBlockBelow = false;
 
     // 标记槽：放入一个合法物品后锁定，决定机器输出的方块种类
-    public final ItemStackHandler markerSlot = new ItemStackHandler(1) {
+    public final ItemStacksResourceHandler markerSlot = new ItemStacksResourceHandler(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
-            return DataConfig.isBlockGeneratorItem(stack);
+        public boolean isValid(int index, @Nonnull ItemResource resource) {
+            return DataConfig.isBlockGeneratorItem(resource.toStack(1));
         }
 
         @Override
-        public int getSlotLimit(int slot) {
+        protected int getCapacity(int index, @Nonnull ItemResource resource) {
             return 1;
         }
 
         @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, @Nonnull ItemStack previousContents) {
             setChanged();
             // 标记槽变化时强制同步到客户端，并触发重新渲染（否则客户端看不到标记的物品）
             Level level = getLevel();
@@ -105,7 +106,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
      * 标记槽中的物品（未标记时返回空）
      */
     public ItemStack getMarkedItem() {
-        return markerSlot.getStackInSlot(0);
+        return ItemUtil.getStack(markerSlot, 0);
     }
 
     /**
@@ -285,7 +286,7 @@ public class BlockGeneratorEntity extends AbstractGeneratorEntity {
         if (!markerItemId.isEmpty()) {
             ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.tryParse(markerItemId)), 1);
             if (!stack.isEmpty()) {
-                markerSlot.setStackInSlot(0, stack);
+                Tool.setStack(markerSlot, 0, stack);
             }
         }
     }

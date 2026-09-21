@@ -52,12 +52,12 @@ public class EnergyGeneratorScreen extends AbstractGeneratorScreen<EnergyGenerat
         this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 152, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_SOUTH));
         this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 152, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_WEST));
         this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 152, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), _ -> sendButton(EnergyGeneratorMenu.BUTTON_TRANSFER_EAST));
-        this.addRenderableWidget(this.faceDown);
-        this.addRenderableWidget(this.faceUp);
-        this.addRenderableWidget(this.faceNorth);
-        this.addRenderableWidget(this.faceSouth);
-        this.addRenderableWidget(this.faceWest);
-        this.addRenderableWidget(this.faceEast);
+        addFaceButton(this.faceDown);
+        addFaceButton(this.faceUp);
+        addFaceButton(this.faceNorth);
+        addFaceButton(this.faceSouth);
+        addFaceButton(this.faceWest);
+        addFaceButton(this.faceEast);
     }
 
     @Override

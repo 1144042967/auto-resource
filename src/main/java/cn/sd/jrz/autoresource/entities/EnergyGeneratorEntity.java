@@ -28,10 +28,11 @@ import net.minecraft.world.level.storage.ValueInput;
 import net.minecraft.world.level.storage.ValueOutput;
 import net.minecraft.world.phys.AABB;
 import net.neoforged.neoforge.capabilities.Capabilities;
-import net.neoforged.neoforge.items.ItemStackHandler;
 import net.neoforged.neoforge.transfer.access.ItemAccess;
 import net.neoforged.neoforge.transfer.energy.EnergyHandler;
 import net.neoforged.neoforge.transfer.item.ItemResource;
+import net.neoforged.neoforge.transfer.item.ItemStacksResourceHandler;
+import net.neoforged.neoforge.transfer.item.ItemUtil;
 import net.neoforged.neoforge.transfer.transaction.Transaction;
 
 import javax.annotation.Nonnull;
@@ -76,40 +77,40 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
     public int transferRepeat = 1;
 
     // 加速增长槽位（放入配置指定物品后增长量变为当前发电量的 1%），只能放 1 个
-    public final ItemStackHandler starSlot = new ItemStackHandler(1) {
+    public final ItemStacksResourceHandler starSlot = new ItemStacksResourceHandler(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isValid(int index, @Nonnull ItemResource resource) {
             Item star = config.getStarItem();
-            return star != null && stack.is(star);
+            return star != null && resource.is(star);
         }
 
         @Override
-        public int getSlotLimit(int slot) {
+        protected int getCapacity(int index, @Nonnull ItemResource resource) {
             return 1;
         }
 
         @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, @Nonnull ItemStack previousContents) {
             setChanged();
         }
     };
 
     // 充电槽位（可放入可充电物品为其充电），每次充电 1 个
-    public final ItemStackHandler chargeSlot = new ItemStackHandler(1) {
+    public final ItemStacksResourceHandler chargeSlot = new ItemStacksResourceHandler(1) {
         @Override
-        public boolean isItemValid(int slot, @Nonnull ItemStack stack) {
+        public boolean isValid(int index, @Nonnull ItemResource resource) {
             // 26.x 通过 Capability 检测接口判断可充电物品
-            EnergyHandler handler = ItemAccess.forStack(stack).getCapability(Capabilities.Energy.ITEM);
+            EnergyHandler handler = ItemAccess.forStack(resource.toStack(1)).getCapability(Capabilities.Energy.ITEM);
             return handler != null;
         }
 
         @Override
-        public int getSlotLimit(int slot) {
+        protected int getCapacity(int index, @Nonnull ItemResource resource) {
             return 1;
         }
 
         @Override
-        protected void onContentsChanged(int slot) {
+        protected void onContentsChanged(int index, @Nonnull ItemStack previousContents) {
             setChanged();
         }
     };
@@ -156,7 +157,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
      */
     private void updateNextIncrease() {
         long increase = config.getStep();
-        if (!starSlot.getStackInSlot(0).isEmpty()) {
+        if (!ItemUtil.getStack(starSlot, 0).isEmpty()) {
             // 放入指定物品后，增长的发电量变为当前发电量的 1%（至少 1，避免低产量时停止增长）
             increase = Math.max(1, output / 100);
         }
@@ -170,7 +171,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (energy <= 0) {
             return;
         }
-        ItemStack stack = chargeSlot.getStackInSlot(0);
+        ItemStack stack = ItemUtil.getStack(chargeSlot, 0);
         if (stack.isEmpty()) {
             return;
         }
@@ -520,7 +521,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
                         + wirelessInterval + "," + wirelessRange + "," + transferRepeat + ","
                         + (transferDown ? 1 : 0) + "," + (transferUp ? 1 : 0) + "," + (transferNorth ? 1 : 0) + ","
                         + (transferSouth ? 1 : 0) + "," + (transferWest ? 1 : 0) + "," + (transferEast ? 1 : 0) + ","
-                        + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(starSlot.getStackInSlot(0).getItem()).toString());
+                        + net.minecraft.core.registries.BuiltInRegistries.ITEM.getKey(ItemUtil.getStack(starSlot, 0).getItem()).toString());
     }
 
     @Override
@@ -549,7 +550,7 @@ public class EnergyGeneratorEntity extends AbstractGeneratorEntity {
         if (!starItemId.isEmpty()) {
             ItemStack stack = new ItemStack(BuiltInRegistries.ITEM.getValue(Identifier.tryParse(starItemId)), 1);
             if (!stack.isEmpty()) {
-                starSlot.setStackInSlot(0, stack);
+                Tool.setStack(starSlot, 0, stack);
             }
         }
     }

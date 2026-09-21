@@ -13,7 +13,7 @@ import net.minecraft.world.item.ItemStack;
 import net.minecraft.world.item.Items;
 import net.minecraft.world.level.material.Fluid;
 import net.minecraft.world.level.material.Fluids;
-import net.neoforged.neoforge.items.SlotItemHandler;
+import net.neoforged.neoforge.transfer.item.ResourceHandlerSlot;
 
 import javax.annotation.Nonnull;
 
@@ -50,8 +50,9 @@ public class LiquidGeneratorMenu extends AbstractGeneratorMenu<LiquidGeneratorEn
 
         // 机器槽位：0=输入，1=输出
         if (entity != null) {
-            addSlot(new SlotItemHandler(entity.inputSlot, 0, 8, 113));
-            addSlot(new SlotItemHandler(entity.outputSlot, 0, 152, 113));
+            // 26.3 起 SlotItemHandler 已移除，改用 ResourceHandlerSlot（第三参为槽位直写函数）
+            addSlot(new ResourceHandlerSlot(entity.inputSlot, entity.inputSlot::set, 0, 8, 113));
+            addSlot(new ResourceHandlerSlot(entity.outputSlot, entity.outputSlot::set, 0, 152, 113));
         }
         // 玩家背包：2-37
         addPlayerInventory(playerInventory, 153);

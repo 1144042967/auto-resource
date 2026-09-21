@@ -48,12 +48,12 @@ public class LiquidGeneratorScreen extends AbstractGeneratorScreen<LiquidGenerat
         this.faceSouth = new FaceButton(this.leftPos + 17, this.topPos + 92, 44, 12, Direction.SOUTH, this.menu.isFaceEnabled(Direction.SOUTH), Component.translatable("screen.autoresource.energy_generator.face.south"), _ -> sendButton(LiquidGeneratorMenu.BUTTON_TRANSFER_SOUTH));
         this.faceWest = new FaceButton(this.leftPos + 66, this.topPos + 92, 44, 12, Direction.WEST, this.menu.isFaceEnabled(Direction.WEST), Component.translatable("screen.autoresource.energy_generator.face.west"), _ -> sendButton(LiquidGeneratorMenu.BUTTON_TRANSFER_WEST));
         this.faceEast = new FaceButton(this.leftPos + 115, this.topPos + 92, 44, 12, Direction.EAST, this.menu.isFaceEnabled(Direction.EAST), Component.translatable("screen.autoresource.energy_generator.face.east"), _ -> sendButton(LiquidGeneratorMenu.BUTTON_TRANSFER_EAST));
-        this.addRenderableWidget(this.faceDown);
-        this.addRenderableWidget(this.faceUp);
-        this.addRenderableWidget(this.faceNorth);
-        this.addRenderableWidget(this.faceSouth);
-        this.addRenderableWidget(this.faceWest);
-        this.addRenderableWidget(this.faceEast);
+        addFaceButton(this.faceDown);
+        addFaceButton(this.faceUp);
+        addFaceButton(this.faceNorth);
+        addFaceButton(this.faceSouth);
+        addFaceButton(this.faceWest);
+        addFaceButton(this.faceEast);
         this.placeButton = new StateButton(this.leftPos + 72, this.topPos + 133, 96, 12, this.menu.isPlaceFluidBelow(), Component.translatable("screen.autoresource.liquid_generator.place_below"), _ -> sendButton(LiquidGeneratorMenu.BUTTON_PLACE_FLUID));
         this.addRenderableWidget(this.placeButton);
     }
